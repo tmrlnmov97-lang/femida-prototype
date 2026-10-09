@@ -83,7 +83,6 @@ const marker = (n: number) => (n < stage.value ? 'ok' : n === stage.value ? 'on'
           <div class="composer">
             <textarea v-model="task" rows="4" placeholder="Describe the task: the situation, what needs to be established and what you want to end up with" aria-label="Describe the task" @keydown="onKey" />
             <div class="composer-foot">
-              <span class="hint">Nothing runs until you approve the&nbsp;plan</span>
               <button class="primary" :disabled="!task.trim()" @click="submit">Draft a plan<i class="pi pi-arrow-right" /></button>
             </div>
           </div>
@@ -91,8 +90,8 @@ const marker = (n: number) => (n < stage.value ? 'ok' : n === stage.value ? 'on'
           <section class="how" aria-labelledby="how-title">
             <h2 id="how-title">How it works</h2>
             <ol>
-              <li><span class="n">1</span><b>Describe the task</b><span>The situation and the result you need.</span></li>
-              <li><span class="n">2</span><b>Approve the plan</b><span>Answer a few questions, check the steps, edit any&nbsp;of&nbsp;them.</span></li>
+              <li><span class="n">1</span><b>Describe the task</b><span>The situation and the result you&nbsp;need.</span></li>
+              <li><span class="n">2</span><b>Approve the plan</b><span>Answer a few questions, then check and edit the&nbsp;steps.</span></li>
               <li><span class="n">3</span><b>Get a cited answer</b><span>Every conclusion links to the law and court&nbsp;practice.</span></li>
             </ol>
           </section>
@@ -228,16 +227,17 @@ h1 { margin: 0; color: var(--fd-ink); font: 600 32px/40px var(--fd-font-serif); 
 .composer:focus-within { border-color: var(--fd-accent); box-shadow: 0 0 0 3px var(--fd-accent-soft); }
 .composer textarea { display: block; width: 100%; min-height: 104px; resize: none; border: 0; outline: none; background: transparent; color: var(--fd-ink); font: 400 16px/26px var(--fd-font-sans); }
 .composer textarea::placeholder { color: var(--fd-muted); }
-.composer-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 8px; }
-.hint { color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); }
+.composer-foot { display: flex; justify-content: flex-end; margin-top: 8px; }
 
-.how { margin-top: 48px; }
-.how h2 { margin: 0 0 16px; color: var(--fd-ink); font: 600 18px/26px var(--fd-font-sans); }
+/* How it works: the same numbered markers as the stages later, joined by one line */
+.how { margin-top: 40px; }
+.how h2 { margin: 0 0 20px; color: var(--fd-muted); font: 500 14px/20px var(--fd-font-sans); }
 .how ol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin: 0; padding: 0; list-style: none; }
-.how li { display: grid; gap: 4px; align-content: start; padding-top: 16px; border-top: 1px solid var(--fd-line); }
-.how .n { margin-bottom: 4px; color: var(--fd-accent-text); font: 600 13px/18px var(--fd-font-sans); }
+.how li { position: relative; display: grid; align-content: start; }
+.how li:not(:last-child)::after { content: ''; position: absolute; top: 14px; left: 40px; right: -12px; height: 1px; background: var(--fd-line); }
+.how .n { display: grid; place-items: center; width: 28px; height: 28px; margin-bottom: 12px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--fd-accent) 40%, transparent); background: var(--fd-accent-soft); color: var(--fd-accent-text); font: 600 13px/1 var(--fd-font-sans); }
 .how b { color: var(--fd-ink); font: 600 15px/22px var(--fd-font-sans); }
-.how li > span:last-child { color: var(--fd-muted); font: 400 14px/22px var(--fd-font-sans); text-wrap: pretty; }
+.how li > span:last-child { max-width: 220px; margin-top: 4px; color: var(--fd-muted); font: 400 14px/22px var(--fd-font-sans); text-wrap: pretty; }
 
 /* Buttons */
 .primary, .secondary, .ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; cursor: pointer; white-space: nowrap; font: 500 14px/20px var(--fd-font-sans); transition: background-color .15s, border-color .15s, color .15s, opacity .15s; }
@@ -332,7 +332,13 @@ h2 { margin: 0; color: var(--fd-ink); font: 600 18px/28px var(--fd-font-sans); }
   .lead { font-size: 15px; line-height: 24px; }
   .composer-foot { flex-direction: column; align-items: stretch; }
   .how { margin-top: 32px; }
-  .how ol { grid-template-columns: 1fr; gap: 16px; }
+  .how ol { grid-template-columns: 1fr; gap: 0; }
+  .how li { grid-template-columns: 28px 1fr; column-gap: 12px; padding-bottom: 20px; }
+  .how li:last-child { padding-bottom: 0; }
+  .how li:not(:last-child)::after { top: 36px; bottom: 4px; left: 13.5px; right: auto; width: 1px; height: auto; }
+  .how .n { grid-row: span 2; margin-bottom: 0; }
+  .how b { line-height: 28px; }
+  .how li > span:last-child { max-width: none; margin-top: 0; }
   .stage { column-gap: 12px; }
   .qs { padding: 16px; }
   .steps { padding: 4px 16px; }
