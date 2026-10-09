@@ -34,12 +34,12 @@ export const NAV: { label: string; items: NavItem[] }[] = [
   },
 ];
 // Tools open from one "Tools" row (flyout) so the chat list keeps its room. Hints are from the brief's screen
-// descriptions; Work plan is not described in the brief — [OPEN], asked in cto-questions.en.md.
+// descriptions; Work plan from the live screen (10.10): plan first, approve, then it runs.
 export const TOOLS: NavItem[] = [
   { label: 'Document wizard', icon: 'pi pi-file-edit', hint: 'Five guided steps to a Word or PDF document.' },
   { label: 'Materials studio', icon: 'pi pi-sparkles', hint: 'Summaries, memos, timelines and risks from your files.' },
   { label: 'Law on a date', icon: 'pi pi-calendar', hint: 'Pick a topic and a date to see which laws were in force.' },
-  { label: 'Work plan', icon: 'pi pi-list-check' },
+  { label: 'Work plan', icon: 'pi pi-list-check', hint: 'For complex questions: approve a plan first, then it runs.', to: '/work-plan' },
   { label: 'Counsel', icon: 'pi pi-briefcase', hint: 'Works with an organisation contract.', badge: 'For organisations' },
 ];
 
@@ -103,6 +103,27 @@ export const DEEP_STEPS = [
 ];
 
 // SAMPLE research plan shown in "Plan first" mode before the answer.
+// Work plan (live screen, 10.10): steps Description → Clarifying questions → Plan → Execution. Questions and plans are SAMPLE.
+export const WORK_STEPS = ['Description', 'Clarifying questions', 'Plan', 'Execution'];
+export const WORK_QUESTIONS = [
+  { q: 'Whose side are you on?', options: ['Landlord / employer', 'Tenant / employee', 'Other'] },
+  { q: 'Is there a written contract?', options: ['Yes', 'No', 'Not sure'] },
+  { q: 'What do you need at the end?', options: ['An assessment', 'A draft document', 'Both'] },
+];
+export const LEASE_PLAN = [
+  'Check the lease terms on rent and early termination',
+  'Find the rules on unilateral termination of a lease in legislation in force',
+  'Search court practice on unpaid rent and premises unfit for use',
+  'Assess how the debt can be recovered and which deadlines apply',
+  'Summarise the options and the documents to prepare',
+];
+export const GENERIC_PLAN = [
+  'Identify the legal question and the parties',
+  'Find the rules in legislation in force',
+  'Search court practice on similar cases',
+  'Check deadlines and procedure',
+  'Summarise the conclusion and next steps',
+];
 export const PLAN_STEPS = [
   'Find the deadline rule for contesting a dismissal in the Labour Code',
   'Check when the period starts if the order was not handed over',

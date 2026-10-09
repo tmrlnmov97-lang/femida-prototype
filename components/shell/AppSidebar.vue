@@ -7,6 +7,7 @@ const emit = defineEmits<{ (e: 'toggle'): void; (e: 'new-chat'): void; (e: 'sele
 const periods = ['Today', 'Previous 7 days'] as const;
 const root = ref<HTMLElement>();
 const route = useRoute();
+const NuxtLinkC = resolveComponent('NuxtLink');
 
 /* Library folds away to give the chat list room; remembered per viewer */
 const open = reactive<Record<string, boolean>>(Object.fromEntries(NAV.map((g) => [g.label, true])));
@@ -148,13 +149,13 @@ onBeforeUnmount(() => {
           <i v-if="!props.collapsed" class="pi pi-angle-right go" :class="{ down: toolsInline }" />
         </button>
         <div v-if="toolsInline" class="tools-inline">
-          <a v-for="t in TOOLS" :key="t.label" href="#" class="tool" @click.prevent>
+          <component :is="t.to ? NuxtLinkC : 'a'" v-for="t in TOOLS" :key="t.label" :to="t.to" :href="t.to ? undefined : '#'" class="tool" @click="!t.to && $event.preventDefault()">
             <span class="tool-ic"><i :class="t.icon" /></span>
             <span class="tool-text">
               <span class="tool-name">{{ t.label }}<span v-if="t.badge" class="badge">{{ t.badge }}</span></span>
               <span v-if="t.hint" class="tool-hint">{{ t.hint }}</span>
             </span>
-          </a>
+          </component>
         </div>
         <button v-if="props.collapsed" class="nav-item" :class="{ on: flyout === 'chats' }" data-flyout-btn aria-haspopup="menu" :aria-expanded="flyout === 'chats'"
                 v-tooltip.right="flyout !== 'chats' ? 'Chats' : null" @click="openFlyout('chats', $event)">
@@ -210,13 +211,13 @@ onBeforeUnmount(() => {
         <div v-if="flyout" ref="flyEl" class="flyout" :class="flyout" :style="flyStyle" role="menu" :aria-label="flyout === 'tools' ? 'Tools' : 'Chats'">
           <template v-if="flyout === 'tools'">
             <div class="fly-title">Tools</div>
-            <a v-for="t in TOOLS" :key="t.label" href="#" class="tool" role="menuitem" @click.prevent="flyout = null">
+            <component :is="t.to ? NuxtLinkC : 'a'" v-for="t in TOOLS" :key="t.label" :to="t.to" :href="t.to ? undefined : '#'" class="tool" role="menuitem" @click="!t.to && $event.preventDefault(); flyout = null">
               <span class="tool-ic"><i :class="t.icon" /></span>
               <span class="tool-text">
                 <span class="tool-name">{{ t.label }}<span v-if="t.badge" class="badge">{{ t.badge }}</span></span>
                 <span v-if="t.hint" class="tool-hint">{{ t.hint }}</span>
               </span>
-            </a>
+            </component>
           </template>
           <template v-else>
             <label class="search-field in-fly">
