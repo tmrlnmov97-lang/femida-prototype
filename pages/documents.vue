@@ -45,6 +45,7 @@ const shownDrafts = computed(() => {
   return drafts.value.filter((d) => !q || d.title.toLowerCase().includes(q)).sort((a, b) => (sort.value === 'name' ? a.title.localeCompare(b.title) : b.ts - a.ts));
 });
 const typeOf = (n: string) => (/\.docx?$/i.test(n) ? 'DOCX' : /\.pdf$/i.test(n) ? 'PDF' : 'FILE');
+const iconOf = (n: string) => (/\.docx?$/i.test(n) ? 'pi pi-file-word' : /\.pdf$/i.test(n) ? 'pi pi-file-pdf' : 'pi pi-file');
 
 /* Upload with progress (prototype: simulated) */
 const timers: ReturnType<typeof setInterval>[] = [];
@@ -101,105 +102,116 @@ function openMenu(e: Event, f: DocFile) { menuFor.value = f; menuOpenId.value = 
             <h1>Documents</h1>
             <p class="lead">Your files and drafts in one place. Uploaded files can be reused in&nbsp;chats.</p>
           </div>
-          <button class="primary-btn" @click="upload"><i class="pi pi-upload" />Upload</button>
+          <button class="btn primary" @click="upload"><i class="pi pi-upload" />Upload</button>
         </header>
 
+        <!-- Underline tabs on a divider, tools on the right -->
         <div class="toolbar">
-          <div class="tabs" role="tablist" aria-label="Documents">
-            <button role="tab" :aria-selected="tab === 'files'" class="tab" :class="{ on: tab === 'files' }" @click="tab = 'files'; clearSel()"><i class="pi pi-folder" />Files<span v-if="phase === 'ready'" class="count">{{ files.length }}</span></button>
-            <button role="tab" :aria-selected="tab === 'drafts'" class="tab" :class="{ on: tab === 'drafts' }" @click="tab = 'drafts'; clearSel()"><i class="pi pi-pencil" />Drafts<span v-if="phase === 'ready'" class="count">{{ drafts.length }}</span></button>
-          </div>
+          <nav class="utabs" role="tablist" aria-label="Documents">
+            <button role="tab" :aria-selected="tab === 'files'" class="utab" :class="{ on: tab === 'files' }" @click="tab = 'files'; clearSel()">Files<span v-if="phase === 'ready'" class="n">{{ files.length }}</span></button>
+            <button role="tab" :aria-selected="tab === 'drafts'" class="utab" :class="{ on: tab === 'drafts' }" @click="tab = 'drafts'; clearSel()">Drafts<span v-if="phase === 'ready'" class="n">{{ drafts.length }}</span></button>
+          </nav>
           <div class="tools">
             <label class="search">
               <i class="pi pi-search" />
               <input v-model="query" type="search" :placeholder="tab === 'files' ? 'Search files' : 'Search drafts'" aria-label="Search documents" @keydown.esc="query = ''" />
               <button v-if="query" class="clear" aria-label="Clear search" @click.prevent="query = ''"><i class="pi pi-times" /></button>
             </label>
-            <button class="sort" aria-haspopup="menu" @click="sortMenu.toggle($event)"><span class="muted">Sort by</span> {{ sortLabel }}<i class="pi pi-angle-down" /></button>
+            <button class="btn ghost" aria-haspopup="menu" @click="sortMenu.toggle($event)"><i class="pi pi-sort-alt" />{{ sortLabel }}</button>
             <PMenu ref="sortMenu" :model="tab === 'files' ? sortItems : sortItems.slice(0, 2)" :popup="true" />
           </div>
         </div>
 
         <!-- Loading -->
-        <div v-if="phase === 'loading'" class="list" aria-busy="true" aria-label="Loading documents">
-          <div v-for="i in 5" :key="i" class="row skel"><PSkeleton width="36px" height="36px" border-radius="8px" /><div class="skel-col"><PSkeleton :width="`${40 + (i % 3) * 12}%`" height="14px" /><PSkeleton width="18%" height="12px" /></div></div>
+        <div v-if="phase === 'loading'" class="table" aria-busy="true" aria-label="Loading documents">
+          <div class="thead"><span /><PSkeleton width="60px" height="10px" /></div>
+          <div v-for="i in 6" :key="i" class="tr skel"><span /><PSkeleton :width="`${30 + (i % 3) * 12}%`" height="12px" /></div>
         </div>
 
         <!-- Error -->
-        <div v-else-if="phase === 'error'" class="state">
-          <span class="state-ic err"><i class="pi pi-refresh" /></span>
-          <h2>Couldn’t load your documents</h2>
-          <p>This is temporary. Your files are safe — try&nbsp;again.</p>
-          <PButton label="Try again" icon="pi pi-refresh" severity="secondary" @click="retry" />
+        <div v-else-if="phase === 'error'" class="notice">
+          <i class="pi pi-exclamation-circle" />
+          <div><b>Couldn’t load your documents.</b> This is temporary — your files are&nbsp;safe.</div>
+          <button class="btn" @click="retry"><i class="pi pi-refresh" />Try again</button>
         </div>
 
         <!-- FILES -->
         <template v-else-if="tab === 'files'">
-          <button v-if="!files.length" class="drop big" @click="upload">
-            <span class="drop-ic"><i class="pi pi-upload" /></span>
-            <span class="drop-t">Upload your first file</span>
-            <span class="drop-s">A contract, claim or court decision — then ask about it in any chat. PDF or Word · up to 25&nbsp;MB · encrypted</span>
-          </button>
+          <div v-if="!files.length" class="empty">
+            <i class="pi pi-folder-open" />
+            <h2>No files yet</h2>
+            <p>Upload a contract, claim or court decision, then ask about it in any chat. PDF or Word, up to 25&nbsp;MB, encrypted.</p>
+            <button class="btn primary" @click="upload"><i class="pi pi-upload" />Upload file</button>
+          </div>
           <template v-else>
-            <div v-if="!shownFiles.length" class="state small"><h2>No files match «{{ query.trim() }}»</h2><PButton label="Clear search" severity="secondary" size="small" @click="query = ''" /></div>
-            <div v-else class="list" role="table" aria-label="Files">
-              <div class="list-head" role="row">
-                <label class="check" @click.stop><input type="checkbox" :checked="allChecked" aria-label="Select all files" @change="toggleAll" /><span /></label>
-                <span class="h-name">Name</span><span class="h-case">Case</span><span class="h-size">Size</span><span class="h-date">Added</span><span class="h-act" />
+            <div v-if="!shownFiles.length" class="notice"><i class="pi pi-search" /><div>No files match <b>«{{ query.trim() }}»</b>.</div><button class="btn" @click="query = ''">Clear search</button></div>
+            <div v-else class="table" role="table" aria-label="Files" :class="{ selecting: selCount > 0 }">
+              <!-- Header turns into the bulk-action bar while files are selected -->
+              <div class="thead" role="row">
+                <label class="check" @click.stop><input type="checkbox" :checked="allChecked" :indeterminate.prop="selCount > 0 && !allChecked" aria-label="Select all files" @change="toggleAll" /><span /></label>
+                <template v-if="!selCount">
+                  <span class="th name">Name</span><span class="th case">Case</span><span class="th size">Size</span><span class="th date">Added</span><span class="th act" />
+                </template>
+                <div v-else class="bulk">
+                  <span class="bulk-n">{{ selCount }} selected</span>
+                  <button class="link-btn" @click="askInChat([...selected])"><i class="pi pi-comments" />Ask in chat</button>
+                  <button class="link-btn"><i class="pi pi-download" />Download</button>
+                  <button class="link-btn danger" @click="deleteSelected"><i class="pi pi-trash" />Delete</button>
+                  <button class="link-btn muted" @click="clearSel">Clear</button>
+                </div>
               </div>
-              <div v-for="f in shownFiles" :key="f.id" class="row" role="row" :class="{ sel: selected.has(f.id), 'menu-open': menuOpenId === f.id, uploading: f.progress !== undefined }">
+              <div v-for="f in shownFiles" :key="f.id" class="tr" role="row" :class="{ sel: selected.has(f.id), 'menu-open': menuOpenId === f.id, uploading: f.progress !== undefined }">
                 <label class="check" @click.stop>
                   <input type="checkbox" :checked="selected.has(f.id)" :disabled="f.progress !== undefined" :aria-label="`Select ${f.name}`" @change="toggle(f.id)" /><span />
                 </label>
-                <div class="name-col">
-                  <span class="type" :class="typeOf(f.name).toLowerCase()">{{ typeOf(f.name) }}</span>
+                <div class="td name">
+                  <i :class="[iconOf(f.name), typeOf(f.name).toLowerCase()]" class="ficon" aria-hidden="true" />
                   <div class="name-text">
                     <span class="fname" :title="f.name">{{ f.name }}</span>
-                    <div v-if="f.progress !== undefined" class="progress" role="progressbar" :aria-valuenow="f.progress" aria-valuemin="0" aria-valuemax="100" :aria-label="`Uploading ${f.name}`">
-                      <span :style="{ width: `${f.progress}%` }" />
-                    </div>
-                    <span class="fmeta-m">{{ f.progress !== undefined ? `Uploading · ${f.progress}%` : `${f.size} · ${rel(f.date)}` }}</span>
+                    <div v-if="f.progress !== undefined" class="progress" role="progressbar" :aria-valuenow="f.progress" aria-valuemin="0" aria-valuemax="100" :aria-label="`Uploading ${f.name}`"><span :style="{ width: `${f.progress}%` }" /></div>
+                    <span class="sub">{{ f.progress !== undefined ? `Uploading — ${f.progress}%` : `${f.size} · ${rel(f.date)}` }}</span>
                   </div>
                 </div>
-                <span class="case-col">
-                  <NuxtLink v-if="f.caseId && byId(f.caseId)" :to="`/cases/${f.caseId}`" class="case-link"><i class="pi pi-briefcase" />{{ byId(f.caseId)!.name }}</NuxtLink>
-                  <span v-else class="dash">—</span>
+                <span class="td case">
+                  <NuxtLink v-if="f.caseId && byId(f.caseId)" :to="`/cases/${f.caseId}`" class="case-link" :title="byId(f.caseId)!.name">{{ byId(f.caseId)!.name }}</NuxtLink>
+                  <span v-else class="none">—</span>
                 </span>
-                <span class="size-col">{{ f.progress !== undefined ? `${f.progress}%` : f.size }}</span>
-                <span class="date-col">{{ f.progress !== undefined ? 'Uploading…' : rel(f.date) }}</span>
-                <span class="act-col">
+                <span class="td size">{{ f.progress !== undefined ? '' : f.size }}</span>
+                <span class="td date">{{ f.progress !== undefined ? 'Uploading…' : rel(f.date) }}</span>
+                <span class="td act">
                   <button class="icon-act" :aria-label="`Ask about ${f.name} in chat`" v-tooltip.top="'Ask in chat'" :disabled="f.progress !== undefined" @click="askInChat([f.id])"><i class="pi pi-comments" /></button>
-                  <button class="icon-act" :aria-label="`Actions for ${f.name}`" aria-haspopup="menu" :disabled="f.progress !== undefined" @click="openMenu($event, f)"><i class="pi pi-ellipsis-h" /></button>
+                  <button class="icon-act" :aria-label="`Actions for ${f.name}`" aria-haspopup="menu" :disabled="f.progress !== undefined" @click="openMenu($event, f)"><i class="pi pi-ellipsis-v" /></button>
                 </span>
               </div>
             </div>
-            <p class="foot-note"><i class="pi pi-lock" />Files are encrypted. PDF or Word, up to 25&nbsp;MB each.</p>
+            <p class="foot"><i class="pi pi-lock" />Encrypted at rest. PDF or Word, up to 25&nbsp;MB per&nbsp;file.</p>
           </template>
         </template>
 
         <!-- DRAFTS (from the Document wizard) -->
         <template v-else>
-          <div v-if="!drafts.length" class="state">
-            <span class="state-ic"><i class="pi pi-file-edit" /></span>
+          <div v-if="!drafts.length" class="empty">
+            <i class="pi pi-file-edit" />
             <h2>No drafts yet</h2>
             <p>Documents you prepare in the Document wizard are saved here, so you can come back and finish&nbsp;them.</p>
-            <PButton label="Open Document wizard" icon="pi pi-arrow-right" icon-pos="right" severity="secondary" />
+            <button class="btn">Open Document wizard<i class="pi pi-arrow-right" /></button>
           </div>
-          <div v-else-if="!shownDrafts.length" class="state small"><h2>No drafts match «{{ query.trim() }}»</h2></div>
-          <div v-else class="list">
-            <div v-for="d in shownDrafts" :key="d.id" class="row draft">
-              <span class="type doc"><i class="pi pi-file-edit" /></span>
-              <div class="name-text">
-                <span class="fname">{{ d.title }}</span>
-                <span class="steps" :aria-label="`Step ${d.step} of 5`">
-                  <span v-for="(s, i) in WIZARD_STEPS" :key="s" class="pip" :class="{ done: i < d.step }" />
-                  <span class="step-t">{{ d.step === 5 ? 'Ready' : `Step ${d.step} of 5 · ${WIZARD_STEPS[d.step - 1]}` }}</span>
-                  <span class="dot">·</span>{{ d.kind }}<span class="dot">·</span>edited {{ rel(d.edited) }}
-                </span>
+          <div v-else-if="!shownDrafts.length" class="notice"><i class="pi pi-search" /><div>No drafts match <b>«{{ query.trim() }}»</b>.</div></div>
+          <div v-else class="table" role="table" aria-label="Drafts">
+            <div class="thead drafts" role="row"><span class="th">Draft</span><span class="th">Progress</span><span class="th">Edited</span><span class="th" /></div>
+            <div v-for="d in shownDrafts" :key="d.id" class="tr drafts" role="row">
+              <div class="td name">
+                <i class="pi pi-file-edit ficon" aria-hidden="true" />
+                <div class="name-text"><span class="fname">{{ d.title }}</span><span class="sub">{{ d.kind }}</span></div>
               </div>
-              <span class="act-col always">
-                <PButton v-if="d.step === 5" label="Download" icon="pi pi-download" size="small" severity="secondary" text />
-                <PButton :label="d.step === 5 ? 'Open' : 'Continue'" icon="pi pi-arrow-right" icon-pos="right" size="small" severity="secondary" />
+              <div class="td prog" :aria-label="`Step ${d.step} of 5`">
+                <span class="bar"><span :style="{ width: `${d.step * 20}%` }" :class="{ full: d.step === 5 }" /></span>
+                <span class="prog-t">{{ d.step === 5 ? 'Ready' : `${d.step}/5 · ${WIZARD_STEPS[d.step - 1]}` }}</span>
+              </div>
+              <span class="td date">{{ rel(d.edited) }}</span>
+              <span class="td act always">
+                <button v-if="d.step === 5" class="link-btn"><i class="pi pi-download" />Download</button>
+                <button class="link-btn">{{ d.step === 5 ? 'Open' : 'Continue' }}</button>
               </span>
             </div>
           </div>
@@ -207,160 +219,148 @@ function openMenu(e: Event, f: DocFile) { menuFor.value = f; menuOpenId.value = 
       </div>
     </div>
     <PMenu ref="rowMenu" :model="menuItems" :popup="true" @hide="menuOpenId = null" />
-
-    <!-- Selection bar -->
-    <Transition name="rise">
-      <div v-if="selCount && tab === 'files'" class="selbar" role="toolbar" aria-label="Selected files">
-        <span class="sel-n">{{ selCount }} selected</span>
-        <button class="sel-btn primary" @click="askInChat([...selected])"><i class="pi pi-comments" />Ask in chat</button>
-        <button class="sel-btn"><i class="pi pi-download" />Download</button>
-        <button class="sel-btn danger" @click="deleteSelected"><i class="pi pi-trash" />Delete</button>
-        <button class="sel-x" aria-label="Clear selection" @click="clearSel"><i class="pi pi-times" /></button>
-      </div>
-    </Transition>
   </AppShell>
 </template>
 
 <style scoped>
 .page { flex: 1; padding: 0 40px; }
-.wrap { width: 100%; max-width: 980px; margin: 0 auto; padding: 48px 0 112px; }
+.wrap { width: 100%; max-width: 1040px; margin: 0 auto; padding: 40px 0 80px; }
 
-.head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.titles { display: grid; gap: 6px; }
-h1 { margin: 0; font: 600 34px/42px var(--fd-font-serif); letter-spacing: -.01em; color: var(--fd-ink); }
-.lead { margin: 0; color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
-.primary-btn {
-  display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; height: 36px; margin-top: 4px; padding: 0 14px 0 12px; border: 0; border-radius: 10px;
-  background: var(--fd-accent); color: var(--fd-on-accent); cursor: pointer; font: 500 14px/20px var(--fd-font-sans); transition: background-color .15s, transform .1s;
+/* Header */
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.titles { display: grid; gap: 4px; }
+h1 { margin: 0; font: 600 28px/36px var(--fd-font-serif); letter-spacing: -.005em; color: var(--fd-ink); }
+.lead { margin: 0; color: var(--fd-muted); font: 400 14px/22px var(--fd-font-sans); }
+
+/* Buttons: rectangular, quiet */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border-radius: 6px; flex-shrink: 0;
+  border: 1px solid var(--fd-line); background: var(--fd-panel); color: var(--fd-ink); cursor: pointer; white-space: nowrap;
+  font: 500 14px/20px var(--fd-font-sans); transition: background-color .12s, border-color .12s;
 }
-.primary-btn .pi { font-size: 12px; }
-.primary-btn:hover { background: var(--fd-accent-hover); }
-.primary-btn:active { transform: scale(.98); }
-.primary-btn:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
+.btn .pi { font-size: 12px; }
+.btn:hover { border-color: color-mix(in srgb, var(--fd-ink) 25%, transparent); }
+.btn.primary { border-color: transparent; background: var(--fd-accent); color: var(--fd-on-accent); }
+.btn.primary:hover { background: var(--fd-accent-hover); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--fd-muted); }
+.btn.ghost:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 6%, transparent); }
+.btn:focus-visible, .utab:focus-visible, .link-btn:focus-visible, .icon-act:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 1px; }
 
-.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 28px 0 20px; }
-.tabs { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
-.tab { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--fd-muted); cursor: pointer; font: 500 14px/20px var(--fd-font-sans); transition: color .15s, background-color .15s; }
-.tab .pi { font-size: 12px; }
-.tab:hover { color: var(--fd-ink); }
-.tab.on { background: var(--fd-panel-2); color: var(--fd-ink); }
-.count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: grid; place-items: center; background: color-mix(in srgb, var(--fd-ink) 8%, transparent); color: var(--fd-muted); font: 600 11px/1 var(--fd-font-sans); }
-.tab.on .count { background: var(--fd-accent-soft); color: var(--fd-accent-text); }
-.tools { display: flex; align-items: center; gap: 8px; }
-.search { display: flex; align-items: center; gap: 10px; width: 260px; height: 36px; padding: 0 6px 0 12px; border-radius: 10px; cursor: text; border: 1px solid var(--fd-line); background: var(--fd-panel); transition: border-color .15s, box-shadow .15s; }
-.search:focus-within { border-color: var(--fd-accent); box-shadow: 0 0 0 3px var(--fd-accent-soft); }
-.search > .pi { font-size: 13px; color: var(--fd-muted); }
+/* Toolbar: underline tabs */
+.toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 24px 0 0; border-bottom: 1px solid var(--fd-line); }
+.utabs { display: flex; gap: 20px; }
+.utab {
+  position: relative; display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 2px; border: 0; background: transparent;
+  color: var(--fd-muted); cursor: pointer; font: 500 14px/20px var(--fd-font-sans); transition: color .12s;
+}
+.utab:hover { color: var(--fd-ink); }
+.utab.on { color: var(--fd-ink); }
+.utab.on::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--fd-accent); }
+.utab .n { color: var(--fd-muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+.tools { display: flex; align-items: center; gap: 6px; padding-bottom: 6px; }
+.search { display: flex; align-items: center; gap: 8px; width: 240px; height: 32px; padding: 0 6px 0 10px; border-radius: 6px; cursor: text; border: 1px solid var(--fd-line); background: var(--fd-panel); }
+.search:focus-within { border-color: var(--fd-accent); }
+.search > .pi { font-size: 12px; color: var(--fd-muted); }
 .search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--fd-ink); outline: none; font: 400 14px/20px var(--fd-font-sans); }
 .search input::placeholder { color: var(--fd-muted); }
 .search input::-webkit-search-cancel-button { display: none; }
-.clear { display: grid; place-items: center; width: 24px; height: 24px; border: 0; border-radius: 50%; background: transparent; color: var(--fd-muted); cursor: pointer; }
+.clear { display: grid; place-items: center; width: 22px; height: 22px; border: 0; border-radius: 4px; background: transparent; color: var(--fd-muted); cursor: pointer; }
 .clear .pi { font-size: 10px; }
-.sort { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; border: 1px solid var(--fd-line); border-radius: 10px; background: var(--fd-panel); color: var(--fd-ink); cursor: pointer; font: 500 14px/20px var(--fd-font-sans); white-space: nowrap; }
-.sort .muted { font-weight: 400; }
-.sort .pi { font-size: 11px; color: var(--fd-muted); }
+.tools .btn.ghost { height: 32px; }
 
-/* List */
-.list { border: 1px solid var(--fd-line); border-radius: 14px; background: var(--fd-panel); overflow: hidden; }
-.list-head, .row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 200px 80px 90px 76px; align-items: center; gap: 12px; padding: 0 12px 0 16px; }
-.list-head { height: 40px; border-bottom: 1px solid var(--fd-line); color: var(--fd-muted); font: 500 12px/16px var(--fd-font-sans); letter-spacing: .02em; }
-.row { min-height: 60px; transition: background-color .12s; }
-.row + .row { border-top: 1px solid color-mix(in srgb, var(--fd-line) 60%, transparent); }
-.row:not(.skel):hover, .row.menu-open { background: color-mix(in srgb, var(--fd-ink) 3%, var(--fd-panel)); }
-.row.sel { background: color-mix(in srgb, var(--fd-accent) 7%, var(--fd-panel)); }
-.row.skel { display: flex; gap: 14px; }
-.skel-col { display: grid; gap: 8px; flex: 1; }
+/* Table */
+.table { margin-top: 0; }
+.thead, .tr { display: grid; grid-template-columns: 32px minmax(0, 1fr) 220px 84px 96px 72px; align-items: center; gap: 12px; padding: 0 8px; }
+.thead { height: 40px; border-bottom: 1px solid var(--fd-line); }
+.th { color: var(--fd-muted); font: 500 12px/16px var(--fd-font-sans); letter-spacing: .03em; text-transform: uppercase; }
+.tr { min-height: 52px; border-bottom: 1px solid color-mix(in srgb, var(--fd-line) 55%, transparent); transition: background-color .1s; }
+.tr:hover, .tr.menu-open { background: color-mix(in srgb, var(--fd-ink) 3%, transparent); }
+.tr.sel { background: color-mix(in srgb, var(--fd-accent) 8%, transparent); }
+.tr.skel { grid-template-columns: 32px 1fr; }
+.thead.drafts, .tr.drafts { grid-template-columns: minmax(0, 1fr) 220px 96px 180px; padding-left: 12px; }
 
 .check { position: relative; display: grid; place-items: center; width: 20px; height: 20px; cursor: pointer; }
 .check input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
-.check span { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid color-mix(in srgb, var(--fd-muted) 70%, transparent); transition: background-color .12s, border-color .12s; }
-.check input:checked + span { background: var(--fd-accent); border-color: var(--fd-accent); box-shadow: inset 0 0 0 3px var(--fd-panel); }
+.check span { position: relative; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 3px; border: 1.5px solid color-mix(in srgb, var(--fd-muted) 75%, transparent); transition: opacity .1s, background-color .1s, border-color .1s; }
+.check input:checked + span, .check input:indeterminate + span { background: var(--fd-accent); border-color: var(--fd-accent); }
+.check input:checked + span::after { content: ''; width: 4px; height: 8px; margin-top: -2px; border: solid var(--fd-on-accent); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.check input:indeterminate + span::after { content: ''; width: 8px; height: 2px; border-radius: 1px; background: var(--fd-on-accent); }
 .check input:focus-visible + span { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
-.check input:disabled + span { opacity: .4; }
+/* row checkboxes appear on hover, when checked, or while selecting */
+.tr .check span { opacity: 0; }
+.tr:hover .check span, .tr.sel .check span, .selecting .tr .check span, .tr .check input:focus-visible + span { opacity: 1; }
+.tr.uploading .check span { opacity: 0 !important; }
 
-.name-col { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.type { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 8px; background: var(--fd-panel-2); color: var(--fd-muted); font: 700 9px/1 var(--fd-font-sans); letter-spacing: .04em; }
-.type.pdf { background: var(--fd-red-soft); color: var(--fd-red); }
-.type.docx, .type.doc { background: var(--fd-accent-soft); color: var(--fd-accent-text); }
-.type.doc .pi { font-size: 14px; }
-.name-text { display: grid; gap: 3px; min-width: 0; }
-.fname { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--fd-ink); font: 500 15px/20px var(--fd-font-sans); }
-.fmeta-m { display: none; color: var(--fd-muted); font: 400 12px/16px var(--fd-font-sans); }
-.progress { width: min(280px, 100%); height: 4px; border-radius: 999px; background: var(--fd-panel-2); overflow: hidden; }
+.td { min-width: 0; }
+.td.name { display: flex; align-items: center; gap: 12px; }
+.ficon { flex-shrink: 0; width: 18px; font-size: 16px; text-align: center; color: var(--fd-muted); }
+.name-text { display: grid; gap: 2px; min-width: 0; }
+.fname { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--fd-ink); font: 400 14px/20px var(--fd-font-sans); }
+.sub { display: none; color: var(--fd-muted); font: 400 12px/16px var(--fd-font-sans); }
+.tr.uploading .sub, .tr.drafts .sub { display: block; }
+.progress { width: min(260px, 100%); height: 3px; margin: 2px 0; border-radius: 2px; background: var(--fd-line); overflow: hidden; }
 .progress span { display: block; height: 100%; background: var(--fd-accent); transition: width .12s linear; }
-.case-col { min-width: 0; }
-.case-link { display: inline-block; max-width: 100%; height: 26px; padding: 0 10px 0 8px; border-radius: 999px; background: var(--fd-panel-2); color: var(--fd-ink); text-decoration: none; font: 400 13px/26px var(--fd-font-sans); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; vertical-align: middle; }
-.case-link .pi { margin-right: 6px; font-size: 11px; color: var(--fd-accent-text); }
-.case-link:hover { background: var(--fd-accent-soft); }
-.dash { color: color-mix(in srgb, var(--fd-muted) 50%, transparent); }
-.size-col, .date-col { color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); white-space: nowrap; }
-.act-col { display: flex; justify-content: flex-end; gap: 2px; opacity: 0; transition: opacity .12s; }
-.row:hover .act-col, .row.menu-open .act-col, .row:focus-within .act-col, .act-col.always { opacity: 1; }
-.icon-act { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: var(--fd-muted); cursor: pointer; }
+.case-link { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--fd-ink); text-decoration: none; font: 400 14px/20px var(--fd-font-sans); }
+.case-link:hover { color: var(--fd-accent-text); text-decoration: underline; text-underline-offset: 3px; }
+.none { color: color-mix(in srgb, var(--fd-muted) 50%, transparent); }
+.td.size, .td.date { color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.td.act { display: flex; justify-content: flex-end; gap: 2px; opacity: 0; transition: opacity .1s; }
+.tr:hover .td.act, .tr.menu-open .td.act, .tr:focus-within .td.act, .td.act.always { opacity: 1; }
+.icon-act { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: var(--fd-muted); cursor: pointer; }
 .icon-act:hover:not(:disabled) { background: color-mix(in srgb, var(--fd-ink) 8%, transparent); color: var(--fd-ink); }
 .icon-act:disabled { opacity: .3; cursor: default; }
 .icon-act .pi { font-size: 13px; }
-.foot-note { display: flex; align-items: center; gap: 8px; margin: 12px 0 0 4px; color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); }
-.foot-note .pi { font-size: 11px; }
 
-/* Drafts */
-.row.draft { grid-template-columns: 36px minmax(0, 1fr) auto; min-height: 72px; padding: 10px 12px 10px 16px; }
-.steps { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); }
-.pip { width: 14px; height: 4px; border-radius: 2px; background: var(--fd-panel-2); }
-.pip.done { background: var(--fd-accent); }
-.step-t { margin-left: 4px; color: var(--fd-ink); }
-.dot { opacity: .5; }
+/* Bulk actions in the header */
+.bulk { grid-column: 2 / -1; display: flex; align-items: center; gap: 4px; }
+.bulk-n { margin-right: 12px; color: var(--fd-ink); font: 600 13px/18px var(--fd-font-sans); }
+.link-btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--fd-ink); cursor: pointer; font: 500 13px/18px var(--fd-font-sans); white-space: nowrap; }
+.link-btn .pi { font-size: 12px; color: var(--fd-muted); }
+.link-btn:hover { background: color-mix(in srgb, var(--fd-ink) 7%, transparent); }
+.link-btn.danger, .link-btn.danger .pi { color: var(--fd-red); }
+.link-btn.muted { color: var(--fd-muted); }
 
-/* Empty / drop */
-.drop { display: grid; justify-items: center; gap: 6px; width: 100%; padding: 48px 24px; border-radius: 16px; border: 1px dashed color-mix(in srgb, var(--fd-accent) 40%, var(--fd-line)); background: transparent; color: var(--fd-ink); text-align: center; cursor: pointer; transition: background-color .15s, border-color .15s; }
-.drop:hover { background: color-mix(in srgb, var(--fd-accent) 5%, transparent); border-color: var(--fd-accent); }
-.drop-ic { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 6px; border-radius: 50%; background: var(--fd-accent-soft); color: var(--fd-accent-text); }
-.drop-t { font: 600 17px/24px var(--fd-font-sans); }
-.drop-s { max-width: 420px; color: var(--fd-muted); font: 400 14px/21px var(--fd-font-sans); text-wrap: balance; }
-.state { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 56px 24px; text-align: center; border: 1px dashed var(--fd-line); border-radius: var(--fd-radius-xl); }
-.state.small { padding: 36px 24px; border-style: solid; background: var(--fd-panel); }
-.state-ic { display: grid; place-items: center; width: 56px; height: 56px; margin-bottom: 6px; border-radius: 16px; background: var(--fd-accent-soft); color: var(--fd-accent-text); }
-.state-ic .pi { font-size: 22px; }
-.state-ic.err { background: var(--fd-amber-soft); color: var(--fd-amber); }
-.state h2 { margin: 0; font: 600 19px/26px var(--fd-font-sans); color: var(--fd-ink); }
-.state p { margin: 0 0 8px; max-width: 440px; color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); text-wrap: balance; }
+/* Drafts progress */
+.td.prog { display: flex; align-items: center; gap: 10px; }
+.bar { width: 64px; height: 4px; border-radius: 2px; background: var(--fd-line); overflow: hidden; flex-shrink: 0; }
+.bar span { display: block; height: 100%; background: var(--fd-muted); }
+.bar span.full { background: var(--fd-accent); }
+.prog-t { color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Selection bar */
-.selbar {
-  position: fixed; left: 50%; bottom: 24px; z-index: 40; transform: translateX(-50%); display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 16px;
-  border-radius: 14px; border: 1px solid var(--fd-line); background: color-mix(in srgb, var(--fd-panel) 96%, transparent); backdrop-filter: blur(20px); box-shadow: var(--fd-overlay-shadow);
-}
-.sel-n { margin-right: 8px; color: var(--fd-ink); font: 600 14px/20px var(--fd-font-sans); white-space: nowrap; }
-.sel-btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent; color: var(--fd-ink); cursor: pointer; font: 500 14px/20px var(--fd-font-sans); white-space: nowrap; }
-.sel-btn .pi { font-size: 12px; }
-.sel-btn:hover { background: color-mix(in srgb, var(--fd-ink) 8%, transparent); }
-.sel-btn.primary { background: var(--fd-accent); color: var(--fd-on-accent); }
-.sel-btn.primary:hover { background: var(--fd-accent-hover); }
-.sel-btn.danger { color: var(--fd-red); }
-.sel-x { display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 10px; background: transparent; color: var(--fd-muted); cursor: pointer; }
-.sel-x:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 8%, transparent); }
-.rise-enter-active, .rise-leave-active { transition: opacity .18s ease, transform .18s ease; }
-.rise-enter-from, .rise-leave-to { opacity: 0; transform: translate(-50%, 12px); }
+.foot { display: flex; align-items: center; gap: 8px; margin: 12px 0 0 8px; color: var(--fd-muted); font: 400 12px/16px var(--fd-font-sans); }
+.foot .pi { font-size: 10px; }
+
+/* Empty / notices: plain, not decorative */
+.empty { display: grid; justify-items: center; gap: 8px; padding: 64px 24px; text-align: center; border-bottom: 1px solid var(--fd-line); }
+.empty > .pi { font-size: 28px; color: var(--fd-muted); margin-bottom: 4px; }
+.empty h2 { margin: 0; color: var(--fd-ink); font: 600 16px/22px var(--fd-font-sans); }
+.empty p { margin: 0 0 8px; max-width: 420px; color: var(--fd-muted); font: 400 14px/21px var(--fd-font-sans); text-wrap: balance; }
+.notice { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 12px 12px 12px 14px; border-radius: 6px; border: 1px solid var(--fd-line); background: var(--fd-panel); color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); }
+.notice > div { flex: 1; } .notice b { color: var(--fd-ink); font-weight: 600; }
+.notice .pi { color: var(--fd-muted); }
 
 @media (max-width: 1023px) {
   .page { padding: 0 24px; }
-  .list-head, .row { grid-template-columns: 28px minmax(0, 1fr) 80px 76px; }
-  .h-case, .case-col, .h-date, .date-col { display: none; }
+  .thead, .tr { grid-template-columns: 32px minmax(0, 1fr) 84px 72px; }
+  .th.case, .td.case, .th.date, .td.date { display: none; }
+  .thead.drafts, .tr.drafts { grid-template-columns: minmax(0, 1fr) 180px 160px; }
+  .tr.drafts .td.date, .thead.drafts .th:nth-child(3) { display: none; }
 }
 @media (max-width: 767px) {
   .page { padding: 0 16px; }
-  .wrap { padding: 24px 0 112px; }
-  h1 { font-size: 28px; line-height: 36px; }
-  .toolbar { flex-direction: column; align-items: stretch; }
-  .tabs { align-self: flex-start; }
+  .wrap { padding: 24px 0 64px; }
+  .head { align-items: flex-start; }
+  h1 { font-size: 24px; line-height: 32px; }
+  .toolbar { flex-direction: column; align-items: stretch; gap: 0; border-bottom: 0; }
+  .utabs { border-bottom: 1px solid var(--fd-line); }
+  .tools { padding: 10px 0 0; }
   .search { flex: 1; width: auto; }
-  .list-head { display: none; }
-  .list-head, .row { grid-template-columns: 24px minmax(0, 1fr) 68px; padding: 0 8px 0 12px; }
-  .h-size, .size-col { display: none; }
-  .fmeta-m { display: block; }
-  .act-col { opacity: 1; }
-  .row.draft { grid-template-columns: 36px minmax(0, 1fr); }
-  .row.draft .act-col { grid-column: 1 / -1; justify-content: flex-start; }
-  .selbar { left: 12px; right: 12px; bottom: 12px; transform: none; flex-wrap: wrap; }
-  .rise-enter-from, .rise-leave-to { transform: translateY(12px); }
+  .thead, .tr { grid-template-columns: 28px minmax(0, 1fr) 64px; }
+  .th.size, .td.size { display: none; }
+  .sub { display: block; }
+  .tr .check span, .td.act { opacity: 1; }
+  .thead.drafts { display: none; }
+  .tr.drafts { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 12px; }
+  .tr.drafts .td.act { justify-content: flex-start; }
 }
 </style>
