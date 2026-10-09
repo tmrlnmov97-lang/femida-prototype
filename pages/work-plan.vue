@@ -2,8 +2,8 @@
 import { ref, computed, nextTick, onBeforeUnmount } from 'vue';
 import { WORK_QUESTIONS, LEASE_PLAN, GENERIC_PLAN, PLAN_STEPS } from '~/data/mock';
 
-// Work plan as a conversation (like deep research in ChatGPT / Gemini / Claude):
-// describe → a couple of clarifying questions → a plan card you can edit → Start → progress → answer.
+// Work plan = one page with three numbered stages on a left rail: Questions → Plan → Answer.
+// The task is the page title, a status line says what is expected from you, and only the current stage is open.
 useHead({ title: 'Work plan — Femida redesign prototype' });
 
 type Phase = 'compose' | 'questions' | 'plan' | 'running' | 'done';
@@ -12,14 +12,15 @@ const task = ref('');
 const answers = ref<(string | null)[]>(WORK_QUESTIONS.map(() => null));
 const plan = ref<string[]>([]);
 const editing = ref(false);
+const showSteps = ref(false);
 const done = ref(0);
 const thinking = ref(false);
-const thread = ref<HTMLElement>();
+const root = ref<HTMLElement>();
 let timer: ReturnType<typeof setInterval> | undefined;
 onBeforeUnmount(() => clearInterval(timer));
 
-const scrollDown = () => nextTick(() => thread.value?.closest('.scroll')?.scrollTo({ top: 1e6, behavior: 'smooth' }));
-function later(fn: () => void, ms = 700) { thinking.value = true; setTimeout(() => { thinking.value = false; fn(); scrollDown(); }, ms); }
+const scrollTo = (sel: string) => nextTick(() => root.value?.querySelector(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+function later(fn: () => void, ms = 700) { thinking.value = true; setTimeout(() => { thinking.value = false; fn(); }, ms); }
 
 function submit() {
   if (!task.value.trim()) return;
@@ -30,13 +31,15 @@ function onKey(e: KeyboardEvent) { if (e.key === 'Enter' && (e.metaKey || e.ctrl
 function toPlan() {
   const t = task.value.toLowerCase();
   plan.value = [...(/lease|rent|tenant|landlord/.test(t) ? LEASE_PLAN : /dismiss|employ|labour|labor|job/.test(t) ? PLAN_STEPS : GENERIC_PLAN)];
+  editing.value = false;
   phase.value = 'plan';
-  later(() => {}, 800);
+  later(() => scrollTo('#stage-plan'), 800);
 }
-const chosen = computed(() => answers.value.map((a, i) => (a ? { q: WORK_QUESTIONS[i].q, a } : null)).filter(Boolean) as { q: string; a: string }[]);
+function changeAnswers() { editing.value = false; phase.value = 'questions'; }
+const summary = computed(() => answers.value.map((a, i) => (a ? { k: WORK_QUESTIONS[i].label, v: a } : null)).filter(Boolean) as { k: string; v: string }[]);
 
 /* Plan editing */
-function addStep() { plan.value.push(''); nextTick(() => { const els = thread.value?.querySelectorAll<HTMLInputElement>('.pedit'); els?.[els.length - 1]?.focus(); }); }
+function addStep() { plan.value.push(''); nextTick(() => { const els = root.value?.querySelectorAll<HTMLInputElement>('.pedit'); els?.[els.length - 1]?.focus(); }); }
 function removeStep(i: number) { plan.value.splice(i, 1); }
 function finishEdit() { plan.value = plan.value.map((s) => s.trim()).filter(Boolean); editing.value = false; }
 
@@ -44,215 +47,305 @@ function finishEdit() { plan.value = plan.value.map((s) => s.trim()).filter(Bool
 function start() {
   finishEdit();
   if (!plan.value.length) return;
-  phase.value = 'running'; done.value = 0;
+  phase.value = 'running'; done.value = 0; showSteps.value = false;
   timer = setInterval(() => {
     done.value++;
-    if (done.value >= plan.value.length) { clearInterval(timer); phase.value = 'done'; scrollDown(); }
+    if (done.value >= plan.value.length) { clearInterval(timer); phase.value = 'done'; scrollTo('#stage-answer'); }
   }, 1100);
-  scrollDown();
 }
-function reset() { clearInterval(timer); phase.value = 'compose'; task.value = ''; answers.value = WORK_QUESTIONS.map(() => null); plan.value = []; editing.value = false; done.value = 0; }
+function reset() { clearInterval(timer); phase.value = 'compose'; task.value = ''; answers.value = WORK_QUESTIONS.map(() => null); plan.value = []; editing.value = false; showSteps.value = false; done.value = 0; thinking.value = false; }
 function openAnswer() { navigateTo({ path: '/', query: { demo: 'answer' } }); }
+
+/* What the page expects from you right now */
+const current = computed(() => Math.min(done.value + 1, plan.value.length));
+const status = computed(() => {
+  if (phase.value === 'questions') return thinking.value ? { tone: 'busy', text: 'Reading the task' } : { tone: 'you', text: 'Needs your answers' };
+  if (phase.value === 'plan') return thinking.value ? { tone: 'busy', text: 'Drafting the plan' } : { tone: 'you', text: 'Needs your approval' };
+  if (phase.value === 'running') return { tone: 'busy', text: `Running · step ${current.value} of ${plan.value.length}` };
+  return { tone: 'ok', text: 'Done' };
+});
+const stage = computed(() => (phase.value === 'questions' ? 1 : phase.value === 'done' ? 3 : 2));
+const marker = (n: number) => (n < stage.value || (n === 3 && phase.value === 'done') ? 'ok' : n === stage.value ? 'on' : 'off');
 </script>
 
 <template>
   <AppShell>
-    <div class="scroll page">
-      <!-- Start: one clear field, like a new chat -->
-      <div v-if="phase === 'compose'" class="start">
-        <span class="mark"><i class="pi pi-list-check" /></span>
-        <h1>Work plan</h1>
-        <p class="lead">For a complex question, Femida first drafts a plan. You approve it — only then does the work&nbsp;begin.</p>
-        <div class="composer">
-          <textarea v-model="task" rows="4" placeholder="Describe a complex task — the situation, what needs to be established and what you want to end up with…" aria-label="Describe the task" @keydown="onKey" />
-          <div class="composer-foot">
-            <span class="hint"><i class="pi pi-shield" />Nothing runs until you approve the plan</span>
-            <button class="primary" :disabled="!task.trim()" @click="submit"><i class="pi pi-list-check" />Draft a plan</button>
+    <div ref="root" class="scroll page">
+      <div class="wrap">
+        <!-- Start: what this is, one field, how it works -->
+        <template v-if="phase === 'compose'">
+          <header class="head">
+            <h1>Work plan</h1>
+            <p class="lead">For complex questions. Femida drafts a plan first — the work starts only after you&nbsp;approve&nbsp;it.</p>
+          </header>
+
+          <div class="composer">
+            <textarea v-model="task" rows="4" placeholder="Describe the task: the situation, what needs to be established and what you want to end up with" aria-label="Describe the task" @keydown="onKey" />
+            <div class="composer-foot">
+              <span class="hint">Nothing runs until you approve the&nbsp;plan</span>
+              <button class="primary" :disabled="!task.trim()" @click="submit">Draft a plan<i class="pi pi-arrow-right" /></button>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Conversation -->
-      <div v-else ref="thread" class="thread-wrap">
-        <div class="thread-head">
-          <span class="th-title"><i class="pi pi-list-check" />Work plan</span>
-          <button class="ghost" @click="reset"><i class="pi pi-plus" />New plan</button>
-        </div>
+          <section class="how" aria-labelledby="how-title">
+            <h2 id="how-title">How it works</h2>
+            <ol>
+              <li><span class="n">1</span><b>Describe the task</b><span>The situation and the result you need.</span></li>
+              <li><span class="n">2</span><b>Approve the plan</b><span>Answer a few questions, check the steps, edit any&nbsp;of&nbsp;them.</span></li>
+              <li><span class="n">3</span><b>Get a cited answer</b><span>Every conclusion links to the law and court&nbsp;practice.</span></li>
+            </ol>
+          </section>
+        </template>
 
-        <div class="thread">
-          <!-- Your task -->
-          <div class="user"><div class="bubble">{{ task }}</div></div>
+        <!-- Work in progress -->
+        <template v-else>
+          <header class="head task-head">
+            <div class="eyebrow">
+              <span>Work plan</span>
+              <button class="ghost" @click="reset"><i class="pi pi-plus" />New plan</button>
+            </div>
+            <h1 class="task" :title="task">{{ task }}</h1>
+            <p class="status" :class="status.tone" role="status"><span class="dot" />{{ status.text }}</p>
+          </header>
 
-          <!-- Clarifying questions -->
-          <div class="bot">
-            <span class="who"><span class="av"><i class="pi pi-sparkles" /></span>femid.ai</span>
-            <template v-if="phase === 'questions' && thinking"><p class="shimmer">Reading the task…</p></template>
-            <template v-else-if="phase === 'questions'">
-              <p class="say">A few quick questions so the plan fits your case. Skip any you&nbsp;like.</p>
-              <div class="qs">
-                <div v-for="(q, qi) in WORK_QUESTIONS" :key="q.q" class="q">
-                  <span class="q-text">{{ q.q }}</span>
-                  <div class="opts" role="radiogroup" :aria-label="q.q">
-                    <button v-for="o in q.options" :key="o" class="opt" :class="{ on: answers[qi] === o }" role="radio" :aria-checked="answers[qi] === o" @click="answers[qi] = answers[qi] === o ? null : o">{{ o }}</button>
-                  </div>
+          <ol class="stages">
+            <!-- 1. Questions -->
+            <li class="stage" :class="marker(1)">
+              <span class="mk"><i v-if="marker(1) === 'ok'" class="pi pi-check" /><template v-else>1</template></span>
+              <div class="body">
+                <div class="s-head">
+                  <h2 :class="{ shimmer: phase === 'questions' && thinking }">{{ phase === 'questions' ? (thinking ? 'Reading the task…' : 'Answer a few questions') : 'Clarifying questions' }}</h2>
+                  <button v-if="phase === 'plan' && !thinking" class="ghost sm" @click="changeAnswers">Change</button>
                 </div>
-              </div>
-              <div class="row-actions">
-                <button class="primary" @click="toPlan">Continue<i class="pi pi-arrow-right" /></button>
-                <button class="ghost" @click="toPlan">Skip</button>
-              </div>
-            </template>
-            <template v-else>
-              <p class="say muted">{{ chosen.length ? 'Thanks — I’ll take this into account:' : 'Questions skipped.' }}</p>
-              <div v-if="chosen.length" class="answered"><span v-for="c in chosen" :key="c.q" class="pill">{{ c.a }}</span></div>
-            </template>
-          </div>
 
-          <!-- Plan card → progress → done -->
-          <div v-if="phase !== 'questions'" class="bot">
-            <span class="who"><span class="av"><i class="pi pi-sparkles" /></span>femid.ai</span>
-            <p v-if="phase === 'plan' && thinking" class="shimmer">Drafting the plan…</p>
-            <div v-else class="plan-card">
-              <div class="pc-head">
-                <span class="pc-title">
-                  {{ phase === 'plan' ? 'Here’s the plan' : phase === 'running' ? `Working on it — step ${Math.min(done + 1, plan.length)} of ${plan.length}` : 'Done' }}
-                </span>
-                <span v-if="phase === 'running'" class="pc-sub">You can leave this page — the answer will appear in your chats.</span>
-              </div>
-
-              <ol class="steps" :class="{ editing }">
-                <li v-for="(s, i) in plan" :key="i" :class="{ ok: phase !== 'plan' && i < done, run: phase === 'running' && i === done }">
-                  <span class="si">
-                    <i v-if="phase !== 'plan' && i < done" class="pi pi-check" />
-                    <span v-else-if="phase === 'running' && i === done" class="pulse" />
-                    <template v-else>{{ i + 1 }}</template>
-                  </span>
-                  <input v-if="editing" v-model="plan[i]" class="pedit" :aria-label="`Step ${i + 1}`" placeholder="Describe the step" @keydown.enter.prevent="addStep" />
-                  <span v-else class="st">{{ s }}</span>
-                  <button v-if="editing" class="x" :aria-label="`Remove step ${i + 1}`" @click="removeStep(i)"><i class="pi pi-times" /></button>
-                </li>
-              </ol>
-
-              <div v-if="phase === 'plan'" class="pc-foot">
-                <template v-if="editing">
-                  <button class="ghost" @click="addStep"><i class="pi pi-plus" />Add step</button>
-                  <button class="secondary" @click="finishEdit">Done editing</button>
+                <template v-if="phase === 'questions'">
+                  <div v-if="thinking" class="card skel" aria-busy="true"><PSkeleton width="40%" height="15px" /><PSkeleton width="70%" height="34px" /><PSkeleton width="35%" height="15px" /><PSkeleton width="55%" height="34px" /></div>
+                  <template v-else>
+                    <p class="sub">So the plan fits your case. Skip any you&nbsp;like.</p>
+                    <div class="card">
+                      <div class="qs">
+                        <div v-for="(q, qi) in WORK_QUESTIONS" :key="q.q" class="q">
+                          <span class="q-text">{{ q.q }}</span>
+                          <div class="opts" role="radiogroup" :aria-label="q.q">
+                            <button v-for="o in q.options" :key="o" class="opt" :class="{ on: answers[qi] === o }" role="radio" :aria-checked="answers[qi] === o" @click="answers[qi] = answers[qi] === o ? null : o">{{ o }}</button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="card-foot">
+                        <button class="ghost" @click="toPlan">Skip questions</button>
+                        <button class="primary" @click="toPlan">Continue<i class="pi pi-arrow-right" /></button>
+                      </div>
+                    </div>
+                  </template>
                 </template>
+                <p v-else class="sub answers">
+                  <template v-if="summary.length"><span v-for="s in summary" :key="s.k" class="kv"><span class="k">{{ s.k }}</span>{{ s.v }}</span></template>
+                  <template v-else>Skipped</template>
+                </p>
+              </div>
+            </li>
+
+            <!-- 2. Plan -->
+            <li id="stage-plan" class="stage" :class="marker(2)">
+              <span class="mk">
+                <i v-if="marker(2) === 'ok'" class="pi pi-check" />
+                <span v-else-if="phase === 'running'" class="pulse" />
+                <template v-else>2</template>
+              </span>
+              <div class="body">
+                <div class="s-head">
+                  <h2 :class="{ shimmer: phase === 'plan' && thinking }">
+                    {{ phase === 'questions' ? 'Plan' : phase === 'plan' ? (thinking ? 'Drafting the plan…' : 'Review the plan') : phase === 'running' ? 'Working on the plan' : 'Plan completed' }}
+                  </h2>
+                  <span v-if="phase === 'plan' && !thinking" class="count">{{ plan.length }} {{ plan.length === 1 ? 'step' : 'steps' }}</span>
+                  <span v-else-if="phase === 'running'" class="count">{{ done }} of {{ plan.length }} done</span>
+                  <button v-else-if="phase === 'done'" class="ghost sm" :aria-expanded="showSteps" @click="showSteps = !showSteps">{{ showSteps ? 'Hide steps' : 'Show steps' }}</button>
+                </div>
+
+                <p v-if="phase === 'questions'" class="sub">Femida drafts it after the questions.</p>
+                <div v-else-if="phase === 'plan' && thinking" class="card skel" aria-busy="true"><PSkeleton v-for="i in 5" :key="i" :width="`${88 - (i % 3) * 14}%`" height="15px" /></div>
                 <template v-else>
-                  <button class="secondary" @click="editing = true"><i class="pi pi-pencil" />Edit plan</button>
-                  <button class="primary" @click="start"><i class="pi pi-play" />Start</button>
+                  <p v-if="phase === 'plan'" class="sub">Check the steps and edit any of them. Nothing runs until you&nbsp;approve.</p>
+                  <p v-else-if="phase === 'running'" class="sub">You can leave this page — the answer will appear in your&nbsp;chats.</p>
+                  <p v-else class="sub">All {{ plan.length }} steps&nbsp;done.</p>
+
+                  <div v-if="phase !== 'done' || showSteps" class="card">
+                    <div v-if="phase === 'running' || phase === 'done'" class="bar" role="progressbar" :aria-valuenow="done" aria-valuemin="0" :aria-valuemax="plan.length"><span :style="{ width: `${(done / plan.length) * 100}%` }" /></div>
+                    <ol class="steps" :class="{ editing }">
+                      <li v-for="(s, i) in plan" :key="i" :class="{ ok: phase !== 'plan' && i < done, run: phase === 'running' && i === done, wait: phase === 'running' && i > done }">
+                        <span class="si">
+                          <i v-if="phase !== 'plan' && i < done" class="pi pi-check" />
+                          <span v-else-if="phase === 'running' && i === done" class="pulse" />
+                          <template v-else>{{ i + 1 }}</template>
+                        </span>
+                        <input v-if="editing" v-model="plan[i]" class="pedit" :aria-label="`Step ${i + 1}`" placeholder="Describe the step" @keydown.enter.prevent="addStep" />
+                        <span v-else class="st">{{ s }}</span>
+                        <span v-if="phase === 'running' && i === done" class="tag">In progress</span>
+                        <button v-if="editing" class="x" :aria-label="`Remove step ${i + 1}`" @click="removeStep(i)"><i class="pi pi-times" /></button>
+                      </li>
+                    </ol>
+                    <div v-if="phase === 'plan'" class="card-foot">
+                      <template v-if="editing">
+                        <button class="ghost" @click="addStep"><i class="pi pi-plus" />Add step</button>
+                        <button class="secondary" @click="finishEdit">Done editing</button>
+                      </template>
+                      <template v-else>
+                        <button class="secondary" @click="editing = true"><i class="pi pi-pencil" />Edit plan</button>
+                        <button class="primary" @click="start">Approve and start<i class="pi pi-arrow-right" /></button>
+                      </template>
+                    </div>
+                  </div>
                 </template>
               </div>
-            </div>
-          </div>
+            </li>
 
-          <!-- Result -->
-          <div v-if="phase === 'done'" class="bot">
-            <span class="who"><span class="av"><i class="pi pi-sparkles" /></span>femid.ai</span>
-            <div class="result">
-              <div>
-                <b>The answer is ready</b>
-                <span>It cites the law and court practice it relies&nbsp;on.</span>
+            <!-- 3. Answer -->
+            <li id="stage-answer" class="stage" :class="marker(3)">
+              <span class="mk"><i v-if="marker(3) === 'ok'" class="pi pi-check" /><template v-else>3</template></span>
+              <div class="body">
+                <div class="s-head"><h2>{{ phase === 'done' ? 'Your answer is ready' : 'Answer' }}</h2></div>
+                <div v-if="phase === 'done'" class="card result">
+                  <p>It cites the law and court practice behind every&nbsp;conclusion.</p>
+                  <button class="primary" @click="openAnswer">Open the answer<i class="pi pi-arrow-right" /></button>
+                </div>
+                <p v-else class="sub">Appears here when the work is&nbsp;done.</p>
               </div>
-              <button class="primary" @click="openAnswer">Open the answer<i class="pi pi-arrow-right" /></button>
-            </div>
-          </div>
-        </div>
+            </li>
+          </ol>
+        </template>
       </div>
     </div>
   </AppShell>
 </template>
 
 <style scoped>
-.page { flex: 1; display: flex; flex-direction: column; padding: 0 24px; }
+/* Same frame as Watch / My notes: 760 column, 48 top. Spacing on an 8px grid.
+   Text: H1 32 serif (task title 26) · stage 18/600 · body 15 · secondary 14 · meta 13 */
+.page { flex: 1; padding: 0 40px; }
+.wrap { width: 100%; max-width: 760px; margin: 0 auto; padding: 48px 0 80px; }
+.head { display: grid; gap: 8px; margin-bottom: 32px; }
+h1 { margin: 0; color: var(--fd-ink); font: 600 32px/40px var(--fd-font-serif); letter-spacing: -.01em; }
+.lead { margin: 0; max-width: 560px; color: var(--fd-muted); font: 400 16px/26px var(--fd-font-sans); text-wrap: pretty; }
 
 /* Start */
-.start { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 720px; margin: auto; padding: 40px 0 64px; text-align: center; }
-.mark { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 4px; border-radius: 50%; background: var(--fd-accent-soft); color: var(--fd-accent-text); border: 1px solid color-mix(in srgb, var(--fd-accent) 35%, transparent); }
-.mark .pi { font-size: 20px; }
-h1 { margin: 0; font: 600 36px/44px var(--fd-font-serif); letter-spacing: -.01em; color: var(--fd-ink); }
-.lead { margin: 0 0 16px; max-width: 520px; color: var(--fd-muted); font: 400 16px/26px var(--fd-font-sans); text-wrap: balance; }
-.composer { width: 100%; padding: 16px 16px 12px; border-radius: 20px; border: 1px solid var(--fd-line); background: var(--fd-panel); text-align: left; transition: border-color .15s, box-shadow .15s; }
-.composer:focus-within { border-color: color-mix(in srgb, var(--fd-accent) 55%, var(--fd-line)); box-shadow: 0 0 0 3px var(--fd-accent-soft); }
-.composer textarea { width: 100%; min-height: 96px; resize: none; border: 0; outline: none; background: transparent; color: var(--fd-ink); font: 400 17px/27px var(--fd-font-sans); }
+.composer { padding: 16px 16px 12px; border-radius: 16px; border: 1px solid var(--fd-line); background: var(--fd-panel); transition: border-color .15s, box-shadow .15s; }
+.composer:focus-within { border-color: var(--fd-accent); box-shadow: 0 0 0 3px var(--fd-accent-soft); }
+.composer textarea { display: block; width: 100%; min-height: 104px; resize: none; border: 0; outline: none; background: transparent; color: var(--fd-ink); font: 400 16px/26px var(--fd-font-sans); }
 .composer textarea::placeholder { color: var(--fd-muted); }
-.composer-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
-.hint { display: inline-flex; align-items: center; gap: 8px; color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); }
-.hint .pi { font-size: 12px; color: var(--fd-accent-text); }
+.composer-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 8px; }
+.hint { color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); }
+
+.how { margin-top: 48px; }
+.how h2 { margin: 0 0 16px; color: var(--fd-ink); font: 600 18px/26px var(--fd-font-sans); }
+.how ol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin: 0; padding: 0; list-style: none; }
+.how li { display: grid; gap: 4px; align-content: start; padding-top: 16px; border-top: 1px solid var(--fd-line); }
+.how .n { margin-bottom: 4px; color: var(--fd-accent-text); font: 600 13px/18px var(--fd-font-sans); }
+.how b { color: var(--fd-ink); font: 600 15px/22px var(--fd-font-sans); }
+.how li > span:last-child { color: var(--fd-muted); font: 400 14px/22px var(--fd-font-sans); text-wrap: pretty; }
 
 /* Buttons */
-.primary, .secondary, .ghost { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 999px; cursor: pointer; white-space: nowrap; font: 500 14px/20px var(--fd-font-sans); transition: background-color .15s, border-color .15s, opacity .15s; }
+.primary, .secondary, .ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; cursor: pointer; white-space: nowrap; font: 500 14px/20px var(--fd-font-sans); transition: background-color .15s, border-color .15s, color .15s, opacity .15s; }
 .primary { border: 0; background: var(--fd-accent); color: var(--fd-on-accent); font-weight: 600; }
 .primary:hover:not(:disabled) { background: var(--fd-accent-hover); }
 .primary:disabled { opacity: .4; cursor: default; }
-.secondary { border: 1px solid var(--fd-line); background: var(--fd-panel); color: var(--fd-ink); }
+.secondary { border: 1px solid var(--fd-line); background: var(--fd-bg); color: var(--fd-ink); }
 .secondary:hover { border-color: color-mix(in srgb, var(--fd-ink) 25%, transparent); }
 .ghost { border: 0; background: transparent; color: var(--fd-muted); padding: 0 12px; }
 .ghost:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 6%, transparent); }
+.ghost.sm { height: 28px; margin-right: -10px; padding: 0 10px; border-radius: 8px; font-size: 13px; }
 .primary .pi, .secondary .pi, .ghost .pi { font-size: 11px; }
-.primary:focus-visible, .secondary:focus-visible, .ghost:focus-visible, .opt:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
+.primary:focus-visible, .secondary:focus-visible, .ghost:focus-visible, .opt:focus-visible, .x:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
 
-/* Conversation */
-.thread-wrap { width: 100%; max-width: 720px; margin: 0 auto; padding: 16px 0 64px; }
-.thread-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 8px 0 12px; background: var(--fd-bg); }
-.th-title { display: inline-flex; align-items: center; gap: 8px; color: var(--fd-muted); font: 500 14px/20px var(--fd-font-sans); }
-.th-title .pi { font-size: 12px; color: var(--fd-accent-text); }
-.thread { display: flex; flex-direction: column; gap: 28px; padding-top: 12px; }
-.user { display: flex; justify-content: flex-end; }
-.bubble { max-width: 560px; padding: 12px 16px; border-radius: 16px 16px 4px 16px; background: var(--fd-panel-2); color: var(--fd-ink); font: 400 16px/26px var(--fd-font-sans); white-space: pre-wrap; }
-.bot { display: grid; gap: 12px; }
-.who { display: inline-flex; align-items: center; gap: 10px; color: var(--fd-ink); font: 600 15px/20px var(--fd-font-sans); }
-.av { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--fd-accent-soft); color: var(--fd-accent-text); border: 1px solid color-mix(in srgb, var(--fd-accent) 35%, transparent); }
-.av .pi { font-size: 12px; }
-.say { margin: 0; color: var(--fd-ink); font: 400 16px/26px var(--fd-font-sans); }
-.say.muted { color: var(--fd-muted); font-size: 14px; line-height: 22px; }
-.shimmer { margin: 0; font: 400 15px/24px var(--fd-font-sans); background: linear-gradient(90deg, var(--fd-muted) 0%, var(--fd-ink) 50%, var(--fd-muted) 100%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 1.6s linear infinite; }
-@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+/* Task header: what you asked + what is expected from you now */
+.eyebrow { display: flex; align-items: center; justify-content: space-between; height: 32px; margin: -8px 0 0; color: var(--fd-muted); font: 500 13px/18px var(--fd-font-sans); }
+.eyebrow .ghost { height: 32px; margin-right: -12px; }
+.task { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 24px; line-height: 32px; text-wrap: pretty; }
+.status { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 0; color: var(--fd-ink); font: 500 14px/20px var(--fd-font-sans); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fd-muted); }
+.status.you .dot { background: var(--fd-amber); }
+.status.busy .dot { background: var(--fd-accent); animation: pulse 1.2s ease-in-out infinite; }
+.status.ok .dot { background: var(--fd-accent); }
 
-.qs { display: grid; gap: 16px; }
-.q { display: grid; gap: 8px; }
+/* Stages on a left rail */
+.stages { margin: 0; padding: 0; list-style: none; }
+.stage { position: relative; display: grid; grid-template-columns: 28px 1fr; column-gap: 16px; padding-bottom: 32px; }
+.stage:last-child { padding-bottom: 0; }
+.stage::before { content: ''; position: absolute; left: 13.5px; top: 36px; bottom: 8px; width: 1px; background: var(--fd-line); }
+.stage:last-child::before { display: none; }
+.mk { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--fd-line); background: var(--fd-bg); color: var(--fd-muted); font: 600 13px/1 var(--fd-font-sans); }
+.stage.on .mk { border-color: var(--fd-accent); background: var(--fd-accent-soft); color: var(--fd-accent-text); }
+.stage.ok .mk { border-color: transparent; background: var(--fd-accent); color: var(--fd-on-accent); }
+.mk .pi { font-size: 11px; }
+.body { min-width: 0; }
+.s-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 28px; }
+h2 { margin: 0; color: var(--fd-ink); font: 600 18px/28px var(--fd-font-sans); }
+.stage.off h2 { color: var(--fd-muted); font-weight: 500; }
+.count { flex-shrink: 0; color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); }
+.sub { margin: 4px 0 0; max-width: 600px; color: var(--fd-muted); font: 400 14px/22px var(--fd-font-sans); text-wrap: pretty; }
+.answers { display: flex; flex-wrap: wrap; gap: 4px 20px; color: var(--fd-ink); }
+.kv .k { margin-right: 6px; color: var(--fd-muted); }
+
+/* Cards */
+.card { margin-top: 16px; border-radius: 16px; border: 1px solid var(--fd-line); background: var(--fd-panel); overflow: hidden; }
+.card.skel { display: grid; gap: 12px; padding: 20px; }
+.card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--fd-line); }
+.card-foot > :last-child { margin-left: auto; }
+
+/* Questions */
+.qs { display: grid; gap: 20px; padding: 20px; }
+.q { display: grid; gap: 10px; }
 .q-text { color: var(--fd-ink); font: 500 15px/22px var(--fd-font-sans); }
 .opts { display: flex; flex-wrap: wrap; gap: 8px; }
-.opt { height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-panel); color: var(--fd-ink); cursor: pointer; font: 400 14px/20px var(--fd-font-sans); transition: border-color .12s, background-color .12s; }
+.opt { height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-bg); color: var(--fd-ink); cursor: pointer; font: 400 14px/20px var(--fd-font-sans); transition: border-color .12s, background-color .12s; }
 .opt:hover { border-color: color-mix(in srgb, var(--fd-ink) 25%, transparent); }
 .opt.on { border-color: var(--fd-accent); background: var(--fd-accent-soft); font-weight: 500; }
-.row-actions { display: flex; gap: 8px; margin-top: 4px; }
-.answered { display: flex; flex-wrap: wrap; gap: 6px; }
-.pill { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: var(--fd-panel-2); color: var(--fd-ink); font: 400 13px/18px var(--fd-font-sans); }
 
-/* Plan card */
-.plan-card { border-radius: 16px; border: 1px solid var(--fd-line); background: var(--fd-panel); overflow: hidden; }
-.pc-head { display: grid; gap: 2px; padding: 16px 20px 8px; }
-.pc-title { color: var(--fd-ink); font: 600 16px/24px var(--fd-font-sans); }
-.pc-sub { color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); }
-.steps { display: grid; margin: 0; padding: 4px 20px 12px; list-style: none; }
-.steps li { display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid color-mix(in srgb, var(--fd-line) 55%, transparent); color: var(--fd-ink); font: 400 15px/22px var(--fd-font-sans); }
+/* Plan steps */
+.bar { height: 3px; background: color-mix(in srgb, var(--fd-ink) 8%, transparent); }
+.bar span { display: block; height: 100%; background: var(--fd-accent); transition: width .4s ease; }
+.steps { margin: 0; padding: 4px 20px; list-style: none; }
+.steps li { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 0; border-bottom: 1px solid color-mix(in srgb, var(--fd-line) 60%, transparent); color: var(--fd-ink); font: 400 15px/22px var(--fd-font-sans); }
 .steps li:last-child { border-bottom: 0; }
-.si { display: grid; place-items: center; width: 24px; height: 24px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--fd-line); color: var(--fd-muted); font: 600 12px/1 var(--fd-font-sans); }
-.steps li.ok .si { border-color: transparent; background: var(--fd-accent); color: var(--fd-on-accent); }
-.steps li.ok .si .pi { font-size: 10px; }
-.steps li.run .si { border-color: var(--fd-accent); }
+.si { display: grid; place-items: center; width: 20px; flex-shrink: 0; color: var(--fd-muted); font: 600 13px/1 var(--fd-font-sans); }
+.steps li.ok { color: var(--fd-muted); }
+.steps li.ok .si { color: var(--fd-accent-text); }
+.steps li.ok .si .pi { font-size: 12px; }
+.steps li.run { font-weight: 500; }
+.steps li.wait .st { color: color-mix(in srgb, var(--fd-ink) 75%, transparent); }
+.st { flex: 1; min-width: 0; text-wrap: pretty; }
+.tag { flex-shrink: 0; height: 24px; padding: 0 10px; border-radius: 999px; background: var(--fd-accent-soft); color: var(--fd-accent-text); font: 500 12px/24px var(--fd-font-sans); }
 .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--fd-accent); animation: pulse 1.2s ease-in-out infinite; }
 @keyframes pulse { 50% { transform: scale(.6); opacity: .5; } }
-.st { flex: 1; min-width: 0; }
-.pedit { flex: 1; min-width: 0; height: 34px; margin: 5px 0; padding: 0 10px; border-radius: 8px; border: 1px solid var(--fd-line); background: var(--fd-bg); color: var(--fd-ink); outline: none; font: 400 15px/22px var(--fd-font-sans); }
-.pedit:focus { border-color: var(--fd-accent); }
-.x { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: var(--fd-muted); cursor: pointer; }
+.pedit { flex: 1; min-width: 0; height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--fd-line); background: var(--fd-bg); color: var(--fd-ink); outline: none; font: 400 15px/22px var(--fd-font-sans); }
+.pedit:focus { border-color: var(--fd-accent); box-shadow: 0 0 0 3px var(--fd-accent-soft); }
+.x { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border: 0; border-radius: 8px; background: transparent; color: var(--fd-muted); cursor: pointer; }
 .x:hover { background: color-mix(in srgb, var(--fd-ink) 8%, transparent); color: var(--fd-ink); }
-.x .pi { font-size: 10px; }
-.pc-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--fd-line); background: color-mix(in srgb, var(--fd-ink) 2%, var(--fd-panel)); }
+.x .pi { font-size: 11px; }
 
-.result { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 16px 16px 20px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--fd-accent) 40%, var(--fd-line)); background: color-mix(in srgb, var(--fd-accent-soft) 55%, var(--fd-panel)); }
-.result div { display: grid; gap: 2px; }
-.result b { color: var(--fd-ink); font: 600 16px/24px var(--fd-font-sans); }
-.result span { color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); }
+/* Answer */
+.result { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 16px 16px 20px; border-color: color-mix(in srgb, var(--fd-accent) 45%, var(--fd-line)); background: color-mix(in srgb, var(--fd-accent-soft) 50%, var(--fd-panel)); }
+.result p { margin: 0; color: var(--fd-ink); font: 400 15px/22px var(--fd-font-sans); text-wrap: pretty; }
 
+.shimmer { background: linear-gradient(90deg, var(--fd-muted) 0%, var(--fd-ink) 50%, var(--fd-muted) 100%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; animation: shimmer 1.6s linear infinite; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+@media (max-width: 1023px) { .page { padding: 0 24px; } }
 @media (max-width: 767px) {
   .page { padding: 0 16px; }
-  h1 { font-size: 28px; line-height: 36px; }
+  .wrap { padding: 24px 0 56px; }
+  .head { margin-bottom: 24px; }
+  h1 { font-size: 26px; line-height: 34px; }
+  .task { font-size: 20px; line-height: 28px; }
+  .lead { font-size: 15px; line-height: 24px; }
   .composer-foot { flex-direction: column; align-items: stretch; }
-  .composer-foot .primary { justify-content: center; }
-  .result { flex-direction: column; align-items: stretch; }
-  .pc-foot { flex-wrap: wrap; }
+  .how { margin-top: 32px; }
+  .how ol { grid-template-columns: 1fr; gap: 16px; }
+  .stage { column-gap: 12px; }
+  .qs { padding: 16px; }
+  .steps { padding: 4px 16px; }
+  .tag { display: none; }
+  .card-foot { flex-wrap: wrap; }
+  .card-foot .primary { flex: 1; }
+  .result { flex-direction: column; align-items: stretch; padding: 16px; }
 }
 </style>

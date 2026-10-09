@@ -105,10 +105,11 @@ export const DEEP_STEPS = [
 // SAMPLE research plan shown in "Plan first" mode before the answer.
 // Work plan (live screen, 10.10): steps Description → Clarifying questions → Plan → Execution. Questions and plans are SAMPLE.
 export const WORK_STEPS = ['Description', 'Clarifying questions', 'Plan', 'Execution'];
+// label = the short name shown in the summary once the questions are answered
 export const WORK_QUESTIONS = [
-  { q: 'Whose side are you on?', options: ['Landlord / employer', 'Tenant / employee', 'Other'] },
-  { q: 'Is there a written contract?', options: ['Yes', 'No', 'Not sure'] },
-  { q: 'What do you need at the end?', options: ['An assessment', 'A draft document', 'Both'] },
+  { q: 'Whose side are you on?', label: 'Side', options: ['Landlord / employer', 'Tenant / employee', 'Other'] },
+  { q: 'Is there a written contract?', label: 'Written contract', options: ['Yes', 'No', 'Not sure'] },
+  { q: 'What do you need at the end?', label: 'Result', options: ['An assessment', 'A draft document', 'Assessment and draft'] },
 ];
 export const LEASE_PLAN = [
   'Check the lease terms on rent and early termination',
