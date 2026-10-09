@@ -26,7 +26,7 @@ export const NAV: { label: string; items: NavItem[] }[] = [
     label: 'Library',
     items: [
       { label: 'My cases', icon: 'pi pi-clipboard', to: '/cases' },
-      { label: 'Documents', icon: 'pi pi-folder' },
+      { label: 'Documents', icon: 'pi pi-folder', to: '/documents' },
       { label: 'My notes', icon: 'pi pi-bookmark' },
       // Brief: Watch is in scope as "coming soon" (follow topics, alerts on new laws and decisions).
       { label: 'Watch', icon: 'pi pi-eye', badge: 'Soon' },
@@ -128,4 +128,26 @@ export const CASES: CaseItem[] = [
   { id: 'k4', name: 'Grigoryan — labour dispute', description: 'Unpaid overtime and a disputed dismissal. Claim filed in September.', updated: '12 Sep', ts: 20260912, archived: true,
     chats: [{ id: 'x2', title: 'Unpaid overtime claim', when: '12 Sep' }],
     files: [{ name: 'Employment_contract.pdf', size: '410 KB', added: '3 Sep' }, { name: 'Timesheets_2026.pdf', size: '1.1 MB', added: '3 Sep' }] },
+];
+
+// Documents — live product screen (hz.femid.ai, 09.10.2026): intro copy and "Up to 25 MB · encrypted" are 1:1 with the live page
+// and the brief. File names partly from the live account (Armenian names are user content), partly the case files above; SAMPLE.
+export interface DocFile { id: string; name: string; size: string; bytes: number; date: string; ts: number; caseId?: string }
+export const FILES: DocFile[] = [
+  { id: 'f1', name: 'Appeal_Avagyan_v_Poghosyan.pdf', size: '2.4 MB', bytes: 2400000, date: '5 Oct', ts: 20261005, caseId: 'k1' },
+  { id: 'f2', name: 'Որոշում.pdf', size: '1.3 MB', bytes: 1300000, date: '7 Oct', ts: 20261007 },
+  { id: 'f3', name: 'Termination_notice.pdf', size: '180 KB', bytes: 180000, date: '6 Oct', ts: 20261006, caseId: 'k2' },
+  { id: 'f4', name: 'Legal Acts to DB Opinion.docx', size: '31 KB', bytes: 31000, date: '6 Oct', ts: 20261006 },
+  { id: 'f5', name: 'Նախագիծ.docx', size: '42 KB', bytes: 42000, date: '6 Oct', ts: 20261006 },
+  { id: 'f6', name: 'Draft Decree-CII.pdf', size: '1.0 MB', bytes: 1000000, date: '5 Oct', ts: 20261005 },
+  { id: 'f7', name: 'Հայցադիմումի պատասխան.pdf', size: '169 KB', bytes: 169000, date: '4 Oct', ts: 20261004 },
+  { id: 'f8', name: 'Lease_agreement_2024.docx', size: '312 KB', bytes: 312000, date: '2 Oct', ts: 20261002, caseId: 'k2' },
+];
+// Drafts come from the Document wizard (brief: 5 steps — type → sources → analysis → parties → document). SAMPLE.
+export interface DocDraft { id: string; title: string; kind: string; step: number; edited: string; ts: number }
+export const WIZARD_STEPS = ['Type', 'Sources', 'Analysis', 'Parties', 'Document'];
+export const DRAFTS: DocDraft[] = [
+  { id: 'd1', title: 'Statement of claim — Avagyan v. Poghosyan', kind: 'Claim', step: 5, edited: 'Today', ts: 20261009 },
+  { id: 'd2', title: 'Lease termination notice', kind: 'Letter', step: 3, edited: 'Yesterday', ts: 20261008 },
+  { id: 'd3', title: 'Response to the claim', kind: 'Response', step: 2, edited: '4 Oct', ts: 20261004 },
 ];

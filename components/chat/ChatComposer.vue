@@ -9,7 +9,7 @@ const { state, modeObj, send } = useChat();
 const text = ref('');
 const menu = ref<null | 'mode' | 'attach'>(null);
 const root = ref<HTMLElement>();
-const uploading = ref(0);
+const uploading = ref(100); // 100 = nothing uploading (files picked from Documents arrive ready)
 const canSend = computed(() => (text.value.trim().length > 0 || !!state.file) && !state.busy);
 
 function submit() {

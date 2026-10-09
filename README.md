@@ -39,6 +39,8 @@ Inside the full workspace, `npm run sync` (runs before dev/build) copies the gen
 
 - **My cases** (`/cases`): tabs Active / Archived / All, search, ⋯ Rename / Archive / Delete, New case dialog; states via `/cases?state=loading|empty|error`.
 
+- **Documents** (`/documents`): Files table with upload progress, case links, select → Ask in chat / Download / Delete; Drafts with wizard steps; states via `/documents?state=loading|empty|error`.
+
 All copy is an English placeholder until the Armenian pass. Answers, sources, chat titles and case names are SAMPLE.
 
 Demo URLs: `?demo=answer`, `fragment`, `streaming`, `searching`, `deep`, `plan`, `refused`, `error-temporary`, `error-quota`, `error-service`, `low`, `out`, `sheet` (phone).
