@@ -5,8 +5,6 @@ import type { AssistantMsg } from '~/composables/useChat';
 
 const { state, isEmpty, outOfQuestions, low, newChat, demo, LIMIT } = useChat();
 const route = useRoute();
-const collapsed = ref(false);
-const drawer = ref(false);
 const scroller = ref<HTMLElement>();
 const dockComposer = ref();
 
@@ -27,28 +25,16 @@ watch(() => [state.messages.length, lastAssistant.value?.progress, lastAssistant
   await nextTick(); scroller.value?.scrollTo({ top: scroller.value.scrollHeight, behavior: 'smooth' });
 });
 onMounted(() => {
-  if (route.query.theme === 'light') document.documentElement.classList.add('fd-light');
-  if (route.query.palette === 'jade') document.documentElement.classList.add('palette-jade');
-  collapsed.value = window.innerWidth < 1280; // tablet: icon rail, sources sit beside the answer
   const d = route.query.demo; if (typeof d === 'string') demo(d);
   // phone: the sources sheet opens only on demand (citation tap / Sources button)
   if (window.innerWidth < 768 && d !== 'fragment' && d !== 'sheet') state.sourcesOpen = false;
   if (d === 'sheet') { demo('answer'); state.sourcesOpen = true; }
 });
-function start() { newChat(); drawer.value = false; }
 </script>
 
 <template>
-  <div class="app" :class="{ collapsed }">
-    <AppSidebar class="desk-sidebar" :collapsed="collapsed" :active-chat="isEmpty ? null : 'c1'" :active-status="activeStatus" @toggle="collapsed = !collapsed" @new-chat="start" />
-    <PDrawer v-model:visible="drawer" class="nav-drawer" :show-close-icon="false" position="left">
-      <AppSidebar :active-chat="isEmpty ? null : 'c1'" :active-status="activeStatus" @toggle="drawer = false" @new-chat="start" @select="drawer = false" />
-    </PDrawer>
-
-    <main class="main">
-      <AppTopbar :remaining="state.remaining" :limit="LIMIT" :sources-count="sourcesCount" :sources-open="!!sourcesVisible"
-                 @menu="drawer = true" @sources="state.sourcesOpen = !sourcesVisible" />
-      <div class="body">
+  <AppShell :active-chat="isEmpty ? null : 'c1'" :active-status="activeStatus" :sources-count="sourcesCount" :sources-open="!!sourcesVisible"
+            @new-chat="newChat()" @sources="state.sourcesOpen = !sourcesVisible">
         <div class="column">
           <div ref="scroller" class="scroll conversation">
             <ChatEmpty v-if="isEmpty" />
@@ -79,18 +65,11 @@ function start() { newChat(); drawer.value = false; }
             <SourcesPanel :sources="lastAssistant!.sources" :loading="sourcesLoading" />
           </div>
         </Transition>
-      </div>
-    </main>
-
-    <button class="feedback" aria-label="Send feedback" v-tooltip.left="'Feedback'"><i class="pi pi-comment" /></button>
-    <DemoStates />
-  </div>
+    <template #overlay><DemoStates /></template>
+  </AppShell>
 </template>
 
 <style scoped>
-.app { display: flex; height: 100dvh; background: var(--fd-bg); }
-.main { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.body { position: relative; display: flex; flex: 1; min-height: 0; }
 .column { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .conversation { flex: 1; display: flex; flex-direction: column; padding: 0 24px; }
 .thread { display: flex; flex-direction: column; gap: 32px; width: 100%; max-width: 720px; margin: 0 auto; padding: 32px 0 24px; }
@@ -107,23 +86,12 @@ function start() { newChat(); drawer.value = false; }
 .backdrop { display: none; }
 .slide-enter-active, .slide-leave-active { transition: transform .25s var(--fd-easing, ease), opacity .25s ease; }
 .slide-enter-from, .slide-leave-to { transform: translateX(24px); opacity: 0; }
-.feedback {
-  position: fixed; right: 20px; bottom: 20px; z-index: 30; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
-  border: 1px solid var(--fd-line); background: var(--fd-panel-2); color: var(--fd-accent-text); cursor: pointer; box-shadow: var(--fd-overlay-shadow);
-}
-:global(.nav-drawer.p-drawer) { width: var(--fd-sidebar) !important; background: var(--fd-panel); border: 0; }
-:global(.nav-drawer .p-drawer-header) { display: none; }
-:global(.nav-drawer .p-drawer-content) { padding: 0; }
 /* tablet: sources overlay the conversation */
-@media (max-width: 1279px) {
-  .feedback { display: none; }
-}
 @media (max-width: 959px) and (min-width: 768px) {
   .sources-wrap { position: absolute; right: 0; top: 0; bottom: 0; z-index: 20; box-shadow: var(--fd-overlay-shadow); }
 }
 /* phone: drawer nav, sources as a bottom sheet */
 @media (max-width: 767px) {
-  .desk-sidebar { display: none; }
   .conversation { padding: 0 16px; }
   .thread { padding-top: 20px; }
   .dock { padding: 0 12px 12px; }

@@ -20,12 +20,12 @@ export const MODES: Mode[] = [
   { id: 'questionnaire', label: 'Questionnaire (file)', icon: 'pi pi-list', hint: 'Upload a file with questions (docx, pdf, txt, md).', badge: 'classic', example: 'Answer the questions in the attached file.' },
 ];
 
-export interface NavItem { label: string; icon: string; hint?: string; badge?: string }
+export interface NavItem { label: string; icon: string; hint?: string; badge?: string; to?: string }
 export const NAV: { label: string; items: NavItem[] }[] = [
   {
     label: 'Library',
     items: [
-      { label: 'My cases', icon: 'pi pi-clipboard' },
+      { label: 'My cases', icon: 'pi pi-clipboard', to: '/cases' },
       { label: 'Documents', icon: 'pi pi-folder' },
       { label: 'My notes', icon: 'pi pi-bookmark' },
       // Brief: Watch is in scope as "coming soon" (follow topics, alerts on new laws and decisions).
@@ -109,4 +109,14 @@ export const PLAN_STEPS = [
   'Search Court of Cassation practice on restoring a missed deadline',
   'Check ECHR practice on access to court (Article 6)',
   'Summarise what to file and which documents to attach',
+];
+
+// My cases — live product screen (hz.femid.ai, 09.10.2026). Intro copy is 1:1 with the live page; case names/counts are SAMPLE
+// (Petrosyan v. Alfa is from the live list; Avagyan v. Poghosyan matches the two case chats in CHATS).
+export interface CaseItem { id: string; name: string; chats: number; docs: number; updated: string; archived?: boolean }
+export const CASES: CaseItem[] = [
+  { id: 'k1', name: 'Avagyan v. Poghosyan', chats: 2, docs: 1, updated: '9 Oct 2026' },
+  { id: 'k2', name: 'Petrosyan v. Alfa — lease termination', chats: 5, docs: 3, updated: '8 Oct 2026' },
+  { id: 'k3', name: 'Harutyunyan — inheritance', chats: 0, docs: 0, updated: '6 Oct 2026' },
+  { id: 'k4', name: 'Grigoryan — labour dispute', chats: 4, docs: 2, updated: '12 Sep 2026', archived: true },
 ];

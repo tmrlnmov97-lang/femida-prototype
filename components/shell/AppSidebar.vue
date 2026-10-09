@@ -6,6 +6,7 @@ const props = defineProps<{ collapsed?: boolean; activeChat?: string | null; act
 const emit = defineEmits<{ (e: 'toggle'): void; (e: 'new-chat'): void; (e: 'select', id: string): void }>();
 const periods = ['Today', 'Previous 7 days'] as const;
 const root = ref<HTMLElement>();
+const route = useRoute();
 
 /* Library folds away to give the chat list room; remembered per viewer */
 const open = reactive<Record<string, boolean>>(Object.fromEntries(NAV.map((g) => [g.label, true])));
@@ -124,11 +125,17 @@ onBeforeUnmount(() => {
         </button>
         <div class="items" :class="{ shut: !props.collapsed && !open[g.label] }">
           <div class="items-inner">
-            <a v-for="it in g.items" :key="it.label" href="#" class="nav-item" :class="{ soon: it.badge === 'Soon' }"
-               v-tooltip.right="props.collapsed ? (it.badge ? `${it.label} · ${it.badge}` : it.label) : null" @click.prevent>
-              <i :class="it.icon" /><span v-if="!props.collapsed" class="lbl">{{ it.label }}</span>
-              <span v-if="!props.collapsed && it.badge" class="badge">{{ it.badge }}</span>
-            </a>
+            <template v-for="it in g.items" :key="it.label">
+              <NuxtLink v-if="it.to" :to="it.to" class="nav-item" :class="{ current: route.path === it.to }" :aria-current="route.path === it.to ? 'page' : undefined"
+                        v-tooltip.right="props.collapsed ? it.label : null">
+                <i :class="it.icon" /><span v-if="!props.collapsed" class="lbl">{{ it.label }}</span>
+              </NuxtLink>
+              <a v-else href="#" class="nav-item" :class="{ soon: it.badge === 'Soon' }"
+                 v-tooltip.right="props.collapsed ? (it.badge ? `${it.label} · ${it.badge}` : it.label) : null" @click.prevent>
+                <i :class="it.icon" /><span v-if="!props.collapsed" class="lbl">{{ it.label }}</span>
+                <span v-if="!props.collapsed && it.badge" class="badge">{{ it.badge }}</span>
+              </a>
+            </template>
           </div>
         </div>
       </section>
@@ -294,6 +301,8 @@ onBeforeUnmount(() => {
 .nav-item > .pi:first-child { font-size: 16px; width: 18px; text-align: center; }
 .nav-item .lbl { flex: 1; min-width: 0; }
 .nav-item:hover, .nav-item.on { background: color-mix(in srgb, var(--fd-ink) 6%, transparent); color: var(--fd-ink); }
+.nav-item.current { background: var(--fd-panel-2); color: var(--fd-ink); font-weight: 500; }
+.nav-item.current > .pi:first-child { color: var(--fd-accent-text); }
 .nav-item.soon .lbl, .nav-item.soon > .pi:first-child { opacity: .75; }
 .badge {
   display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; flex-shrink: 0;
