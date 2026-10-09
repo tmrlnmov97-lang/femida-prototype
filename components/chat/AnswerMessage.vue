@@ -8,7 +8,14 @@ const { state, openSource, retry, approvePlan } = useChat();
 const planned = computed(() => props.msg.mode === 'plan' && props.msg.status !== 'plan');
 const showHow = ref(false);
 const copied = ref(false);
-const saved = ref(false);
+// "Save to notes" really saves into My notes (shared store)
+const notes = useNotes();
+const saved = computed(() => !!notes.byQuestion(props.msg.question));
+function toggleSave() {
+  const n = notes.byQuestion(props.msg.question);
+  if (n) notes.remove(n.id);
+  else notes.saveAnswer(props.msg.question, { caseId: state.caseCtx?.id, chat: state.chatTitle ?? undefined });
+}
 
 const mode = computed(() => MODES.find((m) => m.id === props.msg.mode)!);
 // visible slice of each block while streaming
@@ -97,7 +104,8 @@ function copy() { copied.value = true; setTimeout(() => (copied.value = false), 
         <div v-if="msg.status === 'done'" class="footer">
           <div class="actions">
             <button class="act t-label" @click="copy"><i class="pi" :class="copied ? 'pi-check' : 'pi-copy'" />{{ copied ? 'Copied' : 'Copy' }}</button>
-            <button class="act t-label" :class="{ on: saved }" @click="saved = !saved"><i class="pi" :class="saved ? 'pi-bookmark-fill' : 'pi-bookmark'" />{{ saved ? 'Saved to notes' : 'Save to notes' }}</button>
+            <button class="act t-label" :class="{ on: saved }" @click="toggleSave"><i class="pi" :class="saved ? 'pi-bookmark-fill' : 'pi-bookmark'" />{{ saved ? 'Saved to notes' : 'Save to notes' }}</button>
+            <NuxtLink v-if="saved" to="/notes" class="act t-label open-notes">Open My notes<i class="pi pi-arrow-right" /></NuxtLink>
             <button class="act t-label" :aria-expanded="showHow" @click="showHow = !showHow"><i class="pi pi-shield" />How this answer was found<i class="pi pi-angle-down chev" :class="{ open: showHow }" /></button>
           </div>
           <Transition name="fade-up">
@@ -137,6 +145,8 @@ function copy() { copied.value = true; setTimeout(() => (copied.value = false), 
   display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border: 0; border-radius: 999px;
   background: transparent; color: var(--fd-muted); cursor: pointer; transition: background-color .15s, color .15s;
 }
+.act.open-notes { text-decoration: none; color: var(--fd-accent-text); }
+.act.open-notes .pi { font-size: 11px; }
 .act .pi { font-size: 13px; }
 .act:hover { background: color-mix(in srgb, var(--fd-ink) 6%, transparent); color: var(--fd-ink); }
 .act.on { color: var(--fd-accent-text); }
