@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 
-const props = defineProps<{ title: string; remaining: number; limit: number; editableTitle?: boolean; sourcesCount?: number | null; sourcesOpen?: boolean }>();
+const props = defineProps<{ remaining: number; limit: number; sourcesCount?: number | null; sourcesOpen?: boolean }>();
 const emit = defineEmits<{ (e: 'menu'): void; (e: 'sources'): void }>();
 
 /* ---------- theme (the brief: users switch it in the top bar) ---------- */
@@ -21,20 +21,6 @@ watch(() => props.remaining, (n, o) => {
 });
 const usagePop = ref();
 
-/* ---------- chat title: rename in place ---------- */
-const localTitle = ref(props.title);
-watch(() => props.title, (t) => (localTitle.value = t));
-const editing = ref(false);
-const draft = ref('');
-const titleInput = ref<HTMLInputElement>();
-function startRename() {
-  if (!props.editableTitle) return;
-  draft.value = localTitle.value; editing.value = true;
-  nextTick(() => { titleInput.value?.focus(); titleInput.value?.select(); });
-}
-function commitRename() { if (!editing.value) return; const t = draft.value.trim(); if (t) localTitle.value = t; editing.value = false; }
-function cancelRename() { editing.value = false; }
-
 /* ---------- account menu ---------- */
 const accountPop = ref();
 
@@ -50,20 +36,6 @@ onBeforeUnmount(() => themeObs?.disconnect());
 <template>
   <header class="topbar">
     <button class="icon-btn menu-btn" aria-label="Open navigation" @click="emit('menu')"><i class="pi pi-bars" /></button>
-
-    <!-- Breadcrumbs: section › chat (the chat name is editable) -->
-    <nav class="crumbs" aria-label="Breadcrumb">
-      <a href="#" class="home-btn" aria-label="Home" v-tooltip.bottom="'Home'" @click.prevent><i class="pi pi-home" /></a>
-      <i class="pi pi-angle-right sep home-sep" aria-hidden="true" />
-      <span class="crumb section t-label">Chat</span>
-      <i class="pi pi-angle-right sep section" aria-hidden="true" />
-      <input v-if="editing" ref="titleInput" v-model="draft" class="title-input t-label" aria-label="Chat name" maxlength="80"
-             @keydown.enter.prevent="commitRename" @keydown.esc.prevent="cancelRename" @blur="commitRename" />
-      <button v-else-if="props.editableTitle" class="crumb current title-btn t-label" aria-current="page" v-tooltip.bottom="'Rename'" @click="startRename">
-        <span class="title-text">{{ localTitle }}</span><i class="pi pi-pencil edit-ic" aria-hidden="true" />
-      </button>
-      <h1 v-else class="crumb current t-label" aria-current="page">{{ localTitle }}</h1>
-    </nav>
 
     <div class="spacer" />
 
@@ -141,31 +113,6 @@ onBeforeUnmount(() => themeObs?.disconnect());
 }
 .spacer { flex: 1; }
 .menu-btn { display: none; }
-
-/* Breadcrumbs */
-.crumbs { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.home-btn {
-  display: grid; place-items: center; width: 40px; height: 40px; margin-left: -4px; margin-right: 2px; border-radius: 10px; flex-shrink: 0;
-  background: var(--fd-panel); color: var(--fd-ink); text-decoration: none; transition: background-color .15s;
-}
-.home-btn .pi { font-size: 16px; }
-.home-btn:hover { background: var(--fd-panel-2); }
-.sep { font-size: 11px; color: var(--fd-muted); }
-.crumb { margin: 0; color: var(--fd-muted); white-space: nowrap; }
-.crumb.current { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--fd-ink); font-weight: 600; }
-.title-btn {
-  display: inline-flex; align-items: center; gap: 8px; max-width: 520px; height: 32px; margin-left: -8px; padding: 0 8px; border: 0; border-radius: var(--fd-radius-md);
-  background: transparent; cursor: text; transition: background-color .15s;
-}
-.title-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.edit-ic { font-size: 12px; color: var(--fd-muted); opacity: 0; transition: opacity .15s; }
-.title-btn:hover, .title-btn:focus-visible { background: var(--fd-panel-2); }
-.title-btn:hover .edit-ic, .title-btn:focus-visible .edit-ic { opacity: 1; }
-.title-input {
-  width: min(420px, 50vw); height: 32px; margin-left: -8px; padding: 0 8px; border-radius: var(--fd-radius-md);
-  border: 1px solid var(--fd-accent); background: var(--fd-panel); color: var(--fd-ink); outline: none;
-  box-shadow: 0 0 0 3px var(--fd-accent-soft);
-}
 
 /* Right-side controls: one height, one surface */
 .ctrl {
@@ -256,15 +203,13 @@ onBeforeUnmount(() => themeObs?.disconnect());
 .narrow-only { display: none; }
 
 @media (max-width: 1279px) {
-  .meta, .section, .counter .word { display: none; }
+  .meta, .counter .word { display: none; }
   .narrow-only { display: flex; } /* the floating feedback button is hidden below 1280 */
 }
 @media (max-width: 767px) {
   .topbar { padding: 0 12px; gap: 8px; }
   .menu-btn { display: inline-grid; margin-left: -6px; }
-  .title-btn { margin-left: 0; padding: 0; max-width: none; }
-  .title-btn:hover { background: transparent; }
-  .home-btn, .home-sep, .divider, .chev, .c-info, .sources-btn .lbl { display: none; }
+  .divider, .chev, .c-info, .sources-btn .lbl { display: none; }
   .sources-btn { padding: 0 6px 0 10px; }
   .counter { gap: 6px; padding: 0 12px 0 10px; }
   .counter .full { display: none; } .counter .short { display: inline; }

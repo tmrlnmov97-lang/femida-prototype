@@ -11,7 +11,6 @@ const scroller = ref<HTMLElement>();
 const dockComposer = ref();
 
 const lastAssistant = computed(() => [...state.messages].reverse().find((m) => m.role === 'assistant') as AssistantMsg | undefined);
-const title = computed(() => (isEmpty.value ? 'New chat' : 'Contesting a dismissal'));
 const sourcesVisible = computed(() => !isEmpty.value && state.sourcesOpen && lastAssistant.value && !['refused', 'error'].includes(lastAssistant.value.status));
 // Top-bar Sources toggle: shown once the answer has sources (the count grows while it streams)
 const sourcesCount = computed(() => {
@@ -47,7 +46,7 @@ function start() { newChat(); drawer.value = false; }
     </PDrawer>
 
     <main class="main">
-      <AppTopbar :title="title" :remaining="state.remaining" :limit="LIMIT" :editable-title="!isEmpty" :sources-count="sourcesCount" :sources-open="!!sourcesVisible"
+      <AppTopbar :remaining="state.remaining" :limit="LIMIT" :sources-count="sourcesCount" :sources-open="!!sourcesVisible"
                  @menu="drawer = true" @sources="state.sourcesOpen = !sourcesVisible" />
       <div class="body">
         <div class="column">

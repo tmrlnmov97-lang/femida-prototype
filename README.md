@@ -18,7 +18,7 @@ Inside the full workspace, `npm run sync` (runs before dev/build) copies the gen
 ## What works
 
 - **Palette:** Sage (approved 08.10.2026). Dark is the default; light via the account menu → Theme, or `?theme=light`.
-- **Top bar:** Home › Chat › chat name (click to rename). Sources (n) toggle. Credit counter "N of 50 credits" (1 question = 1 credit): skeleton while loading, amber at ≤10, click for the usage card + "See plans". Account menu (Account / Plans / Organisation, Theme dark/light, Log out). No language switch: the product is Armenian-only.
+- **Top bar:** Sources (n) toggle. Credit counter "N of 50 credits" (1 question = 1 credit): skeleton while loading, amber at ≤10, click for the usage card + "See plans". Account menu (Account / Plans / Organisation, Theme dark/light, Log out). No language switch: the product is Armenian-only.
 - **Sidebar:**
   - Search chats and New chat; Library (with Watch · Soon); Tools open a panel with one-line descriptions.
   - The chat list is on one 36px rhythm: status dots (deep research running / answer ready), case icon, ⋯ → Rename / Delete.
