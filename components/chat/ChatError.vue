@@ -3,8 +3,8 @@ import type { ErrorKind } from '~/composables/useChat';
 const props = defineProps<{ kind: ErrorKind }>();
 const emit = defineEmits<{ (e: 'retry'): void }>();
 const COPY: Record<ErrorKind, { icon: string; title: string; body: string; action: string; actionIcon: string }> = {
-  temporary: { icon: 'pi-refresh', title: 'Couldn’t get an answer — this is temporary', body: 'The connection dropped before the answer arrived. Your question is saved and wasn’t counted.', action: 'Try again', actionIcon: 'pi-refresh' },
-  quota: { icon: 'pi-bolt', title: 'This question wasn’t sent: your plan limit is reached', body: 'Your question is saved and wasn’t counted. Choose a plan to send it.', action: 'View plans', actionIcon: 'pi-arrow-right' },
+  temporary: { icon: 'pi-refresh', title: 'Couldn’t get an answer — this is temporary', body: 'The connection dropped before the answer arrived. Your question is saved and no credits were used.', action: 'Try again', actionIcon: 'pi-refresh' },
+  quota: { icon: 'pi-database', title: 'This question wasn’t sent: you’re out of credits', body: 'Your question is saved and no credits were used. Choose a plan to send it.', action: 'View plans', actionIcon: 'pi-arrow-right' },
   service: { icon: 'pi-exclamation-circle', title: 'A problem on our side — we’re fixing it', body: 'This isn’t something you can fix by retrying. Your question is saved; we’ll be back shortly.', action: 'Check status', actionIcon: 'pi-external-link' },
 };
 const c = COPY[props.kind];

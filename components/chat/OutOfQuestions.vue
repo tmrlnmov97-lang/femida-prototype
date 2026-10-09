@@ -1,8 +1,8 @@
 <template>
   <div class="oq" role="status">
-    <span class="mark"><i class="pi pi-bolt" /></span>
+    <span class="mark"><i class="pi pi-database" /></span>
     <div class="text">
-      <h3 class="t-label">You’ve used all 50 questions</h3>
+      <h3 class="t-label">You’ve used all 50 credits</h3>
       <p class="t-body-sm">Choose a plan to keep asking — your chats and documents&nbsp;stay.</p>
     </div>
     <PButton label="View plans" icon="pi pi-arrow-right" icon-pos="right" rounded />

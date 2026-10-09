@@ -68,7 +68,7 @@ function start() { newChat(); drawer.value = false; }
           </div>
           <div v-if="!isEmpty" class="dock">
             <div class="dock-inner">
-              <div v-if="low" class="low t-body-sm"><i class="pi pi-bolt" />{{ state.remaining }} of {{ LIMIT }} questions left<a href="#" class="t-label" @click.prevent>View plans</a></div>
+              <div v-if="low" class="low t-body-sm"><i class="pi pi-database" />{{ state.remaining }} of {{ LIMIT }} credits left<a href="#" class="t-label" @click.prevent>View plans</a></div>
               <OutOfQuestions v-if="outOfQuestions" />
               <ChatComposer v-else ref="dockComposer" variant="dock" placeholder="Ask a follow-up…" />
             </div>

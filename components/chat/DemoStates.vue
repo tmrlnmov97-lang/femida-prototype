@@ -6,7 +6,7 @@ const router = useRouter();
 const STATES = [
   ['empty', 'Empty'], ['searching', 'Searching'], ['streaming', 'Streaming'], ['answer', 'Answer + sources'], ['fragment', 'Source fragment'],
   ['deep', 'Deep research'], ['plan', 'Plan first (review)'], ['refused', 'Refused (no source)'], ['error-temporary', 'Error · temporary'], ['error-quota', 'Error · quota'],
-  ['error-service', 'Error · service'], ['low', 'Few questions left'], ['out', 'Out of questions'],
+  ['error-service', 'Error · service'], ['low', 'Few credits left'], ['out', 'Out of credits'],
 ];
 function pick(id: string) { open.value = false; router.replace({ query: id === 'empty' ? {} : { demo: id } }); demo(id); }
 </script>

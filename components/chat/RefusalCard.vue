@@ -10,7 +10,7 @@ const ideas = ['Rephrase with the article or law name', 'Narrow it to one situat
       <h3 class="t-label">No source found — so no answer</h3>
     </div>
     <p class="t-body-sm muted">
-      We only answer when we can point to a law, a court decision or ECHR practice. For this question we found nothing we can stand behind, so we won’t guess. Your question wasn’t&nbsp;counted.
+      We only answer when we can point to a law, a court decision or ECHR practice. For this question we found nothing we can stand behind, so we won’t guess. No credits were&nbsp;used.
     </p>
     <div class="ideas">
       <button v-for="i in ideas" :key="i" class="idea t-body-sm" @click="emit('suggest', i)">{{ i }}<i class="pi pi-arrow-right" /></button>

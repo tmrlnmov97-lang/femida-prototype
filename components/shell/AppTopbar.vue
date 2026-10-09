@@ -11,7 +11,7 @@ let themeObs: MutationObserver | undefined;
 const syncTheme = () => { light.value = document.documentElement.classList.contains('fd-light'); };
 function setTheme(toLight: boolean) { document.documentElement.classList.toggle('fd-light', toLight); }
 
-/* ---------- question counter: one meaning — questions left ---------- */
+/* ---------- credit counter: one meaning — credits left (1 question = 1 credit) ---------- */
 const ready = ref(false); // skeleton until the number is known (never "0 / 0")
 const tone = computed(() => (props.remaining <= 0 ? 'empty' : props.remaining <= 10 ? 'low' : 'normal'));
 const share = computed(() => Math.max(0, Math.min(1, props.remaining / props.limit)));
@@ -74,28 +74,28 @@ onBeforeUnmount(() => themeObs?.disconnect());
       <i class="pi pi-book" /><span class="lbl">Sources</span><span class="count">{{ props.sourcesCount }}</span>
     </button>
 
-    <!-- Question counter -->
+    <!-- Credit counter -->
     <PSkeleton v-if="!ready" class="counter-skel" width="200px" height="38px" border-radius="999px" />
-    <button v-else class="ctrl counter t-label" :class="[tone, { bump }]" aria-haspopup="dialog" :aria-label="`${props.remaining} of ${props.limit} questions remaining`"
+    <button v-else class="ctrl counter t-label" :class="[tone, { bump }]" aria-haspopup="dialog" :aria-label="`${props.remaining} of ${props.limit} credits remaining`"
             @click="usagePop.toggle($event)">
       <i class="pi pi-database c-ic" aria-hidden="true" />
-      <span class="full"><b :key="props.remaining" class="num">{{ props.remaining }}</b> of {{ props.limit }} <span class="word">questions</span></span>
+      <span class="full"><b :key="props.remaining" class="num">{{ props.remaining }}</b> of {{ props.limit }} <span class="word">credits</span></span>
       <span class="short"><b :key="props.remaining" class="num">{{ props.remaining }}</b></span>
       <i class="pi pi-info-circle c-info" aria-hidden="true" />
     </button>
     <PPopover ref="usagePop" class="fd-pop">
       <div class="usage" :class="tone">
         <div class="u-head">
-          <span class="t-eyebrow muted">Questions</span>
+          <span class="t-eyebrow muted">Credits</span>
           <span class="tag">Trial</span>
         </div>
         <div class="u-big"><b>{{ props.remaining }}</b><span class="muted"> of {{ props.limit }} remaining</span></div>
-        <div class="u-bar" role="progressbar" :aria-valuenow="props.remaining" aria-valuemin="0" :aria-valuemax="props.limit" aria-label="Questions remaining">
+        <div class="u-bar" role="progressbar" :aria-valuenow="props.remaining" aria-valuemin="0" :aria-valuemax="props.limit" aria-label="Credits remaining">
           <span :style="{ width: `${share * 100}%` }" />
         </div>
         <p v-if="tone === 'low'" class="u-note"><i class="pi pi-exclamation-circle" />Running low. Choose a plan so you aren't stopped in the middle of a&nbsp;case.</p>
-        <p v-else-if="tone === 'empty'" class="u-note"><i class="pi pi-exclamation-circle" />You're out of questions. Choose a plan to keep&nbsp;asking.</p>
-        <p v-else class="u-hint t-caption muted">Your Trial includes {{ props.limit }} questions. You'll see the same number in Account and in&nbsp;emails.</p>
+        <p v-else-if="tone === 'empty'" class="u-note"><i class="pi pi-exclamation-circle" />You're out of credits. Choose a plan to keep&nbsp;asking.</p>
+        <p v-else class="u-hint t-caption muted">Your Trial includes {{ props.limit }} credits, one per question. You'll see the same number in Account and in&nbsp;emails.</p>
         <PButton label="See plans" icon="pi pi-arrow-right" icon-pos="right" size="small" class="u-cta" :severity="tone === 'normal' ? 'secondary' : undefined" @click="usagePop.hide()" />
       </div>
     </PPopover>
@@ -121,7 +121,7 @@ onBeforeUnmount(() => themeObs?.disconnect());
       <div class="account" role="menu">
         <div class="a-head">
           <span class="avatar lg">DE</span>
-          <span class="a-id"><span class="email">dev@femid.ai</span><span class="t-caption muted">Trial plan · {{ props.remaining }} of {{ props.limit }} questions</span></span>
+          <span class="a-id"><span class="email">dev@femid.ai</span><span class="t-caption muted">Trial plan · {{ props.remaining }} of {{ props.limit }} credits</span></span>
         </div>
         <div class="a-sep" />
         <button class="a-item" role="menuitem"><i class="pi pi-user" />Account</button>
