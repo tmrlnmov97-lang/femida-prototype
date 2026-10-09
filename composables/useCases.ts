@@ -10,13 +10,15 @@ export function monogram(name: string) {
   const words = name.replace(/[—–-]/g, ' ').split(/\s+/).filter((w) => w && !/^v\.?$/i.test(w));
   return ((words[0]?.[0] ?? '') + (words[1]?.[0] ?? '')).toUpperCase();
 }
+// 'Today' → 'today'; dates stay as they are
+export const rel = (s: string) => (/^(Today|Yesterday|Just now)$/.test(s) ? s.toLowerCase() : s);
 export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 export const fileIcon = (f: string) => (/\.docx?$/i.test(f) ? 'pi pi-file-word' : /\.pdf$/i.test(f) ? 'pi pi-file-pdf' : 'pi pi-file');
 
 export function useCases() {
   const byId = (id: string) => state.cases.find((c) => c.id === id);
-  function create(name: string) {
-    const c: CaseItem = { id: `k${Date.now()}`, name, updated: 'Just now', ts: 99999999, chats: [], files: [] };
+  function create(name: string, description = '') {
+    const c: CaseItem = { id: `k${Date.now()}`, name, description, updated: 'Just now', ts: 99999999, chats: [], files: [] };
     state.cases.unshift(c);
     return c;
   }
