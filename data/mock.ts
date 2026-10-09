@@ -37,10 +37,10 @@ export const NAV: { label: string; items: NavItem[] }[] = [
 // descriptions; Work plan from the live screen (10.10): plan first, approve, then it runs.
 export const TOOLS: NavItem[] = [
   { label: 'Document wizard', icon: 'pi pi-file-edit', hint: 'Five guided steps to a Word or PDF document.', to: '/wizard' },
-  { label: 'Materials studio', icon: 'pi pi-sparkles', hint: 'Summaries, memos, timelines and risks from your files.' },
-  { label: 'Law on a date', icon: 'pi pi-calendar', hint: 'Pick a topic and a date to see which laws were in force.' },
+  { label: 'Materials studio', icon: 'pi pi-sparkles', hint: 'Summaries, memos, timelines and risks from your files.', to: '/studio' },
+  { label: 'Law on a date', icon: 'pi pi-calendar', hint: 'Pick a topic and a date to see which laws were in force.', to: '/temporal' },
   { label: 'Work plan', icon: 'pi pi-list-check', hint: 'For complex questions: approve a plan first, then it runs.', to: '/work-plan' },
-  { label: 'Counsel', icon: 'pi pi-briefcase', hint: 'Works with an organisation contract.', badge: 'For organisations' },
+  { label: 'Counsel', icon: 'pi pi-briefcase', hint: 'Works with an organisation contract.', badge: 'For organisations', to: '/counsel' },
 ];
 
 // Titles: short topics, as an auto-title would give them (proposal — needs backend). Case names are SAMPLE.
@@ -195,7 +195,7 @@ export const DRAFTS: DocDraft[] = [
 
 // My notes — live product screen (hz.femid.ai, 09.10.2026): "Saved answers and Studio materials". The saved answer reuses
 // the SAMPLE answer above; Studio notes only restate the sample case files (no new legal claims). SAMPLE.
-export type StudioKind = 'Timeline' | 'Key facts' | 'Question list';
+export type StudioKind = 'Timeline' | 'Key facts' | 'Question list' | 'Summary' | 'Legal memo' | 'Key arguments' | 'Possible risks' | 'Glossary of terms' | 'Reasoned memo';
 export interface Note {
   id: string; kind: 'answer' | 'studio'; studio?: StudioKind; title: string; excerpt: string;
   saved: string; ts: number; caseId?: string; chat?: string;
@@ -240,4 +240,68 @@ export const WATCH_UPDATES: WatchUpdate[] = [
   { id: 'w2', kind: 'Amendment', title: 'Tax Code amendment on VAT for imported services', tag: 'VAT', date: '6 Oct', ts: 20261006 },
   { id: 'w3', kind: 'Law', title: 'New rules for electronic public procurement', tag: 'Procurement', date: '2 Oct', ts: 20261002 },
   { id: 'w4', kind: 'Tax decision', title: 'Tax authority clarification on VAT invoices for advance payments', tag: 'VAT', date: '29 Sep', ts: 20260929 },
+];
+
+// Studio — live screen (hy|en/app-studio.jpg): title, intro and the 7 material names 1:1 with the live page (the brief lists
+// "key facts, question list, basis memo" instead — we follow the live screen [OPEN]). Hints are ours. Results are SAMPLE and
+// only restate the Avagyan v. Poghosyan sample case and SOURCES above (no new legal claims).
+export type StudioLayout = 'paras' | 'sections' | 'timeline' | 'numbered' | 'list' | 'terms';
+export interface StudioItem { label?: string; text: string }
+export const STUDIO_TYPES: { id: StudioKind; icon: string; hint: string; layout: StudioLayout }[] = [
+  { id: 'Summary', icon: 'pi pi-align-left', hint: 'The main points in a few sentences', layout: 'paras' },
+  { id: 'Legal memo', icon: 'pi pi-file-edit', hint: 'Question, short answer, analysis, next steps', layout: 'sections' },
+  { id: 'Timeline', icon: 'pi pi-clock', hint: 'The events in order', layout: 'timeline' },
+  { id: 'Key arguments', icon: 'pi pi-bolt', hint: 'The strongest points, with sources', layout: 'numbered' },
+  { id: 'Possible risks', icon: 'pi pi-exclamation-triangle', hint: 'What could go wrong', layout: 'list' },
+  { id: 'Glossary of terms', icon: 'pi pi-book', hint: 'Key terms explained simply', layout: 'terms' },
+  { id: 'Reasoned memo', icon: 'pi pi-check-circle', hint: 'A conclusion with its reasons', layout: 'sections' },
+];
+export const STUDIO_RESULTS: Record<string, StudioItem[]> = {
+  'Summary': [
+    { text: 'An employee was dismissed while in hospital and missed the one-month deadline to contest the dismissal [1].' },
+    { text: 'A missed deadline can be restored if there was a valid reason, and a hospital stay confirmed by medical records is one [2].' },
+    { text: 'Next step: file the claim together with a motion to restore the deadline, with the hospital records attached.' },
+  ],
+  'Legal memo': [
+    { label: 'Question', text: 'Can the employee contest the dismissal after the one-month deadline?' },
+    { label: 'Short answer', text: 'Yes, if the court restores the deadline. A hospital stay is a valid reason [2].' },
+    { label: 'Analysis', text: 'The claim must normally be filed within one month of the day the dismissal order was handed over [1]. If the employee missed it for a valid reason, the court may restore the period at their request [2]. Time limits must not be applied so rigidly that they deny access to court [3].' },
+    { label: 'Next steps', text: 'File the claim with a motion to restore the deadline and attach hospital records covering the period that was missed.' },
+  ],
+  'Timeline': [
+    { label: 'Dismissal', text: 'The employer issues the dismissal order while the employee is in hospital.' },
+    { label: 'Hospital stay', text: 'The employee is in hospital; the medical records cover this period.' },
+    { label: 'Deadline', text: 'The one-month period to contest the dismissal passes [1].' },
+    { label: 'Now', text: 'The claim is prepared together with a motion to restore the deadline [2].' },
+  ],
+  'Key arguments': [
+    { text: 'The deadline was missed for a valid reason: the employee was in hospital [1] [2].' },
+    { text: 'Hospital records confirm the whole period, so the court may restore the deadline [2].' },
+    { text: 'Applying the time limit too rigidly would deny access to court [3].' },
+  ],
+  'Possible risks': [
+    { text: 'The court checks whether the reason really prevented filing in time [3].' },
+    { text: 'If the hospital records don’t cover the whole missed period, the motion is weaker [2].' },
+    { text: 'Without a motion to restore the deadline, the claim is late [1].' },
+  ],
+  'Glossary of terms': [
+    { label: 'Restoring a deadline', text: 'The court lets a late claim go ahead when the delay had a valid reason [2].' },
+    { label: 'Valid reason', text: 'Something that really prevented filing in time, such as a hospital stay confirmed by medical records [2].' },
+    { label: 'Access to court', text: 'The right to have a claim heard; time limits must not be applied so rigidly that they take it away [3].' },
+  ],
+  'Reasoned memo': [
+    { label: 'Conclusion', text: 'The dismissal can still be contested: the court may restore the missed deadline [2].' },
+    { label: 'Reasons', text: 'The deadline runs from the day the order was handed over [1]. The employee was in hospital, which is a valid reason when confirmed by medical records [2]. A rigid approach to the time limit would deny access to court [3].' },
+  ],
+};
+
+// Law on a date — live screen (hy|en/app-temporal.jpg): title, intro, field labels, hint and empty text 1:1.
+// Results are SAMPLE (titles and dates are placeholders until the CTO sends a real result — question 11).
+export interface TemporalAct { id: string; title: string; match: string; from: string; to: string | null; status: 'in-force' | 'repealed' | 'later' }
+export const TEMPORAL_SAMPLE: TemporalAct[] = [
+  { id: 't1', title: 'Labour Code of the Republic of Armenia', match: 'Article 265 · deadline to contest a dismissal', from: '21.06.2005', to: null, status: 'in-force' },
+  { id: 't2', title: 'Law on Employment', match: 'Support for job seekers', from: '01.01.2014', to: null, status: 'in-force' },
+  { id: 't3', title: 'Government decision on the minimum monthly wage', match: 'Minimum wage amount', from: '01.01.2019', to: '31.12.2019', status: 'in-force' },
+  { id: 't4', title: 'Government decision on the minimum monthly wage (earlier version)', match: 'Minimum wage amount', from: '01.07.2015', to: '31.12.2018', status: 'repealed' },
+  { id: 't5', title: 'Labour Code amendment on remote work', match: 'Remote and distance work', from: '01.09.2023', to: null, status: 'later' },
 ];

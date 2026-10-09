@@ -49,7 +49,7 @@ function removeNote() { if (!n.value) return; remove(n.value.id); navigateTo('/n
           <template v-else>
             <ol v-if="n.studio === 'Timeline'" class="timeline"><li v-for="(it, i) in n.items" :key="i"><span class="d">{{ it.label }}</span><span>{{ it.text }}</span></li></ol>
             <ol v-else-if="n.studio === 'Question list'" class="list"><li v-for="(it, i) in n.items" :key="i">{{ it.text }}</li></ol>
-            <ul v-else class="list"><li v-for="(it, i) in n.items" :key="i">{{ it.text }}</li></ul>
+            <ul v-else class="list"><li v-for="(it, i) in n.items" :key="i"><b v-if="it.label">{{ it.label }}. </b>{{ it.text }}</li></ul>
           </template>
 
           <!-- One row of actions under the text, like under an answer in the chat -->
