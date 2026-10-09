@@ -111,12 +111,19 @@ export const PLAN_STEPS = [
   'Summarise what to file and which documents to attach',
 ];
 
-// My cases — live product screen (hz.femid.ai, 09.10.2026). Intro copy is 1:1 with the live page; case names/counts are SAMPLE
+// My cases — live product screen (hz.femid.ai, 09.10.2026). Intro copy is 1:1 with the live page; everything else here is SAMPLE
 // (Petrosyan v. Alfa is from the live list; Avagyan v. Poghosyan matches the two case chats in CHATS).
-export interface CaseItem { id: string; name: string; chats: number; docs: number; updated: string; archived?: boolean }
+export interface CaseItem {
+  id: string; name: string; chats: number; docs: number;
+  updated: string; ts: number; archived?: boolean;
+  recent?: { id: string; title: string }[]; files?: string[];
+}
 export const CASES: CaseItem[] = [
-  { id: 'k1', name: 'Avagyan v. Poghosyan', chats: 2, docs: 1, updated: '9 Oct 2026' },
-  { id: 'k2', name: 'Petrosyan v. Alfa — lease termination', chats: 5, docs: 3, updated: '8 Oct 2026' },
-  { id: 'k3', name: 'Harutyunyan — inheritance', chats: 0, docs: 0, updated: '6 Oct 2026' },
-  { id: 'k4', name: 'Grigoryan — labour dispute', chats: 4, docs: 2, updated: '12 Sep 2026', archived: true },
+  { id: 'k1', name: 'Avagyan v. Poghosyan', chats: 2, docs: 1, updated: 'Today', ts: 20261009,
+    recent: [{ id: 'c1', title: 'Contesting a dismissal' }, { id: 'c5', title: 'Statement of claim' }], files: ['Appeal_Avagyan_v_Poghosyan.pdf'] },
+  { id: 'k2', name: 'Petrosyan v. Alfa — lease termination', chats: 5, docs: 3, updated: 'Yesterday', ts: 20261008,
+    recent: [{ id: 'c3', title: 'Lease agreement review' }, { id: 'x1', title: 'Notice period for termination' }], files: ['Lease_agreement_2024.docx', 'Termination_notice.pdf', 'Payment_history.pdf'] },
+  { id: 'k3', name: 'Harutyunyan — inheritance', chats: 0, docs: 0, updated: '6 Oct', ts: 20261006 },
+  { id: 'k4', name: 'Grigoryan — labour dispute', chats: 4, docs: 2, updated: '12 Sep', ts: 20260912, archived: true,
+    recent: [{ id: 'x2', title: 'Unpaid overtime claim' }], files: ['Employment_contract.pdf', 'Timesheets_2026.pdf'] },
 ];
