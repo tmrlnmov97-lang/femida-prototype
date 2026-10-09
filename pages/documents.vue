@@ -286,10 +286,8 @@ h1 { margin: 0; font: 600 28px/36px var(--fd-font-serif); letter-spacing: -.005e
 .check input:checked + span::after { content: ''; width: 4px; height: 8px; margin-top: -2px; border: solid var(--fd-on-accent); border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .check input:indeterminate + span::after { content: ''; width: 8px; height: 2px; border-radius: 1px; background: var(--fd-on-accent); }
 .check input:focus-visible + span { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
-/* row checkboxes appear on hover, when checked, or while selecting */
-.tr .check span { opacity: 0; }
-.tr:hover .check span, .tr.sel .check span, .selecting .tr .check span, .tr .check input:focus-visible + span { opacity: 1; }
-.tr.uploading .check span { opacity: 0 !important; }
+/* row checkboxes are always visible; hidden only while a file is still uploading */
+.tr.uploading .check span { opacity: 0; }
 
 .td { min-width: 0; }
 .td.name { display: flex; align-items: center; gap: 12px; }
@@ -358,7 +356,7 @@ h1 { margin: 0; font: 600 28px/36px var(--fd-font-serif); letter-spacing: -.005e
   .thead, .tr { grid-template-columns: 28px minmax(0, 1fr) 64px; }
   .th.size, .td.size { display: none; }
   .sub { display: block; }
-  .tr .check span, .td.act { opacity: 1; }
+  .td.act { opacity: 1; }
   .thead.drafts { display: none; }
   .tr.drafts { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 12px; }
   .tr.drafts .td.act { justify-content: flex-start; }
