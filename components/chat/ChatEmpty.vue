@@ -10,7 +10,8 @@
 </template>
 
 <style scoped>
-.empty { position: relative; display: flex; flex-direction: column; align-items: center; gap: 28px; width: 100%; max-width: 720px; margin: auto; padding: 32px 0 48px; }
+/* Sits in the upper part of the screen (not centred) so the mode dropdown has room to open below the composer */
+.empty { position: relative; display: flex; flex-direction: column; align-items: center; gap: 28px; width: 100%; max-width: 720px; margin: 0 auto auto; padding: clamp(24px, 8vh, 96px) 0 48px; }
 .hero-composer { width: 100%; }
 .greeting { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
 .mark {
@@ -22,8 +23,14 @@
 h2 { margin: 0; font: 600 40px/48px var(--fd-font-serif); letter-spacing: -.01em; }
 .trust { position: relative; display: flex; align-items: center; gap: 8px; margin: 0; color: var(--fd-muted); text-align: center; }
 .trust .pi { color: var(--fd-accent-text); font-size: 13px; }
+/* Laptop-height screens: tighter top so the open mode list stays visible */
+@media (min-width: 768px) and (max-height: 960px) {
+  .empty { gap: 20px; padding-top: 24px; }
+  .mark { width: 44px; height: 44px; }
+  .mark .pi { font-size: 18px; }
+}
 @media (max-width: 767px) {
-  .empty { gap: 20px; padding: 16px 0 24px; }
+  .empty { gap: 20px; margin: auto; padding: 16px 0 24px; } /* phone: modes open in a bottom sheet, keep it centred */
   h2 { font-size: 30px; line-height: 38px; }
   .trust { font-size: 13px; }
 }
