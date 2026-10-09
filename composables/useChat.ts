@@ -31,6 +31,8 @@ const state = reactive({
 });
 
 let seq = 1;
+// Desktop/tablet: the Sources panel opens with the answer. Phone: it is a bottom sheet over the answer, so only on demand.
+const autoSources = () => typeof window === 'undefined' || window.innerWidth >= 768;
 const timers: ReturnType<typeof setTimeout>[] = [];
 const later = (fn: () => void, ms: number) => timers.push(setTimeout(fn, ms));
 const clearTimers = () => { while (timers.length) clearTimeout(timers.pop()!); };
@@ -74,7 +76,7 @@ export function useChat() {
       later(() => { msg.status = 'plan'; finish(); }, 1100); // user reviews the plan first
       return;
     }
-    state.sourcesOpen = true;
+    if (autoSources()) state.sourcesOpen = true;
     if (state.mode === 'deep') {
       msg.status = 'deep';
       const tick = () => {
@@ -95,7 +97,7 @@ export function useChat() {
 
   function approvePlan(msg: AssistantMsg) {
     if (msg.status !== 'plan') return;
-    state.busy = true; state.sourcesOpen = true; msg.status = 'searching';
+    state.busy = true; if (autoSources()) state.sourcesOpen = true; msg.status = 'searching';
     later(() => stream(msg, () => { state.remaining--; state.busy = false; }), 900);
   }
 

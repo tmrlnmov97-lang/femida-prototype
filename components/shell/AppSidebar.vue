@@ -33,7 +33,8 @@ function select(id: string) {
   flyout.value = null;
   emit('select', id);
 }
-const ready = ref(false); // skeleton rows until the list loads
+// Skeleton rows only on the first load of the session — moving between pages must not make the list blink and jump
+const ready = useState('fd-chats-ready', () => false);
 
 const menu = ref();
 const menuChat = ref<string | null>(null);
@@ -82,7 +83,7 @@ const closeFly = () => (flyout.value = null);
 
 onMounted(() => {
   try { Object.assign(open, JSON.parse(localStorage.getItem('fd-nav-open') || '{}')); } catch {}
-  setTimeout(() => (ready.value = true), 500);
+  if (!ready.value) setTimeout(() => (ready.value = true), 500);
   document.addEventListener('pointerdown', onDocDown, true);
   document.addEventListener('keydown', onKey);
   window.addEventListener('resize', closeFly);

@@ -12,7 +12,7 @@ const syncTheme = () => { light.value = document.documentElement.classList.conta
 function setTheme(toLight: boolean) { document.documentElement.classList.toggle('fd-light', toLight); }
 
 /* ---------- credit counter: one meaning — credits left (1 question = 1 credit) ---------- */
-const ready = ref(false); // skeleton until the number is known (never "0 / 0")
+const ready = useState('fd-credits-ready', () => false); // skeleton until the number is known (never "0 / 0"); first load only
 const tone = computed(() => (props.remaining <= 0 ? 'empty' : props.remaining <= 10 ? 'low' : 'normal'));
 const share = computed(() => Math.max(0, Math.min(1, props.remaining / props.limit)));
 const bump = ref(false);
@@ -28,7 +28,7 @@ onMounted(() => {
   syncTheme();
   themeObs = new MutationObserver(syncTheme);
   themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-  setTimeout(() => (ready.value = true), 500);
+  if (!ready.value) setTimeout(() => (ready.value = true), 500);
 });
 onBeforeUnmount(() => themeObs?.disconnect());
 </script>
