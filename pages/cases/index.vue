@@ -82,7 +82,7 @@ function submit() {
       <div class="wrap">
         <header class="head">
           <h1>My cases</h1>
-          <PButton label="New case" icon="pi pi-plus" class="new-btn" @click="openNew" />
+          <button class="new-btn" @click="openNew"><i class="pi pi-plus" />New case</button>
         </header>
 
         <template v-if="phase !== 'error' && !(phase === 'ready' && !all.length)">
@@ -179,7 +179,15 @@ function submit() {
 
 .head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 h1 { margin: 0; font: 600 34px/42px var(--fd-font-serif); letter-spacing: -.01em; color: var(--fd-ink); }
-.new-btn { flex-shrink: 0; }
+/* Compact primary action (like "New project") */
+.new-btn {
+  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; height: 36px; padding: 0 14px 0 12px; border: 0; border-radius: 10px;
+  background: var(--fd-accent); color: var(--fd-on-accent); cursor: pointer; font: 500 14px/20px var(--fd-font-sans); transition: background-color .15s, transform .1s;
+}
+.new-btn .pi { font-size: 11px; }
+.new-btn:hover { background: var(--fd-accent-hover); }
+.new-btn:active { transform: scale(.98); }
+.new-btn:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
 
 .search {
   display: flex; align-items: center; gap: 12px; height: 48px; margin-top: 28px; padding: 0 8px 0 16px; border-radius: 12px; cursor: text;
