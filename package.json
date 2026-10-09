@@ -1,0 +1,27 @@
+{
+  "name": "femida-prototype",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "node scripts/sync-tokens.mjs",
+    "dev": "npm run sync && nuxt dev",
+    "build": "npm run sync && nuxt build",
+    "generate": "npm run sync && nuxt generate",
+    "preview": "nuxt preview",
+    "shot": "node scripts/shot.mjs",
+    "deploy": "NUXT_APP_BASE_URL=/femida-prototype/ npm run generate && touch .output/public/.nojekyll && gh-pages -d .output/public --dotfiles"
+  },
+  "dependencies": {
+    "@primevue/nuxt-module": "^4.5.4",
+    "@primevue/themes": "^4.5.4",
+    "nuxt": "^3.17.0",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.5.5",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0",
+    "puppeteer-core": "^23.11.1"
+  }
+}

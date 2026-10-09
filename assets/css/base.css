@@ -1,0 +1,54 @@
+/* Global base — tokens only, no literal colours. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--fd-bg);
+  color: var(--fd-ink);
+  font-family: var(--fd-type-body-family);
+  font-size: var(--fd-type-body-size);
+  line-height: var(--fd-type-body-line);
+  font-weight: var(--fd-type-body-weight);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  transition: background-color var(--fd-motion-base) var(--fd-easing), color var(--fd-motion-base) var(--fd-easing);
+}
+
+a {
+  color: var(--fd-accent-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--fd-focus);
+  outline-offset: 2px;
+}
+
+/* PrimeVue inherits the Femida UI font */
+.p-component,
+.p-inputtext,
+.p-button,
+.p-select-label {
+  font-family: var(--fd-font-sans);
+}
+
+/* Info banner = panel-2 + icon in accent-text (no blue "info" in Femida) */
+.p-message-info .p-message-icon,
+.p-toast-message-info .p-toast-message-icon {
+  color: var(--fd-accent-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

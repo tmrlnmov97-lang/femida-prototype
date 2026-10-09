@@ -1,0 +1,136 @@
+/* Prototype styles — tokens only. Glow/rim values mirror the fd/marketing/* Figma styles. */
+:root {
+  --fd-glow: rgb(127 184 154 / 0.18);
+  --fd-glow-soft: rgb(127 184 154 / 0.06);
+  --fd-rim-top: rgb(255 255 255 / 0.14);
+  --fd-rim-bottom: rgb(255 255 255 / 0.04);
+  --fd-overlay-shadow: 0 16px 40px rgb(0 0 0 / 0.35);
+  --fd-radius-sm: 6px; --fd-radius-md: 8px; --fd-radius-lg: 12px; --fd-radius-xl: 16px;
+  --fd-sidebar: 264px; --fd-sources: 360px; --fd-topbar: 64px;
+}
+:root.fd-light {
+  --fd-glow: rgb(63 122 92 / 0.10);
+  --fd-glow-soft: rgb(63 122 92 / 0.04);
+  --fd-rim-top: rgb(23 24 26 / 0.12);
+  --fd-rim-bottom: rgb(23 24 26 / 0.06);
+  --fd-overlay-shadow: 0 16px 40px rgb(23 24 26 / 0.12);
+}
+
+html, body, #__nuxt { height: 100%; }
+body { overflow: hidden; }
+button { font: inherit; color: inherit; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- type helpers ---------- */
+.t-label { font: var(--fd-type-label-weight) var(--fd-type-label-size)/var(--fd-type-label-line) var(--fd-font-sans); }
+.t-caption { font: 400 var(--fd-type-caption-size, 14px)/var(--fd-type-caption-line, 20px) var(--fd-font-sans); }
+.t-body-sm { font: 400 15px/24px var(--fd-font-sans); }
+.t-body-lg { font: 400 17px/28px var(--fd-font-sans); }
+.t-eyebrow { font: 600 13px/20px var(--fd-font-sans); letter-spacing: .08em; text-transform: uppercase; }
+.muted { color: var(--fd-muted); }
+
+/* ---------- shared bits ---------- */
+.icon-btn {
+  display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: var(--fd-radius-md);
+  border: 1px solid transparent; background: transparent; color: var(--fd-muted); cursor: pointer;
+  transition: background-color .15s, color .15s, border-color .15s;
+}
+.icon-btn:hover { background: var(--fd-panel-2); color: var(--fd-ink); }
+.icon-btn.bordered { border-color: var(--fd-line); background: var(--fd-panel); }
+.icon-btn .pi { font-size: 16px; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 8px; border-radius: 999px;
+  font: 400 13px/20px var(--fd-font-sans); background: var(--fd-panel-2); color: var(--fd-muted); white-space: nowrap;
+}
+.tag.accent { background: var(--fd-accent-soft); color: var(--fd-accent-text); }
+.tag.amber { background: var(--fd-amber-soft); color: var(--fd-amber); }
+
+/* Citation chip inside answer text */
+.cite {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; margin: 0 2px;
+  border-radius: var(--fd-radius-sm); border: 1px solid transparent; vertical-align: 2px;
+  background: var(--fd-accent-soft); color: var(--fd-accent-text); font: 600 12px/1 var(--fd-font-sans);
+  cursor: pointer; transition: background-color .15s, color .15s, border-color .15s, transform .15s;
+}
+.cite:hover { border-color: var(--fd-accent); }
+.cite.active { background: var(--fd-accent); color: var(--fd-on-accent); }
+.cite.appear { animation: cite-in .35s var(--fd-easing, ease) both; }
+@keyframes cite-in { from { transform: scale(.6); opacity: 0; } }
+
+/* Streaming caret */
+.caret { display: inline-block; width: 2px; height: 1.1em; margin-left: 2px; vertical-align: -3px; background: var(--fd-accent); animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Shimmer text for "searching…" */
+.shimmer {
+  background: linear-gradient(90deg, var(--fd-muted) 0%, var(--fd-ink) 50%, var(--fd-muted) 100%);
+  background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: shimmer 1.6s linear infinite;
+}
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+.fade-up-enter-active { transition: opacity .3s ease, transform .3s ease; }
+.fade-up-enter-from { opacity: 0; transform: translateY(8px); }
+.pop-enter-active, .pop-leave-active { transition: opacity .16s ease, transform .16s ease; }
+.pop-enter-from, .pop-leave-to { opacity: 0; transform: translateY(4px) scale(.98); }
+
+/* ---------- glass popover (mode / attach menus) ---------- */
+.menu {
+  position: absolute; bottom: calc(100% + 8px); z-index: 40; min-width: 260px; padding: 4px;
+  border-radius: var(--fd-radius-lg); border: 1px solid var(--fd-line);
+  background: color-mix(in srgb, var(--fd-panel) 94%, transparent);
+  backdrop-filter: blur(24px) saturate(140%); box-shadow: var(--fd-overlay-shadow);
+}
+.menu-title { padding: 8px 12px 4px; color: var(--fd-muted); }
+.menu-item {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px; border: 0; border-radius: var(--fd-radius-md);
+  background: transparent; text-align: left; cursor: pointer; color: var(--fd-ink);
+}
+.menu-item:hover, .menu-item:focus-visible { background: color-mix(in srgb, var(--fd-ink) 6%, transparent); }
+.menu-item .pi { font-size: 16px; color: var(--fd-muted); }
+.menu-item.active .pi:first-child { color: var(--fd-accent-text); }
+.menu-item .text { display: grid; flex: 1; }
+.menu-item .hint { color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); }
+.menu-item .check { color: var(--fd-accent-text) !important; }
+
+/* scrollbars */
+.scroll { overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--fd-line) transparent; }
+
+/* PrimeVue Popover skinned as a Femida glass menu (rendered in <body>, flips to fit) */
+.fd-pop.p-popover {
+  margin-top: 8px; margin-bottom: 8px; padding: 0; border-radius: var(--fd-radius-lg); border: 1px solid var(--fd-line);
+  background: color-mix(in srgb, var(--fd-panel) 94%, transparent); color: var(--fd-ink);
+  backdrop-filter: blur(24px) saturate(140%); box-shadow: var(--fd-overlay-shadow);
+}
+.fd-pop.p-popover::before, .fd-pop.p-popover::after { display: none; }
+.fd-pop .p-popover-content { padding: 4px; }
+.menu-body { display: flex; flex-direction: column; }
+
+/* Destructive item in PrimeVue popup menus (e.g. Delete chat) */
+.p-menu .fd-danger .p-menu-item-label, .p-menu .fd-danger .p-menu-item-icon { color: var(--fd-red); }
+
+/* Phone bottom sheet (mode menu) */
+.fd-sheet.p-drawer { height: auto !important; max-height: 82dvh; border: 0; border-radius: 20px 20px 0 0; background: var(--fd-panel); color: var(--fd-ink); }
+.fd-sheet .p-drawer-header { padding: 10px 0 0; justify-content: center; }
+.fd-sheet .p-drawer-header::before { content: ''; width: 40px; height: 4px; border-radius: 4px; background: var(--fd-line); }
+.fd-sheet .p-drawer-content { padding: 4px 8px 16px; overflow-y: auto; }
+
+/* ---------- Palette exploration: "Jade on graphite" (?palette=jade) ----------
+   Neutral graphite base, warm ivory text, muted jade accent, minimal glow. AA-checked in both themes. */
+:root.palette-jade {
+  --fd-bg: #0E1113; --fd-panel: #15191C; --fd-panel-2: #1C2125; --fd-line: #2A3035;
+  --fd-ink: #ECE8E1; --fd-muted: #9EA3A6;
+  --fd-accent: #5DB592; --fd-accent-hover: #76C4A5; --fd-accent-soft: #17271F; --fd-accent-text: #7CC7A6; --fd-on-accent: #0B1F17;
+  --fd-amber: #E0B062; --fd-amber-soft: #2E2614; --fd-red: #EC7F86; --fd-red-soft: #33191C; --fd-focus: #7CC7A6;
+  --fd-glow: rgb(93 181 146 / 0.13); --fd-glow-soft: rgb(93 181 146 / 0.05);
+  --fd-rim-top: rgb(236 232 225 / 0.12); --fd-rim-bottom: rgb(236 232 225 / 0.03);
+}
+:root.palette-jade.fd-light {
+  --fd-bg: #F7F5F0; --fd-panel: #FFFFFF; --fd-panel-2: #EFECE5; --fd-line: #DDD8CE;
+  --fd-ink: #1A1D1F; --fd-muted: #5C6164;
+  --fd-accent: #2F7D62; --fd-accent-hover: #276B54; --fd-accent-soft: #E4EFE9; --fd-accent-text: #2A6F57; --fd-on-accent: #FFFFFF;
+  --fd-amber: #8F5400; --fd-amber-soft: #FBF1DE; --fd-red: #B42335; --fd-red-soft: #FBE8EA; --fd-focus: #2A6F57;
+  --fd-glow: rgb(47 125 98 / 0.10); --fd-glow-soft: rgb(47 125 98 / 0.04);
+  --fd-rim-top: rgb(26 29 31 / 0.12); --fd-rim-bottom: rgb(26 29 31 / 0.06);
+}
