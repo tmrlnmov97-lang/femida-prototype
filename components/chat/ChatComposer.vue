@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { MODES } from '~/data/mock';
 
 const props = withDefaults(defineProps<{ variant?: 'hero' | 'dock'; placeholder?: string }>(), { variant: 'hero', placeholder: 'Ask a legal question or attach a document…' });
+const emit = defineEmits<{ (e: 'lift', px: number): void }>();
 const { state, modeObj, send } = useChat();
 
 const text = ref('');
@@ -45,8 +46,23 @@ function openModes() {
     : { left, bottom: `${window.innerHeight - r.top + 6}px`, maxHeight: `${above}px` };
   focusIdx.value = Math.max(0, MODES.findIndex((m) => m.id === state.mode));
   menu.value = menu.value === 'mode' ? null : 'mode';
-  if (menu.value) nextTick(() => { (menuEl.value?.querySelector(`[data-mode-idx="${focusIdx.value}"]`) as HTMLElement | null)?.focus({ preventScroll: true }); checkMore(); });
+  if (menu.value) nextTick(() => {
+    (menuEl.value?.querySelector(`[data-mode-idx="${focusIdx.value}"]`) as HTMLElement | null)?.focus({ preventScroll: true });
+    // Empty chat: the hero stays centred; if the list doesn't fit below, lift the whole block just enough (back on close)
+    if (props.variant === 'hero' && down && menuEl.value) {
+      const deficit = menuEl.value.scrollHeight - below;
+      const block = root.value?.closest('.empty')?.querySelector('.greeting')?.getBoundingClientRect(); // top of the visible hero, not its padding
+      const shift = block ? Math.round(Math.max(0, Math.min(deficit, block.top - 64 - 16))) : 0;
+      if (shift > 0) {
+        emit('lift', shift);
+        dropStyle.value = { ...dropStyle.value, top: `${r.bottom + 6 - shift}px`, maxHeight: `${below + shift}px` };
+        setTimeout(checkMore, 280);
+      }
+    }
+    checkMore();
+  });
 }
+watch(menu, (v) => { if (props.variant === 'hero' && v !== 'mode') emit('lift', 0); });
 function pickMode(id: typeof state.mode) { state.mode = id; menu.value = null; modeSheet.value = false; }
 function onDocDown(e: PointerEvent) {
   const t = e.target as Node;
@@ -241,7 +257,8 @@ defineExpose({ prefill });
 .mp-row-hint { color: var(--fd-muted); font: 400 12px/16px var(--fd-font-sans); text-wrap: pretty; }
 .mp-check { flex-shrink: 0; font-size: 13px; color: var(--fd-accent-text); }
 .mp-sep { flex-shrink: 0; height: 1px; margin: 4px 12px; background: color-mix(in srgb, var(--fd-line) 70%, transparent); }
-.drop-enter-active, .drop-leave-active { transition: opacity .14s ease, transform .14s ease; }
+.mode-drop { transition: top .25s var(--fd-easing, ease), max-height .25s var(--fd-easing, ease); }
+.drop-enter-active, .drop-leave-active { transition: opacity .14s ease, transform .14s ease, top .25s var(--fd-easing, ease), max-height .25s var(--fd-easing, ease); }
 .drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-4px); }
 
 :deep(.p-button.send) { height: 36px; padding: 0 16px; gap: 8px; margin-left: 4px; font: 500 15px/20px var(--fd-font-sans); transition: box-shadow .25s ease, opacity .2s ease, transform .1s ease; }
