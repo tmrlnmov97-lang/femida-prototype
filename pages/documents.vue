@@ -194,7 +194,7 @@ function openMenu(e: Event, f: DocFile) { menuFor.value = f; menuOpenId.value = 
             <i class="pi pi-file-edit" />
             <h2>No drafts yet</h2>
             <p>Documents you prepare in the Document wizard are saved here, so you can come back and finish&nbsp;them.</p>
-            <button class="btn">Open Document wizard<i class="pi pi-arrow-right" /></button>
+            <NuxtLink to="/wizard" class="btn">Open Document wizard<i class="pi pi-arrow-right" /></NuxtLink>
           </div>
           <div v-else-if="!shownDrafts.length" class="notice"><i class="pi pi-search" /><div>No drafts match <b>«{{ query.trim() }}»</b>.</div></div>
           <div v-else class="table" role="table" aria-label="Drafts">
@@ -211,7 +211,7 @@ function openMenu(e: Event, f: DocFile) { menuFor.value = f; menuOpenId.value = 
               <span class="td date">{{ rel(d.edited) }}</span>
               <span class="td act always">
                 <button v-if="d.step === 5" class="link-btn"><i class="pi pi-download" />Download</button>
-                <button class="link-btn">{{ d.step === 5 ? 'Open' : 'Continue' }}</button>
+                <NuxtLink :to="`/wizard?step=${d.step}`" class="link-btn">{{ d.step === 5 ? 'Open' : 'Continue' }}</NuxtLink>
               </span>
             </div>
           </div>
@@ -312,7 +312,7 @@ h1 { margin: 0; font: 600 28px/36px var(--fd-font-serif); letter-spacing: -.005e
 /* Bulk actions in the header */
 .bulk { grid-column: 2 / -1; display: flex; align-items: center; gap: 4px; }
 .bulk-n { margin-right: 12px; color: var(--fd-ink); font: 600 13px/18px var(--fd-font-sans); }
-.link-btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--fd-ink); cursor: pointer; font: 500 13px/18px var(--fd-font-sans); white-space: nowrap; }
+.link-btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--fd-ink); cursor: pointer; text-decoration: none; font: 500 13px/18px var(--fd-font-sans); white-space: nowrap; }
 .link-btn .pi { font-size: 12px; color: var(--fd-muted); }
 .link-btn:hover { background: color-mix(in srgb, var(--fd-ink) 7%, transparent); }
 .link-btn.danger, .link-btn.danger .pi { color: var(--fd-red); }

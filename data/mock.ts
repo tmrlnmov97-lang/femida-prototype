@@ -36,7 +36,7 @@ export const NAV: { label: string; items: NavItem[] }[] = [
 // Tools open from one "Tools" row (flyout) so the chat list keeps its room. Hints are from the brief's screen
 // descriptions; Work plan from the live screen (10.10): plan first, approve, then it runs.
 export const TOOLS: NavItem[] = [
-  { label: 'Document wizard', icon: 'pi pi-file-edit', hint: 'Five guided steps to a Word or PDF document.' },
+  { label: 'Document wizard', icon: 'pi pi-file-edit', hint: 'Five guided steps to a Word or PDF document.', to: '/wizard' },
   { label: 'Materials studio', icon: 'pi pi-sparkles', hint: 'Summaries, memos, timelines and risks from your files.' },
   { label: 'Law on a date', icon: 'pi pi-calendar', hint: 'Pick a topic and a date to see which laws were in force.' },
   { label: 'Work plan', icon: 'pi pi-list-check', hint: 'For complex questions: approve a plan first, then it runs.', to: '/work-plan' },
@@ -165,9 +165,28 @@ export const FILES: DocFile[] = [
   { id: 'f7', name: 'Հայցադիմումի պատասխան.pdf', size: '169 KB', bytes: 169000, date: '4 Oct', ts: 20261004 },
   { id: 'f8', name: 'Lease_agreement_2024.docx', size: '312 KB', bytes: 312000, date: '2 Oct', ts: 20261002, caseId: 'k2' },
 ];
-// Drafts come from the Document wizard (brief: 5 steps — type → sources → analysis → parties → document). SAMPLE.
+// Drafts come from the Document wizard. Step names 1:1 with the live screen (hy/app-wizard.jpg: Տեսակ · Աղբյուր · Վերլուծություն ·
+// Հիմքեր · Փաստաթուղթ). The brief says step 4 is "parties", the live screen says "grounds" — we follow the live screen [OPEN].
 export interface DocDraft { id: string; title: string; kind: string; step: number; edited: string; ts: number }
-export const WIZARD_STEPS = ['Type', 'Sources', 'Analysis', 'Parties', 'Document'];
+export const WIZARD_STEPS = ['Type', 'Source', 'Analysis', 'Grounds', 'Document'];
+// Step 1 types and placeholders are 1:1 with the live screen; the one-line hints are ours. Steps 2–5 content is SAMPLE and only
+// restates the Avagyan v. Poghosyan sample case and SOURCES above (no new legal claims).
+export const WIZARD_TYPES = [
+  { id: 'appeal', label: 'Appeal (appellate/cassation)', hint: 'Against a court judgment', icon: 'pi pi-flag', doc: 'Appeal' },
+  { id: 'claim', label: 'Statement of claim', hint: 'To bring a case to court', icon: 'pi pi-send', doc: 'Statement of claim' },
+  { id: 'opinion', label: 'Legal opinion', hint: 'A written assessment for a client', icon: 'pi pi-file', doc: 'Legal opinion' },
+];
+export const WIZARD_ANALYSIS = ['Reading the source files', 'Searching legislation in force', 'Searching court practice', 'Checking ECHR practice'];
+export const WIZARD_FACTS = [
+  'The employee was dismissed while in hospital.',
+  'The one-month deadline to contest the dismissal was missed.',
+  'Hospital records cover the period that was missed.',
+];
+export const WIZARD_GROUNDS = [
+  { text: 'The deadline was missed for a valid reason: the employee was in hospital.', cites: [1, 2] },
+  { text: 'Hospital records confirm the whole period, so the court may restore the deadline.', cites: [2] },
+  { text: 'Applying the time limit too rigidly would deny access to court.', cites: [3] },
+];
 export const DRAFTS: DocDraft[] = [
   { id: 'd1', title: 'Statement of claim — Avagyan v. Poghosyan', kind: 'Claim', step: 5, edited: 'Today', ts: 20261009 },
   { id: 'd2', title: 'Lease termination notice', kind: 'Letter', step: 3, edited: 'Yesterday', ts: 20261008 },
