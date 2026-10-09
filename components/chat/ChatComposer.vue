@@ -158,12 +158,6 @@ defineExpose({ prefill });
 
       <div class="grow" />
 
-      <button class="skip t-label" :class="{ on: state.skipClarifying }" :aria-pressed="state.skipClarifying"
-              v-tooltip.top="'Answer right away, without follow-up questions'" @click="state.skipClarifying = !state.skipClarifying">
-        <i class="pi" :class="state.skipClarifying ? 'pi-check-circle' : 'pi-question-circle'" />
-        <span>Skip clarifying</span>
-      </button>
-
       <PButton class="send" :class="{ ready: canSend }" label="Ask" icon="pi pi-send" icon-pos="right" rounded :disabled="!canSend" @click="submit" />
     </div>
   </div>
@@ -250,13 +244,6 @@ defineExpose({ prefill });
 .drop-enter-active, .drop-leave-active { transition: opacity .14s ease, transform .14s ease; }
 .drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-4px); }
 
-.skip {
-  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 999px; cursor: pointer;
-  background: transparent; color: var(--fd-muted); transition: background-color .15s, color .15s;
-}
-.skip .pi { font-size: 14px; }
-.skip:hover { background: color-mix(in srgb, var(--fd-ink) 6%, transparent); color: var(--fd-ink); }
-.skip.on { background: var(--fd-accent-soft); color: var(--fd-accent-text); }
 :deep(.p-button.send) { height: 36px; padding: 0 16px; gap: 8px; margin-left: 4px; font: 500 15px/20px var(--fd-font-sans); transition: box-shadow .25s ease, opacity .2s ease, transform .1s ease; }
 :deep(.p-button.send:disabled) { opacity: .4; }
 :deep(.p-button.send.ready) { box-shadow: 0 0 22px var(--fd-glow); }
@@ -271,8 +258,4 @@ defineExpose({ prefill });
 .name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .bar { height: 3px; border-radius: 3px; background: var(--fd-line); overflow: hidden; }
 .bar span { display: block; height: 100%; background: var(--fd-accent); transition: width .06s linear; }
-@media (max-width: 767px) {
-  .skip span { display: none; }
-  .skip { width: 32px; padding: 0; justify-content: center; }
-}
 </style>
