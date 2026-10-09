@@ -37,7 +37,6 @@ function cancelRename() { editing.value = false; }
 
 /* ---------- account menu ---------- */
 const accountPop = ref();
-const lang = ref<'hy' | 'en'>('hy');
 
 onMounted(() => {
   syncTheme();
@@ -100,15 +99,6 @@ onBeforeUnmount(() => themeObs?.disconnect());
       </div>
     </PPopover>
 
-    <div class="ctrl lang" role="group" aria-label="Interface language">
-      <button :class="{ on: lang === 'hy' }" :aria-pressed="lang === 'hy'" @click="lang = 'hy'">ՀԱՅ</button>
-      <button :class="{ on: lang === 'en' }" :aria-pressed="lang === 'en'" @click="lang = 'en'">EN</button>
-    </div>
-
-    <button class="ctrl theme-btn" :aria-label="light ? 'Switch to dark theme' : 'Switch to light theme'" v-tooltip.bottom="light ? 'Dark theme' : 'Light theme'" @click="setTheme(!light)">
-      <i class="pi" :class="light ? 'pi-moon' : 'pi-sun'" :key="String(light)" />
-    </button>
-
     <span class="divider" />
 
     <!-- Account -->
@@ -128,18 +118,12 @@ onBeforeUnmount(() => themeObs?.disconnect());
         <button class="a-item" role="menuitem"><i class="pi pi-credit-card" />Plans</button>
         <button class="a-item" role="menuitem"><i class="pi pi-building" />Organisation</button>
         <div class="a-sep" />
-        <div class="a-row phone-only">
-          <span class="a-row-label"><i class="pi pi-language" />Language</span>
-          <div class="seg" role="group" aria-label="Interface language">
-            <button :class="{ on: lang === 'hy' }" :aria-pressed="lang === 'hy'" @click="lang = 'hy'">ՀԱՅ</button>
-            <button :class="{ on: lang === 'en' }" :aria-pressed="lang === 'en'" @click="lang = 'en'">EN</button>
-          </div>
-        </div>
-        <div class="a-row phone-only">
+        <!-- Theme lives here, out of the bar (user decision 09.10.2026); the product is Armenian-only, so no language switch -->
+        <div class="a-row">
           <span class="a-row-label"><i class="pi pi-palette" />Theme</span>
           <div class="seg" role="group" aria-label="Theme">
-            <button :class="{ on: !light }" :aria-pressed="!light" @click="setTheme(false)">Dark</button>
-            <button :class="{ on: light }" :aria-pressed="light" @click="setTheme(true)">Light</button>
+            <button :class="{ on: !light }" :aria-pressed="!light" aria-label="Dark theme" @click="setTheme(false)"><i class="pi pi-moon" />Dark</button>
+            <button :class="{ on: light }" :aria-pressed="light" aria-label="Light theme" @click="setTheme(true)"><i class="pi pi-sun" />Light</button>
           </div>
         </div>
         <button class="a-item narrow-only" role="menuitem"><i class="pi pi-comment" />Send feedback</button>
@@ -213,19 +197,6 @@ onBeforeUnmount(() => themeObs?.disconnect());
 .counter.low, .counter.empty { background: var(--fd-amber-soft); border-color: color-mix(in srgb, var(--fd-amber) 30%, transparent); color: var(--fd-amber); }
 .counter.low .c-ic, .counter.empty .c-ic, .counter.low .c-info, .counter.empty .c-info { color: var(--fd-amber); }
 
-/* Language: segmented pill, active = accent */
-.lang { gap: 2px; padding: 3px; cursor: default; }
-.lang button {
-  height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--fd-muted); cursor: pointer;
-  font: 600 13px/20px var(--fd-font-sans); letter-spacing: .03em; transition: color .15s, background-color .15s;
-}
-.lang button:hover { color: var(--fd-ink); }
-.lang button.on { background: var(--fd-accent-soft); color: var(--fd-accent-text); }
-
-.theme-btn { justify-content: center; width: 38px; color: var(--fd-ink); }
-.theme-btn .pi { font-size: 16px; animation: spin-in .35s var(--fd-easing, ease); }
-@keyframes spin-in { from { transform: rotate(-90deg) scale(.6); opacity: 0; } }
-
 .divider { width: 1px; height: 28px; margin: 0 4px; background: color-mix(in srgb, var(--fd-line) 80%, transparent); flex-shrink: 0; }
 
 .user {
@@ -276,12 +247,12 @@ onBeforeUnmount(() => themeObs?.disconnect());
 .a-row-label { display: inline-flex; align-items: center; gap: 12px; font: 400 15px/20px var(--fd-font-sans); }
 .seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-bg); }
 .seg button {
-  height: 26px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: var(--fd-muted); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: var(--fd-muted); cursor: pointer;
   font: 500 13px/20px var(--fd-font-sans); transition: color .15s, background-color .15s;
 }
+.seg button .pi { font-size: 12px; }
 .seg button:hover { color: var(--fd-ink); }
 .seg button.on { background: var(--fd-panel-2); color: var(--fd-ink); }
-.phone-only { display: none; }
 .narrow-only { display: none; }
 
 @media (max-width: 1279px) {
@@ -293,11 +264,10 @@ onBeforeUnmount(() => themeObs?.disconnect());
   .menu-btn { display: inline-grid; margin-left: -6px; }
   .title-btn { margin-left: 0; padding: 0; max-width: none; }
   .title-btn:hover { background: transparent; }
-  .home-btn, .home-sep, .lang, .theme-btn, .divider, .chev, .c-info, .sources-btn .lbl { display: none; }
+  .home-btn, .home-sep, .divider, .chev, .c-info, .sources-btn .lbl { display: none; }
   .sources-btn { padding: 0 6px 0 10px; }
   .counter { gap: 6px; padding: 0 12px 0 10px; }
   .counter .full { display: none; } .counter .short { display: inline; }
   .user { padding: 0; height: 38px; }
-  .phone-only { display: flex; }
 }
 </style>
