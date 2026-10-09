@@ -28,8 +28,8 @@ export const NAV: { label: string; items: NavItem[] }[] = [
       { label: 'My cases', icon: 'pi pi-clipboard', to: '/cases' },
       { label: 'Documents', icon: 'pi pi-folder', to: '/documents' },
       { label: 'My notes', icon: 'pi pi-bookmark', to: '/notes' },
-      // Brief: Watch is in scope as "coming soon" (follow topics, alerts on new laws and decisions).
-      { label: 'Watch', icon: 'pi pi-eye', badge: 'Soon' },
+      // Brief + live screenshot (hy|en/app-watch.jpg): follow topics, alerts on new laws and decisions. Made active 10.10 (user decision).
+      { label: 'Watch', icon: 'pi pi-bell', to: '/watch' },
     ],
   },
 ];
@@ -187,4 +187,16 @@ export const NOTES: Note[] = [
       { text: 'The claim was not filed within one month of the dismissal order.' },
       { text: 'Hospital records cover the period that was missed.' },
     ] },
+];
+
+// Watch — live screenshot (artifacts/reference/femida/en/app-watch.jpg): intro, default tags (VAT, Labour disputes, Procurement)
+// and the email note are 1:1. The updates feed is SAMPLE for layout only — replace with the real feed.
+export const WATCH_TAGS = ['VAT', 'Labour disputes', 'Procurement'];
+export const WATCH_SUGGESTIONS = ['Lease', 'Inheritance', 'Family law', 'Corporate', 'Tax disputes', 'Real estate'];
+export interface WatchUpdate { id: string; kind: 'Law' | 'Amendment' | 'Court decision' | 'Tax decision'; title: string; tag: string; date: string; ts: number }
+export const WATCH_UPDATES: WatchUpdate[] = [
+  { id: 'w1', kind: 'Court decision', title: 'Court of Cassation on restoring a missed deadline for a dismissal claim', tag: 'Labour disputes', date: '8 Oct', ts: 20261008 },
+  { id: 'w2', kind: 'Amendment', title: 'Tax Code amendment on VAT for imported services', tag: 'VAT', date: '6 Oct', ts: 20261006 },
+  { id: 'w3', kind: 'Law', title: 'New rules for electronic public procurement', tag: 'Procurement', date: '2 Oct', ts: 20261002 },
+  { id: 'w4', kind: 'Tax decision', title: 'Tax authority clarification on VAT invoices for advance payments', tag: 'VAT', date: '29 Sep', ts: 20260929 },
 ];

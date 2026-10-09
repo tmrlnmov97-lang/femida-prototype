@@ -93,6 +93,8 @@ onBeforeUnmount(() => {
 
 /** Lets starter cards prefill the composer. */
 function prefill(q: string) { text.value = q; nextTick(() => root.value?.querySelector('textarea')?.focus()); }
+// A draft handed over from another page (e.g. Watch → Ask about it) lands in the composer once
+onMounted(() => { if (state.draft) { prefill(state.draft); state.draft = ''; } });
 defineExpose({ prefill });
 </script>
 
