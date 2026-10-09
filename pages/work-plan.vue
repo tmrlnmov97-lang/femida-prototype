@@ -12,12 +12,12 @@ const task = ref('');
 const answers = ref<(string | null)[]>(WORK_QUESTIONS.map(() => null));
 const plan = ref<string[]>([]);
 const editing = ref(false);
-const showSteps = ref(false);
 const done = ref(0);
 const thinking = ref(false);
 const root = ref<HTMLElement>();
 let timer: ReturnType<typeof setInterval> | undefined;
-onBeforeUnmount(() => clearInterval(timer));
+let openTimer: ReturnType<typeof setTimeout> | undefined;
+onBeforeUnmount(() => { clearInterval(timer); clearTimeout(openTimer); });
 
 const scrollTo = (sel: string) => nextTick(() => root.value?.querySelector(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 function later(fn: () => void, ms = 700) { thinking.value = true; setTimeout(() => { thinking.value = false; fn(); }, ms); }
@@ -47,13 +47,14 @@ function finishEdit() { plan.value = plan.value.map((s) => s.trim()).filter(Bool
 function start() {
   finishEdit();
   if (!plan.value.length) return;
-  phase.value = 'running'; done.value = 0; showSteps.value = false;
+  phase.value = 'running'; done.value = 0;
   timer = setInterval(() => {
     done.value++;
-    if (done.value >= plan.value.length) { clearInterval(timer); phase.value = 'done'; scrollTo('#stage-answer'); }
+    // When the last step is done the answer opens by itself — no extra click
+    if (done.value >= plan.value.length) { clearInterval(timer); phase.value = 'done'; scrollTo('#stage-answer'); openTimer = setTimeout(openAnswer, 900); }
   }, 1100);
 }
-function reset() { clearInterval(timer); phase.value = 'compose'; task.value = ''; answers.value = WORK_QUESTIONS.map(() => null); plan.value = []; editing.value = false; showSteps.value = false; done.value = 0; thinking.value = false; }
+function reset() { clearInterval(timer); clearTimeout(openTimer); phase.value = 'compose'; task.value = ''; answers.value = WORK_QUESTIONS.map(() => null); plan.value = []; editing.value = false; done.value = 0; thinking.value = false; }
 function openAnswer() { navigateTo({ path: '/', query: { demo: 'answer' } }); }
 
 /* What the page expects from you right now */
@@ -65,7 +66,7 @@ const status = computed(() => {
   return { tone: 'ok', text: 'Done' };
 });
 const stage = computed(() => (phase.value === 'questions' ? 1 : phase.value === 'done' ? 3 : 2));
-const marker = (n: number) => (n < stage.value || (n === 3 && phase.value === 'done') ? 'ok' : n === stage.value ? 'on' : 'off');
+const marker = (n: number) => (n < stage.value ? 'ok' : n === stage.value ? 'on' : 'off');
 </script>
 
 <template>
@@ -138,7 +139,7 @@ const marker = (n: number) => (n < stage.value || (n === 3 && phase.value === 'd
                     </div>
                   </template>
                 </template>
-                <p v-else class="sub answers">
+                <p v-else class="sub" :class="{ answers: summary.length }">
                   <template v-if="summary.length"><span v-for="s in summary" :key="s.k" class="kv"><span class="k">{{ s.k }}</span>{{ s.v }}</span></template>
                   <template v-else>Skipped</template>
                 </p>
@@ -159,7 +160,6 @@ const marker = (n: number) => (n < stage.value || (n === 3 && phase.value === 'd
                   </h2>
                   <span v-if="phase === 'plan' && !thinking" class="count">{{ plan.length }} {{ plan.length === 1 ? 'step' : 'steps' }}</span>
                   <span v-else-if="phase === 'running'" class="count">{{ done }} of {{ plan.length }} done</span>
-                  <button v-else-if="phase === 'done'" class="ghost sm" :aria-expanded="showSteps" @click="showSteps = !showSteps">{{ showSteps ? 'Hide steps' : 'Show steps' }}</button>
                 </div>
 
                 <p v-if="phase === 'questions'" class="sub">Femida drafts it after the questions.</p>
@@ -169,7 +169,7 @@ const marker = (n: number) => (n < stage.value || (n === 3 && phase.value === 'd
                   <p v-else-if="phase === 'running'" class="sub">You can leave this page — the answer will appear in your&nbsp;chats.</p>
                   <p v-else class="sub">All {{ plan.length }} steps&nbsp;done.</p>
 
-                  <div v-if="phase !== 'done' || showSteps" class="card">
+                  <div v-if="phase !== 'done'" class="card">
                     <div v-if="phase === 'running' || phase === 'done'" class="bar" role="progressbar" :aria-valuenow="done" aria-valuemin="0" :aria-valuemax="plan.length"><span :style="{ width: `${(done / plan.length) * 100}%` }" /></div>
                     <ol class="steps" :class="{ editing }">
                       <li v-for="(s, i) in plan" :key="i" :class="{ ok: phase !== 'plan' && i < done, run: phase === 'running' && i === done, wait: phase === 'running' && i > done }">
@@ -203,12 +203,8 @@ const marker = (n: number) => (n < stage.value || (n === 3 && phase.value === 'd
             <li id="stage-answer" class="stage" :class="marker(3)">
               <span class="mk"><i v-if="marker(3) === 'ok'" class="pi pi-check" /><template v-else>3</template></span>
               <div class="body">
-                <div class="s-head"><h2>{{ phase === 'done' ? 'Your answer is ready' : 'Answer' }}</h2></div>
-                <div v-if="phase === 'done'" class="card result">
-                  <p>It cites the law and court practice behind every&nbsp;conclusion.</p>
-                  <button class="primary" @click="openAnswer">Open the answer<i class="pi pi-arrow-right" /></button>
-                </div>
-                <p v-else class="sub">Appears here when the work is&nbsp;done.</p>
+                <div class="s-head"><h2 :class="{ shimmer: phase === 'done' }">{{ phase === 'done' ? 'Opening the answer…' : 'Answer' }}</h2></div>
+                <p v-if="phase !== 'done'" class="sub">Opens by itself when the work is&nbsp;done.</p>
               </div>
             </li>
           </ol>
@@ -322,9 +318,6 @@ h2 { margin: 0; color: var(--fd-ink); font: 600 18px/28px var(--fd-font-sans); }
 .x:hover { background: color-mix(in srgb, var(--fd-ink) 8%, transparent); color: var(--fd-ink); }
 .x .pi { font-size: 11px; }
 
-/* Answer */
-.result { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 16px 16px 20px; border-color: color-mix(in srgb, var(--fd-accent) 45%, var(--fd-line)); background: color-mix(in srgb, var(--fd-accent-soft) 50%, var(--fd-panel)); }
-.result p { margin: 0; color: var(--fd-ink); font: 400 15px/22px var(--fd-font-sans); text-wrap: pretty; }
 
 .shimmer { background: linear-gradient(90deg, var(--fd-muted) 0%, var(--fd-ink) 50%, var(--fd-muted) 100%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; animation: shimmer 1.6s linear infinite; }
 @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
@@ -346,6 +339,5 @@ h2 { margin: 0; color: var(--fd-ink); font: 600 18px/28px var(--fd-font-sans); }
   .tag { display: none; }
   .card-foot { flex-wrap: wrap; }
   .card-foot .primary { flex: 1; }
-  .result { flex-direction: column; align-items: stretch; padding: 16px; }
 }
 </style>
