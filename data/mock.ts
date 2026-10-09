@@ -27,7 +27,7 @@ export const NAV: { label: string; items: NavItem[] }[] = [
     items: [
       { label: 'My cases', icon: 'pi pi-clipboard', to: '/cases' },
       { label: 'Documents', icon: 'pi pi-folder', to: '/documents' },
-      { label: 'My notes', icon: 'pi pi-bookmark' },
+      { label: 'My notes', icon: 'pi pi-bookmark', to: '/notes' },
       // Brief: Watch is in scope as "coming soon" (follow topics, alerts on new laws and decisions).
       { label: 'Watch', icon: 'pi pi-eye', badge: 'Soon' },
     ],
@@ -150,4 +150,41 @@ export const DRAFTS: DocDraft[] = [
   { id: 'd1', title: 'Statement of claim — Avagyan v. Poghosyan', kind: 'Claim', step: 5, edited: 'Today', ts: 20261009 },
   { id: 'd2', title: 'Lease termination notice', kind: 'Letter', step: 3, edited: 'Yesterday', ts: 20261008 },
   { id: 'd3', title: 'Response to the claim', kind: 'Response', step: 2, edited: '4 Oct', ts: 20261004 },
+];
+
+// My notes — live product screen (hz.femid.ai, 09.10.2026): "Saved answers and Studio materials". The saved answer reuses
+// the SAMPLE answer above; Studio notes only restate the sample case files (no new legal claims). SAMPLE.
+export type StudioKind = 'Timeline' | 'Key facts' | 'Question list';
+export interface Note {
+  id: string; kind: 'answer' | 'studio'; studio?: StudioKind; title: string; excerpt: string;
+  saved: string; ts: number; caseId?: string; chat?: string;
+  items?: { label?: string; text: string }[]; files?: string[];
+}
+export const NOTES: Note[] = [
+  { id: 'n1', kind: 'answer', title: 'Can an employee contest a dismissal after the one-month deadline if they were in hospital?',
+    excerpt: 'Yes. A missed one-month deadline can be restored if the employee had a valid reason, and a hospital stay is one.',
+    saved: 'Today', ts: 20261009, caseId: 'k1', chat: 'Contesting a dismissal' },
+  { id: 'n2', kind: 'studio', studio: 'Timeline', title: 'Timeline — Petrosyan v. Alfa', excerpt: 'Lease signed, termination notice sent, landlord’s penalty claim.',
+    saved: 'Yesterday', ts: 20261008, caseId: 'k2', files: ['Lease_agreement_2024.docx', 'Termination_notice.pdf', 'Payment_history.pdf'],
+    items: [
+      { label: '2 Oct 2024', text: 'Lease agreement signed for commercial premises.' },
+      { label: 'Monthly', text: 'Rent paid on time according to the payment history.' },
+      { label: '6 Oct 2026', text: 'Tenant sends a notice to end the lease early.' },
+      { label: '7 Oct 2026', text: 'Landlord replies with a penalty claim and keeps the deposit.' },
+    ] },
+  { id: 'n3', kind: 'studio', studio: 'Question list', title: 'Questions for the client — Petrosyan v. Alfa', excerpt: 'What to confirm before advising on early termination.',
+    saved: '7 Oct', ts: 20261007, caseId: 'k2', files: ['Lease_agreement_2024.docx'],
+    items: [
+      { text: 'Was the termination notice delivered in writing, and on what date?' },
+      { text: 'Which clause of the lease covers early termination by the tenant?' },
+      { text: 'Has any part of the deposit been returned?' },
+      { text: 'Did the landlord inspect the premises after the notice?' },
+    ] },
+  { id: 'n4', kind: 'studio', studio: 'Key facts', title: 'Key facts — Avagyan v. Poghosyan', excerpt: 'Dismissal during a hospital stay; the one-month deadline was missed.',
+    saved: '5 Oct', ts: 20261005, caseId: 'k1', files: ['Appeal_Avagyan_v_Poghosyan.pdf'],
+    items: [
+      { text: 'The employee was dismissed while in hospital.' },
+      { text: 'The claim was not filed within one month of the dismissal order.' },
+      { text: 'Hospital records cover the period that was missed.' },
+    ] },
 ];

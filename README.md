@@ -41,6 +41,8 @@ Inside the full workspace, `npm run sync` (runs before dev/build) copies the gen
 
 - **Documents** (`/documents`): Files table with upload progress, case links, select → Ask in chat / Download / Delete; Drafts with wizard steps; states via `/documents?state=loading|empty|error`.
 
+- **My notes** (`/notes`): list + reader; saved answers keep clickable citations and sources; Studio materials (timeline, questions, key facts) with the files they are based on; states via `/notes?state=loading|empty|error`.
+
 All copy is an English placeholder until the Armenian pass. Answers, sources, chat titles and case names are SAMPLE.
 
 Demo URLs: `?demo=answer`, `fragment`, `streaming`, `searching`, `deep`, `plan`, `refused`, `error-temporary`, `error-quota`, `error-service`, `low`, `out`, `sheet` (phone).
