@@ -202,7 +202,7 @@ h1 { margin: 0; font: 600 34px/42px var(--fd-font-serif); letter-spacing: -.01em
 .clear:hover { background: color-mix(in srgb, var(--fd-ink) 8%, transparent); color: var(--fd-ink); }
 .clear .pi { font-size: 11px; }
 
-.bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 14px 0 16px; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 14px 0 32px; }
 .hint { color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); text-wrap: pretty; }
 .bar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .link { height: 32px; padding: 0 10px; border: 0; border-radius: var(--fd-radius-md); background: transparent; color: var(--fd-muted); cursor: pointer; font: 500 14px/20px var(--fd-font-sans); }
