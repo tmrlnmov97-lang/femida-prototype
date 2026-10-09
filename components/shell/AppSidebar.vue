@@ -126,7 +126,7 @@ onBeforeUnmount(() => {
         <div class="items" :class="{ shut: !props.collapsed && !open[g.label] }">
           <div class="items-inner">
             <template v-for="it in g.items" :key="it.label">
-              <NuxtLink v-if="it.to" :to="it.to" class="nav-item" :class="{ current: route.path === it.to }" :aria-current="route.path === it.to ? 'page' : undefined"
+              <NuxtLink v-if="it.to" :to="it.to" class="nav-item" :class="{ current: route.path.startsWith(it.to) }" :aria-current="route.path.startsWith(it.to) ? 'page' : undefined"
                         v-tooltip.right="props.collapsed ? it.label : null">
                 <i :class="it.icon" /><span v-if="!props.collapsed" class="lbl">{{ it.label }}</span>
               </NuxtLink>

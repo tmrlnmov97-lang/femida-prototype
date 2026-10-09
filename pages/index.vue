@@ -39,6 +39,7 @@ onMounted(() => {
           <div ref="scroller" class="scroll conversation">
             <ChatEmpty v-if="isEmpty" />
             <div v-else class="thread">
+              <NuxtLink v-if="state.caseCtx" :to="`/cases/${state.caseCtx.id}`" class="case-line"><i class="pi pi-briefcase" />In case <b>{{ state.caseCtx.name }}</b><i class="pi pi-angle-right" /></NuxtLink>
               <template v-for="m in state.messages" :key="m.id">
                 <div v-if="m.role === 'user'" class="user-msg">
                   <div class="bubble t-body">
@@ -73,6 +74,9 @@ onMounted(() => {
 .column { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .conversation { flex: 1; display: flex; flex-direction: column; padding: 0 24px; }
 .thread { display: flex; flex-direction: column; gap: 32px; width: 100%; max-width: 720px; margin: 0 auto; padding: 32px 0 24px; }
+.case-line { display: inline-flex; align-items: center; gap: 8px; align-self: center; height: 32px; padding: 0 12px; border-radius: 999px; background: var(--fd-accent-soft); color: var(--fd-ink); text-decoration: none; font: 400 13px/18px var(--fd-font-sans); }
+.case-line .pi { font-size: 12px; color: var(--fd-accent-text); }
+.case-line b { font-weight: 600; }
 .user-msg { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .bubble { max-width: 560px; padding: 12px 16px; border-radius: 16px 16px 4px 16px; background: var(--fd-panel-2); color: var(--fd-ink); }
 .file-ref { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; color: var(--fd-accent-text); }
