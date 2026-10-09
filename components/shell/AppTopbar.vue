@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 
-const props = defineProps<{ remaining: number; limit: number; sourcesCount?: number | null; sourcesOpen?: boolean }>();
+const props = defineProps<{ remaining: number; limit: number; sourcesCount?: number | null; sourcesOpen?: boolean; crumbs?: { label: string; to?: string }[] }>();
 const emit = defineEmits<{ (e: 'menu'): void; (e: 'sources'): void }>();
 
 /* ---------- theme (the brief: users switch it in the top bar) ---------- */
@@ -37,6 +37,16 @@ onBeforeUnmount(() => themeObs?.disconnect());
   <header class="topbar">
     <button class="icon-btn menu-btn" aria-label="Open navigation" @click="emit('menu')"><i class="pi pi-bars" /></button>
 
+    <!-- Breadcrumbs only when the chat lives somewhere (e.g. inside a case) -->
+    <nav v-if="props.crumbs?.length" class="crumbs" aria-label="Breadcrumb">
+      <template v-for="(cr, i) in props.crumbs" :key="i">
+        <span v-if="i" class="slash" :class="`lvl-${i}`" aria-hidden="true">/</span>
+        <NuxtLink v-if="cr.to" :to="cr.to" class="crumb" :class="`lvl-${i}`">
+          <i v-if="i === 0" class="pi pi-briefcase" />{{ cr.label }}
+        </NuxtLink>
+        <span v-else class="crumb current" :class="`lvl-${i}`" aria-current="page">{{ cr.label }}</span>
+      </template>
+    </nav>
     <div class="spacer" />
 
     <!-- Sources: a stable toggle (doesn't appear/disappear), count = sources in the answer -->
@@ -113,6 +123,19 @@ onBeforeUnmount(() => themeObs?.disconnect());
 }
 .spacer { flex: 1; }
 .menu-btn { display: none; }
+
+/* Breadcrumbs: My cases / Case / Chat */
+.crumbs { display: flex; align-items: center; gap: 2px; min-width: 0; margin-left: -8px; }
+.crumb {
+  display: inline-block; min-width: 0; height: 32px; padding: 0 8px; border-radius: var(--fd-radius-md); overflow: hidden; text-overflow: ellipsis;
+  color: var(--fd-muted); text-decoration: none; white-space: nowrap; font: 500 15px/32px var(--fd-font-sans); transition: color .15s, background-color .15s;
+}
+.crumb .pi { margin-right: 8px; font-size: 13px; }
+a.crumb { flex-shrink: 1; max-width: 220px; }
+a.crumb.lvl-0 { flex-shrink: 0; }
+a.crumb:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 6%, transparent); }
+.crumb.current { flex: 0 1 auto; color: var(--fd-ink); }
+.slash { color: color-mix(in srgb, var(--fd-muted) 55%, transparent); font: 400 15px/20px var(--fd-font-sans); }
 
 /* Right-side controls: one height, one surface */
 .ctrl {
@@ -204,12 +227,17 @@ onBeforeUnmount(() => themeObs?.disconnect());
 
 @media (max-width: 1279px) {
   .meta, .counter .word { display: none; }
+  .crumb.lvl-0, .slash.lvl-1 { display: none; } /* tablet: Case / Chat */
   .narrow-only { display: flex; } /* the floating feedback button is hidden below 1280 */
 }
 @media (max-width: 767px) {
   .topbar { padding: 0 12px; gap: 8px; }
   .menu-btn { display: inline-grid; margin-left: -6px; }
   .divider, .chev, .c-info, .sources-btn .lbl { display: none; }
+  .crumbs { margin-left: 0; }
+  .crumb.current, .slash.lvl-2 { display: none; } /* phone: just the way back to the case */
+  .crumb.lvl-1 { max-width: 46vw; padding: 0 6px; }
+  .crumb.lvl-1::before { content: '‹ '; }
   .sources-btn { padding: 0 6px 0 10px; }
   .counter { gap: 6px; padding: 0 12px 0 10px; }
   .counter .full { display: none; } .counter .short { display: inline; }

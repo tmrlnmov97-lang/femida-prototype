@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 
 // Shared app frame: sidebar (desktop rail / phone drawer) + top bar + feedback button. Pages put their body in the slot.
-const props = defineProps<{ activeChat?: string | null; activeStatus?: 'running' | null; sourcesCount?: number | null; sourcesOpen?: boolean }>();
+const props = defineProps<{ activeChat?: string | null; activeStatus?: 'running' | null; sourcesCount?: number | null; sourcesOpen?: boolean; crumbs?: { label: string; to?: string }[] }>();
 const emit = defineEmits<{ (e: 'new-chat'): void; (e: 'sources'): void }>();
 const { state, newChat, LIMIT } = useChat();
 const route = useRoute();
@@ -21,6 +21,7 @@ function start() {
 }
 function select() {
   drawer.value = false;
+  state.caseCtx = null; state.chatTitle = null; // a sidebar chat is not inside a case → no breadcrumbs
   if (route.path !== '/') navigateTo({ path: '/', query: { demo: 'answer' } }); // prototype: any past chat opens the sample answer
 }
 </script>
@@ -33,7 +34,7 @@ function select() {
     </PDrawer>
 
     <main class="main">
-      <AppTopbar :remaining="state.remaining" :limit="LIMIT" :sources-count="props.sourcesCount" :sources-open="!!props.sourcesOpen"
+      <AppTopbar :remaining="state.remaining" :limit="LIMIT" :sources-count="props.sourcesCount" :sources-open="!!props.sourcesOpen" :crumbs="props.crumbs"
                  @menu="drawer = true" @sources="emit('sources')" />
       <div class="body"><slot /></div>
     </main>

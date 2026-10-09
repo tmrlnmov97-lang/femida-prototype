@@ -25,7 +25,8 @@ const state = reactive({
   sourcesOpen: false,
   activeSource: null as null | number,
   busy: false,
-  caseCtx: null as null | { id: string; name: string; docs: number }, // new chat asked inside a case
+  caseCtx: null as null | { id: string; name: string; docs: number }, // chat that belongs to a case
+  chatTitle: null as null | string, // shown as the last breadcrumb
 });
 
 let seq = 1;
@@ -88,7 +89,7 @@ export function useChat() {
 
   function newChat() {
     clearTimers();
-    state.messages = []; state.busy = false; state.sourcesOpen = false; state.activeSource = null; state.file = null; state.caseCtx = null;
+    state.messages = []; state.busy = false; state.sourcesOpen = false; state.activeSource = null; state.file = null; state.caseCtx = null; state.chatTitle = null;
   }
 
   function approvePlan(msg: AssistantMsg) {

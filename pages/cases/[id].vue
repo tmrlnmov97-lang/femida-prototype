@@ -22,12 +22,15 @@ watch(() => chat.messages.length, (n) => {
   if (!n || !c.value || chat.caseCtx?.id !== c.value.id) return;
   const first = chat.messages.find((m) => m.role === 'user') as { text?: string } | undefined;
   const t = first?.text?.trim() || 'New chat';
-  c.value.chats.unshift({ id: `n${Date.now()}`, title: t.length > 60 ? `${t.slice(0, 58)}…` : t, when: 'Just now' });
+  const title = t.length > 60 ? `${t.slice(0, 58)}…` : t;
+  c.value.chats.unshift({ id: `n${Date.now()}`, title, when: 'Just now' });
+  chat.chatTitle = title;
   c.value.updated = 'Just now'; c.value.ts = 99999999;
   navigateTo('/');
 });
 onBeforeUnmount(() => { if (!chat.messages.length && chat.caseCtx?.id === c.value?.id) chat.caseCtx = null; });
-function openChat() { navigateTo({ path: '/', query: { demo: 'answer' } }); } // prototype: past chats open the sample answer
+// prototype: past chats open the sample answer; the case and chat title ride along for the breadcrumbs
+function openChat(title: string) { navigateTo({ path: '/', query: { demo: 'answer', case: c.value?.id, chat: title } }); }
 
 /* Title / description editing */
 const menu = ref();
@@ -110,7 +113,7 @@ function removeFile(i: number) { c.value?.files.splice(i, 1); }
             <section class="chats" aria-label="Chats in this case">
               <ul v-if="c.chats.length" class="rows">
                 <li v-for="x in c.chats" :key="x.id">
-                  <button class="row" @click="openChat">
+                  <button class="row" @click="openChat(x.title)">
                     <span class="t">{{ x.title }}</span>
                     <span class="when">Last message {{ rel(x.when) }}</span>
                   </button>

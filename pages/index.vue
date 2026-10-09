@@ -18,6 +18,10 @@ const sourcesCount = computed(() => {
 });
 // Sidebar status dot for the open chat while deep research runs
 const activeStatus = computed(() => (lastAssistant.value?.status === 'deep' ? 'running' : null));
+// Breadcrumbs (like a chat inside a Claude project): My cases / Case / Chat
+const crumbs = computed(() => (state.caseCtx
+  ? [{ label: 'My cases', to: '/cases' }, { label: state.caseCtx.name, to: `/cases/${state.caseCtx.id}` }, { label: state.chatTitle || 'New chat' }]
+  : undefined));
 const sourcesLoading = computed(() => !!lastAssistant.value && ['searching', 'deep', 'streaming'].includes(lastAssistant.value.status));
 const modeLabel = (id: string) => MODES.find((m) => m.id === id)?.label;
 
@@ -26,6 +30,9 @@ watch(() => [state.messages.length, lastAssistant.value?.progress, lastAssistant
 });
 onMounted(() => {
   const d = route.query.demo; if (typeof d === 'string') demo(d);
+  // opened from a case page: keep the case for the breadcrumbs
+  const cs = typeof route.query.case === 'string' ? useCases().byId(route.query.case) : undefined;
+  if (cs) { state.caseCtx = { id: cs.id, name: cs.name, docs: cs.files.length }; state.chatTitle = typeof route.query.chat === 'string' ? route.query.chat : null; }
   // phone: the sources sheet opens only on demand (citation tap / Sources button)
   if (window.innerWidth < 768 && d !== 'fragment' && d !== 'sheet') state.sourcesOpen = false;
   if (d === 'sheet') { demo('answer'); state.sourcesOpen = true; }
@@ -33,13 +40,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <AppShell :active-chat="isEmpty ? null : 'c1'" :active-status="activeStatus" :sources-count="sourcesCount" :sources-open="!!sourcesVisible"
+  <AppShell :active-chat="isEmpty || state.caseCtx ? null : 'c1'" :active-status="activeStatus" :sources-count="sourcesCount" :sources-open="!!sourcesVisible" :crumbs="crumbs"
             @new-chat="newChat()" @sources="state.sourcesOpen = !sourcesVisible">
         <div class="column">
           <div ref="scroller" class="scroll conversation">
             <ChatEmpty v-if="isEmpty" />
             <div v-else class="thread">
-              <NuxtLink v-if="state.caseCtx" :to="`/cases/${state.caseCtx.id}`" class="case-line"><i class="pi pi-briefcase" />In case <b>{{ state.caseCtx.name }}</b><i class="pi pi-angle-right" /></NuxtLink>
               <template v-for="m in state.messages" :key="m.id">
                 <div v-if="m.role === 'user'" class="user-msg">
                   <div class="bubble t-body">
@@ -74,9 +80,6 @@ onMounted(() => {
 .column { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .conversation { flex: 1; display: flex; flex-direction: column; padding: 0 24px; }
 .thread { display: flex; flex-direction: column; gap: 32px; width: 100%; max-width: 720px; margin: 0 auto; padding: 32px 0 24px; }
-.case-line { display: inline-flex; align-items: center; gap: 8px; align-self: center; height: 32px; padding: 0 12px; border-radius: 999px; background: var(--fd-accent-soft); color: var(--fd-ink); text-decoration: none; font: 400 13px/18px var(--fd-font-sans); }
-.case-line .pi { font-size: 12px; color: var(--fd-accent-text); }
-.case-line b { font-weight: 600; }
 .user-msg { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .bubble { max-width: 560px; padding: 12px 16px; border-radius: 16px 16px 4px 16px; background: var(--fd-panel-2); color: var(--fd-ink); }
 .file-ref { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; color: var(--fd-accent-text); }
