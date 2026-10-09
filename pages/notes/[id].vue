@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { ANSWER, SOURCES } from '~/data/mock';
 import { rel } from '~/composables/useCases';
 
+// A note reads like the answer in the chat: title, text with sources, and one row of actions under it.
 const route = useRoute();
 const { byId } = useCases();
 const { state: ns, remove } = useNotes();
@@ -17,8 +18,7 @@ const activeSrc = ref<number | null>(null);
 const copied = ref(false);
 function copy() { copied.value = true; setTimeout(() => (copied.value = false), 1500); }
 function openChat() { if (!n.value) return; navigateTo({ path: '/', query: { demo: 'answer', ...(n.value.caseId ? { case: n.value.caseId, chat: n.value.chat ?? n.value.title } : {}) } }); }
-const menu = ref();
-const items = [{ label: 'Remove from notes', icon: 'pi pi-trash', class: 'fd-danger', command: () => { if (n.value) { remove(n.value.id); navigateTo('/notes'); } } }];
+function removeNote() { if (!n.value) return; remove(n.value.id); navigateTo('/notes'); }
 </script>
 
 <template>
@@ -30,50 +30,49 @@ const items = [{ label: 'Remove from notes', icon: 'pi pi-trash', class: 'fd-dan
         <div v-if="!n" class="state">
           <h2>Note not found</h2>
           <p>It may have been removed.</p>
-          <PButton label="Back to My notes" severity="secondary" @click="navigateTo('/notes')" />
+          <NuxtLink to="/notes" class="act">Back to My notes</NuxtLink>
         </div>
 
-        <div v-else-if="!ready" class="skel"><PSkeleton width="20%" height="11px" /><PSkeleton width="80%" height="32px" /><PSkeleton width="40%" height="13px" /><PSkeleton height="80px" /><PSkeleton height="120px" /></div>
+        <div v-else-if="!ready" class="skel"><PSkeleton width="80%" height="30px" /><PSkeleton width="35%" height="13px" /><PSkeleton height="80px" /><PSkeleton height="120px" /></div>
 
-        <article v-else class="note">
-          <span class="kind">{{ n.kind === 'answer' ? 'Saved answer' : `Studio · ${n.studio}` }}</span>
+        <article v-else>
           <h1>{{ n.title }}</h1>
           <p class="meta">
-            <template v-if="n.caseId && byId(n.caseId)"><NuxtLink :to="`/cases/${n.caseId}`" class="link">{{ byId(n.caseId)!.name }}</NuxtLink> · </template>Saved {{ rel(n.saved) }}
+            Saved {{ rel(n.saved) }}<template v-if="n.caseId && byId(n.caseId)"> · <NuxtLink :to="`/cases/${n.caseId}`" class="link">{{ byId(n.caseId)!.name }}</NuxtLink></template>
           </p>
-
-          <div class="actions">
-            <button class="btn" @click="copy"><i class="pi" :class="copied ? 'pi-check' : 'pi-copy'" />{{ copied ? 'Copied' : 'Copy' }}</button>
-            <button v-if="n.kind === 'answer'" class="btn" @click="openChat"><i class="pi pi-comments" />Open chat</button>
-            <NuxtLink v-else-if="n.caseId" :to="`/cases/${n.caseId}`" class="btn"><i class="pi pi-briefcase" />Open case</NuxtLink>
-            <button class="btn icon" aria-label="More actions" aria-haspopup="menu" @click="menu.toggle($event)"><i class="pi pi-ellipsis-h" /></button>
-            <PMenu ref="menu" :model="items" :popup="true" />
-          </div>
 
           <template v-if="n.kind === 'answer'">
             <p class="short"><template v-for="(s, i) in segs(ANSWER.short)" :key="i"><span v-if="'t' in s">{{ s.t }}</span><button v-else class="cite" :class="{ active: activeSrc === s.n }" @click="activeSrc = s.n">{{ s.n }}</button></template></p>
             <p v-for="(para, pi) in ANSWER.paragraphs" :key="pi" class="para"><template v-for="(s, i) in segs(para)" :key="i"><span v-if="'t' in s">{{ s.t }}</span><button v-else class="cite" :class="{ active: activeSrc === s.n }" @click="activeSrc = s.n">{{ s.n }}</button></template></p>
             <ul class="list"><li v-for="(st, si) in ANSWER.steps" :key="si"><template v-for="(s, i) in segs(st)" :key="i"><span v-if="'t' in s">{{ s.t }}</span><button v-else class="cite" :class="{ active: activeSrc === s.n }" @click="activeSrc = s.n">{{ s.n }}</button></template></li></ul>
-            <section class="block">
-              <h2>Sources</h2>
-              <ol class="sources">
-                <li v-for="src in SOURCES" :key="src.n" :class="{ hl: activeSrc === src.n }" @click="activeSrc = src.n">
-                  <span class="sn">{{ src.n }}</span>
-                  <span class="st"><b>{{ src.title }}</b><span>{{ src.kind }} · {{ src.ref }}</span></span>
-                </li>
-              </ol>
-            </section>
           </template>
-
           <template v-else>
             <ol v-if="n.studio === 'Timeline'" class="timeline"><li v-for="(it, i) in n.items" :key="i"><span class="d">{{ it.label }}</span><span>{{ it.text }}</span></li></ol>
-            <ol v-else-if="n.studio === 'Question list'" class="list numbered"><li v-for="(it, i) in n.items" :key="i">{{ it.text }}</li></ol>
+            <ol v-else-if="n.studio === 'Question list'" class="list"><li v-for="(it, i) in n.items" :key="i">{{ it.text }}</li></ol>
             <ul v-else class="list"><li v-for="(it, i) in n.items" :key="i">{{ it.text }}</li></ul>
-            <section v-if="n.files?.length" class="block">
-              <h2>Based on</h2>
-              <div class="files"><span v-for="f in n.files" :key="f" class="file"><i :class="/\.docx?$/i.test(f) ? 'pi pi-file-word' : 'pi pi-file-pdf'" />{{ f }}</span></div>
-            </section>
           </template>
+
+          <!-- One row of actions under the text, like under an answer in the chat -->
+          <div class="actions">
+            <button class="act" @click="copy"><i class="pi" :class="copied ? 'pi-check' : 'pi-copy'" />{{ copied ? 'Copied' : 'Copy' }}</button>
+            <button v-if="n.kind === 'answer'" class="act" @click="openChat"><i class="pi pi-comments" />Open chat</button>
+            <NuxtLink v-else-if="n.caseId" :to="`/cases/${n.caseId}`" class="act"><i class="pi pi-briefcase" />Open case</NuxtLink>
+            <button class="act danger" @click="removeNote"><i class="pi pi-trash" />Remove</button>
+          </div>
+
+          <section v-if="n.kind === 'answer'" class="block">
+            <h2>Sources</h2>
+            <ol class="sources">
+              <li v-for="src in SOURCES" :key="src.n" :class="{ hl: activeSrc === src.n }" @click="activeSrc = src.n">
+                <span class="sn">{{ src.n }}</span>
+                <span class="st"><b>{{ src.title }}</b><span>{{ src.kind }} · {{ src.ref }}</span></span>
+              </li>
+            </ol>
+          </section>
+          <section v-else-if="n.files?.length" class="block">
+            <h2>Based on</h2>
+            <div class="files"><span v-for="f in n.files" :key="f" class="file"><i :class="/\.docx?$/i.test(f) ? 'pi pi-file-word' : 'pi pi-file-pdf'" />{{ f }}</span></div>
+          </section>
         </article>
       </div>
     </div>
@@ -88,28 +87,29 @@ const items = [{ label: 'Remove from notes', icon: 'pi pi-trash', class: 'fd-dan
 .back .pi { font-size: 12px; }
 .skel { display: grid; gap: 14px; }
 
-.kind { color: var(--fd-muted); font: 500 11px/16px var(--fd-font-sans); letter-spacing: .05em; text-transform: uppercase; }
-h1 { margin: 8px 0 8px; color: var(--fd-ink); font: 600 30px/38px var(--fd-font-serif); letter-spacing: -.01em; text-wrap: balance; }
-.meta { margin: 0 0 18px; color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); }
-.link { color: var(--fd-ink); text-decoration: underline; text-decoration-color: var(--fd-line); text-underline-offset: 3px; }
-.link:hover { color: var(--fd-accent-text); text-decoration-color: currentColor; }
-
-.actions { display: flex; gap: 8px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--fd-line); }
-.btn { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--fd-line); background: var(--fd-panel); color: var(--fd-ink); cursor: pointer; text-decoration: none; font: 500 14px/20px var(--fd-font-sans); }
-.btn .pi { font-size: 12px; color: var(--fd-muted); }
-.btn:hover { border-color: color-mix(in srgb, var(--fd-ink) 25%, transparent); }
-.btn.icon { width: 34px; padding: 0; justify-content: center; }
+h1 { margin: 0 0 8px; color: var(--fd-ink); font: 600 28px/36px var(--fd-font-serif); letter-spacing: -.01em; text-wrap: balance; }
+.meta { margin: 0 0 24px; color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); }
+.link { color: var(--fd-muted); text-decoration: underline; text-decoration-color: var(--fd-line); text-underline-offset: 3px; }
+.link:hover { color: var(--fd-ink); }
 
 .short { margin: 0 0 18px; padding: 14px 18px; border-left: 2px solid var(--fd-accent); background: color-mix(in srgb, var(--fd-ink) 3%, transparent); color: var(--fd-ink); font: 400 17px/28px var(--fd-font-sans); }
 .para { margin: 0 0 14px; color: var(--fd-ink); font: 400 16px/27px var(--fd-font-sans); }
-.list { margin: 0 0 24px; padding-left: 22px; color: var(--fd-ink); font: 400 16px/27px var(--fd-font-sans); }
+.list { margin: 0 0 8px; padding-left: 22px; color: var(--fd-ink); font: 400 16px/27px var(--fd-font-sans); }
 .list li { margin-bottom: 6px; }
-.timeline { display: grid; margin: 0 0 24px; padding: 0; list-style: none; }
+.timeline { display: grid; margin: 0 0 8px; padding: 0; list-style: none; }
 .timeline li { display: grid; grid-template-columns: 120px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid color-mix(in srgb, var(--fd-line) 60%, transparent); color: var(--fd-ink); font: 400 16px/24px var(--fd-font-sans); }
 .timeline .d { color: var(--fd-muted); font-size: 14px; }
 
+/* Same look as the actions under an answer in the chat */
+.actions { display: flex; flex-wrap: wrap; gap: 4px; margin: 16px 0 28px -10px; }
+.act { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: var(--fd-muted); cursor: pointer; text-decoration: none; font: 500 14px/20px var(--fd-font-sans); transition: background-color .15s, color .15s; }
+.act .pi { font-size: 13px; }
+.act:hover { background: color-mix(in srgb, var(--fd-ink) 6%, transparent); color: var(--fd-ink); }
+.act.danger:hover { color: var(--fd-red); }
+.act:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 1px; }
+
 .block { padding-top: 18px; border-top: 1px solid var(--fd-line); }
-.block h2 { margin: 0 0 10px; color: var(--fd-muted); font: 500 11px/16px var(--fd-font-sans); letter-spacing: .05em; text-transform: uppercase; }
+.block h2 { margin: 0 0 10px; color: var(--fd-muted); font: 500 12px/16px var(--fd-font-sans); letter-spacing: .04em; text-transform: uppercase; }
 .sources { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
 .sources li { display: flex; align-items: flex-start; gap: 12px; padding: 8px; margin: 0 -8px; border-radius: 8px; cursor: pointer; }
 .sources li:hover, .sources li.hl { background: color-mix(in srgb, var(--fd-accent) 7%, transparent); }
@@ -121,8 +121,8 @@ h1 { margin: 8px 0 8px; color: var(--fd-ink); font: 600 30px/38px var(--fd-font-
 .file { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--fd-line); color: var(--fd-ink); font: 400 13px/18px var(--fd-font-sans); }
 .file .pi { font-size: 12px; color: var(--fd-muted); }
 
-.state { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 56px 24px; text-align: center; border: 1px dashed var(--fd-line); border-radius: var(--fd-radius-xl); }
-.state h2 { margin: 0; font: 600 18px/26px var(--fd-font-sans); color: var(--fd-ink); }
+.state { display: grid; justify-items: center; gap: 8px; padding: 48px 24px; text-align: center; border: 1px dashed var(--fd-line); border-radius: 16px; }
+.state h2 { margin: 0; font: 600 17px/24px var(--fd-font-sans); color: var(--fd-ink); }
 .state p { margin: 0 0 6px; color: var(--fd-muted); }
 
 @media (max-width: 1023px) { .page { padding: 0 24px; } }
