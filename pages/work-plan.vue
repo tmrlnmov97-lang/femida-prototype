@@ -73,11 +73,16 @@ const marker = (n: number) => (n < stage.value ? 'ok' : n === stage.value ? 'on'
   <AppShell>
     <div ref="root" class="scroll page">
       <div class="wrap">
-        <!-- Start: what this is, one field, how it works -->
+        <!-- Start: title, one line, the three steps in one quiet row, the field -->
         <template v-if="phase === 'compose'">
           <header class="head">
             <h1>Work plan</h1>
             <p class="lead">For complex questions. Femida drafts a plan first — the work starts only after you&nbsp;approve&nbsp;it.</p>
+            <ol class="flow" aria-label="How it works">
+              <li class="on"><span class="n">1</span>Describe the task</li>
+              <li><span class="n">2</span>Approve the plan</li>
+              <li><span class="n">3</span>Get a cited answer</li>
+            </ol>
           </header>
 
           <div class="composer">
@@ -87,14 +92,6 @@ const marker = (n: number) => (n < stage.value ? 'ok' : n === stage.value ? 'on'
             </div>
           </div>
 
-          <section class="how" aria-labelledby="how-title">
-            <h2 id="how-title">How it works</h2>
-            <ol>
-              <li><span class="n">1</span><b>Describe the task</b><span>The situation and the result you&nbsp;need.</span></li>
-              <li><span class="n">2</span><b>Approve the plan</b><span>Answer a few questions, then check and edit the&nbsp;steps.</span></li>
-              <li><span class="n">3</span><b>Get a cited answer</b><span>Every conclusion links to the law and court&nbsp;practice.</span></li>
-            </ol>
-          </section>
         </template>
 
         <!-- Work in progress -->
@@ -229,15 +226,13 @@ h1 { margin: 0; color: var(--fd-ink); font: 600 32px/40px var(--fd-font-serif); 
 .composer textarea::placeholder { color: var(--fd-muted); }
 .composer-foot { display: flex; justify-content: flex-end; margin-top: 8px; }
 
-/* How it works: the same numbered markers as the stages later, joined by one line */
-.how { margin-top: 40px; }
-.how h2 { margin: 0 0 20px; color: var(--fd-muted); font: 500 14px/20px var(--fd-font-sans); }
-.how ol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin: 0; padding: 0; list-style: none; }
-.how li { position: relative; display: grid; align-content: start; }
-.how li:not(:last-child)::after { content: ''; position: absolute; top: 14px; left: 40px; right: -12px; height: 1px; background: var(--fd-line); }
-.how .n { display: grid; place-items: center; width: 28px; height: 28px; margin-bottom: 12px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--fd-accent) 40%, transparent); background: var(--fd-accent-soft); color: var(--fd-accent-text); font: 600 13px/1 var(--fd-font-sans); }
-.how b { color: var(--fd-ink); font: 600 15px/22px var(--fd-font-sans); }
-.how li > span:last-child { max-width: 220px; margin-top: 4px; color: var(--fd-muted); font: 400 14px/22px var(--fd-font-sans); text-wrap: pretty; }
+/* The three steps: one quiet row under the lead, step 1 marked as where you are */
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 12px 0 0; padding: 0; list-style: none; }
+.flow li { display: inline-flex; align-items: center; gap: 8px; color: var(--fd-muted); font: 500 14px/20px var(--fd-font-sans); }
+.flow li + li::before { content: ''; width: 24px; height: 1px; margin-right: 4px; background: var(--fd-line); }
+.flow .n { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--fd-line); font: 600 11px/1 var(--fd-font-sans); }
+.flow li.on { color: var(--fd-ink); }
+.flow li.on .n { border-color: transparent; background: var(--fd-accent-soft); color: var(--fd-accent-text); }
 
 /* Buttons */
 .primary, .secondary, .ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; cursor: pointer; white-space: nowrap; font: 500 14px/20px var(--fd-font-sans); transition: background-color .15s, border-color .15s, color .15s, opacity .15s; }
@@ -331,14 +326,8 @@ h2 { margin: 0; color: var(--fd-ink); font: 600 18px/28px var(--fd-font-sans); }
   .task { font-size: 20px; line-height: 28px; }
   .lead { font-size: 15px; line-height: 24px; }
   .composer-foot { flex-direction: column; align-items: stretch; }
-  .how { margin-top: 32px; }
-  .how ol { grid-template-columns: 1fr; gap: 0; }
-  .how li { grid-template-columns: 28px 1fr; column-gap: 12px; padding-bottom: 20px; }
-  .how li:last-child { padding-bottom: 0; }
-  .how li:not(:last-child)::after { top: 36px; bottom: 4px; left: 13.5px; right: auto; width: 1px; height: auto; }
-  .how .n { grid-row: span 2; margin-bottom: 0; }
-  .how b { line-height: 28px; }
-  .how li > span:last-child { max-width: none; margin-top: 0; }
+  .flow { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .flow li + li::before { display: none; }
   .stage { column-gap: 12px; }
   .qs { padding: 16px; }
   .steps { padding: 4px 16px; }
