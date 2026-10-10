@@ -83,6 +83,9 @@ function download() { downloading.value = true; setTimeout(() => { downloading.v
             <button v-for="t in TABS" :key="t.id" class="tab" :class="{ on: tab === t.id }" :aria-current="tab === t.id ? 'page' : undefined" @click="go(t.id)">
               <i :class="t.icon" />{{ t.label }}
             </button>
+            <!-- Sign out stands on its own, as on the live page — not inside a section -->
+            <div class="tabs-sep" />
+            <button class="tab signout"><i class="pi pi-sign-out" />Sign out</button>
           </nav>
 
           <div class="content">
@@ -222,13 +225,11 @@ function download() { downloading.value = true; setTimeout(() => { downloading.v
                       <button class="btn secondary" :disabled="downloading" @click="download"><i class="pi" :class="downloaded ? 'pi-check' : 'pi-download'" />{{ downloading ? 'Preparing…' : downloaded ? 'Downloaded' : 'Download' }}</button>
                     </div>
                   </div>
-                  <div class="row">
-                    <div class="r-text"><span class="r-label">Sign out</span><span class="r-hint">On this device</span></div>
-                    <button class="btn secondary danger"><i class="pi pi-sign-out" />Sign out</button>
-                  </div>
                 </div>
               </section>
             </template>
+
+            <button class="btn secondary danger signout-m"><i class="pi pi-sign-out" />Sign out</button>
           </div>
         </div>
       </div>
@@ -251,6 +252,10 @@ h1 { margin: 0; color: var(--fd-ink); font: 600 32px/40px var(--fd-font-serif); 
 .tab:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 5%, transparent); }
 .tab.on { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 8%, transparent); }
 .tab.on .pi { color: var(--fd-accent-text); }
+.tabs-sep { height: 1px; margin: 8px 12px; background: var(--fd-line); }
+.tab.signout { color: var(--fd-red); }
+.tab.signout:hover { color: var(--fd-red); background: color-mix(in srgb, var(--fd-red) 8%, transparent); }
+.btn.signout-m { display: none; }
 
 .content { display: grid; gap: 40px; min-width: 0; max-width: 680px; }
 .skel { display: grid; gap: 16px; }
@@ -345,6 +350,8 @@ h2 { margin: 0 0 12px; color: var(--fd-ink); font: 600 18px/26px var(--fd-font-s
   .tabs::-webkit-scrollbar { display: none; }
   .tab { flex-shrink: 0; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--fd-line); font-size: 14px; }
   .tab.on { border-color: transparent; }
+  .tabs-sep, .tab.signout { display: none; }
+  .btn.signout-m { display: inline-flex; justify-self: start; }
   .content { gap: 32px; }
   .grid { grid-template-columns: 1fr; }
   .row { gap: 12px; padding: 14px 16px; }
