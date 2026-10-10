@@ -122,31 +122,31 @@ const open = ref<number | null>(0);
         </div>
         <div class="steps">
           <div class="step">
-            <div class="s-visual">
+            <div class="s-visual"><div class="s-stage">
               <img class="s-ellipse" :src="A('83fdb')" alt="" />
               <div class="s-composer">
                 <p>Can I still contest my dismissal after six weeks?</p>
                 <div class="s-row"><img :src="A('dc98d')" alt="" width="18" height="18" /><span class="s-spacer" /><span class="s-send"><img :src="A('fe5e6')" alt="" width="16" height="16" /></span></div>
               </div>
-            </div>
+            </div></div>
             <div class="s-head"><span class="grad">01</span><span>Ask in Armenian</span></div>
             <p class="s-body">Type the question the way you would ask a colleague. Attach a contract or a decision if you have one.</p>
           </div>
           <div class="step">
-            <div class="s-visual">
+            <div class="s-visual"><div class="s-stage">
               <img class="s-ellipse" :src="A('83fdb')" alt="" />
               <div class="s-src" style="top: 35px"><img :src="A('71232')" alt="" width="18" height="18" /><span>Labour Code · Art. 265</span><img :src="A('6987b')" alt="" width="18" height="18" /></div>
               <div class="s-src" style="top: 83px"><img :src="A('a728b')" alt="" width="18" height="18" /><span>Court of Cassation · 2021</span><img :src="A('6987b')" alt="" width="18" height="18" /></div>
               <div class="s-src" style="top: 131px"><img :src="A('496e6')" alt="" width="18" height="18" /><span>ECHR · Article 6</span><img :src="A('12f8b')" alt="" width="18" height="18" /></div>
-            </div>
+            </div></div>
             <div class="s-head"><span class="grad">02</span><span>We find the sources</span></div>
             <p class="s-body">femid.ai searches legislation in force, court practice and ECHR decisions for exactly your situation.</p>
           </div>
           <div class="step">
-            <div class="s-visual">
+            <div class="s-visual"><div class="s-stage">
               <img class="s-ellipse" :src="A('83fdb')" alt="" />
               <p class="s-answer">Yes, if you learned of the order late: the one-month period runs from the day you learned of it <b>[1]</b>, and courts restore it for a valid reason <b>[2]</b>.</p>
-            </div>
+            </div></div>
             <div class="s-head"><span class="grad">03</span><span>Get an answer you can check</span></div>
             <p class="s-body">A reasoned answer where every statement links to its source — or an honest “no source found”.</p>
           </div>
@@ -263,7 +263,8 @@ p { margin: 0; }
 img { display: block; flex-shrink: 0; max-width: none; }
 a { color: inherit; text-decoration: none; }
 .grow { flex: 1; min-width: 1px; }
-.container { width: 1200px; margin: 0 auto; }
+/* Content width: up to 1320 with 48px side gutters (was a fixed 1200 — the page looked squeezed) */
+.container { width: min(1320px, calc(100% - 96px)); margin: 0 auto; }
 .grad { background: linear-gradient(90deg, #cfe6d9, #7fb89a); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .eyebrow { color: var(--fd-accent-text); font: 600 14px/20px var(--fd-font-sans); letter-spacing: 1.12px; text-transform: uppercase; white-space: nowrap; }
 .eyebrow.muted { color: var(--fd-muted); }
@@ -293,7 +294,7 @@ a { color: inherit; text-decoration: none; }
 .hero { position: relative; display: flex; flex-direction: column; align-items: center; gap: 51px; padding-bottom: 96px; overflow: hidden; }
 .hero-glow-top { position: absolute; left: calc(50% - 650px); top: -300px; width: 1300px; height: 780px; }
 .header { position: relative; display: flex; justify-content: center; width: 100%; height: 72px; flex-shrink: 0; background: var(--fd-bg); }
-.h-in { display: flex; align-items: center; gap: 32px; width: 1200px; }
+.h-in { display: flex; align-items: center; gap: 32px; width: min(1320px, calc(100% - 96px)); }
 .h-nav { display: flex; gap: 32px; color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); white-space: nowrap; }
 .h-nav a:hover { color: var(--fd-ink); }
 .h-actions { display: flex; align-items: center; gap: 12px; }
@@ -303,7 +304,7 @@ a { color: inherit; text-decoration: none; }
 .headline .l1 { color: var(--fd-ink); }
 .hero-lead { width: 580px; text-align: center; }
 .ctas { display: flex; gap: 12px; align-items: flex-start; }
-.hero-chat { width: 720px; text-align: left; }
+.hero-chat { width: 760px; text-align: left; }
 .notes { display: flex; align-items: center; gap: 24px; }
 .note { display: flex; align-items: center; gap: 8px; color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); white-space: nowrap; }
 
@@ -338,9 +339,10 @@ a { color: inherit; text-decoration: none; }
 .how { padding: 96px 0; }
 .how-in { display: flex; flex-direction: column; align-items: center; gap: 48px; }
 .how-head { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.steps { display: flex; align-items: flex-start; gap: 24px; width: 100%; }
-.step { display: flex; flex-direction: column; gap: 24px; width: 384px; flex-shrink: 0; }
-.s-visual { position: relative; width: 384px; height: 200px; overflow: hidden; border-radius: 16px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 24px; width: 100%; }
+.step { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.s-visual { position: relative; width: 100%; height: 200px; overflow: hidden; border-radius: 16px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
+.s-stage { position: absolute; top: 0; bottom: 0; left: 50%; width: 384px; transform: translateX(-50%); } /* Figma composition, centred */
 .s-ellipse { position: absolute; left: 21px; top: -151px; width: 340px; height: 240px; }
 .s-composer { position: absolute; left: 31px; top: 35px; display: flex; flex-direction: column; gap: 12px; width: 320px; padding: 16px 16px 12px; border-radius: 8px; border: 1.5px solid var(--fd-accent); background: var(--fd-panel-2); }
 .s-composer p { color: var(--fd-ink); font: 400 16px/26px var(--fd-font-sans); }
@@ -369,7 +371,7 @@ a { color: inherit; text-decoration: none; }
 .pricing { padding: 96px 0; }
 .pr-in { display: flex; flex-direction: column; align-items: center; gap: 48px; }
 .pr-head { display: flex; flex-direction: column; align-items: center; gap: 16px; white-space: nowrap; }
-.trial { display: flex; align-items: center; gap: 16px; width: 1200px; height: 80px; padding: 24px 24px 24px 32px; border-radius: 16px; border: 1px solid rgba(143, 199, 168, .55); background: var(--fd-accent-soft); }
+.trial { display: flex; align-items: center; gap: 16px; width: 100%; height: 80px; padding: 24px 24px 24px 32px; border-radius: 16px; border: 1px solid rgba(143, 199, 168, .55); background: var(--fd-accent-soft); }
 .tr-text { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 1px; white-space: nowrap; }
 .tr-text b { color: var(--fd-ink); font: 600 18px/26px var(--fd-font-sans); }
 .tr-text span { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
@@ -400,10 +402,10 @@ a { color: inherit; text-decoration: none; }
 /* ============ CTA ============ */
 .cta { padding: 48px 0; }
 .band { position: relative; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 96px 0; overflow: hidden; border-radius: 16px; border: 1px solid rgba(143, 199, 168, .55); background: var(--fd-panel); }
-.b-glow { position: absolute; left: 99px; top: -201px; width: 1000px; height: 520px; }
-.b-grid { position: absolute; left: -1px; top: -41px; width: 1201px; height: 520px; pointer-events: none;
+.b-glow { position: absolute; left: calc(50% - 501px); top: -201px; width: 1000px; height: 520px; }
+.b-grid { position: absolute; left: -1px; top: -41px; width: calc(100% + 1px); height: 520px; pointer-events: none;
   background-image: linear-gradient(90deg, var(--fd-ink) 1px, transparent 1px), linear-gradient(180deg, var(--fd-ink) 1px, transparent 1px); background-size: 60px 60px;
-  -webkit-mask-size: 1200px 520px; mask-size: 1200px 520px; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; mask-mode: alpha; }
+  -webkit-mask-size: 100% 520px; mask-size: 100% 520px; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; mask-mode: alpha; }
 .b-title { position: relative; display: flex; flex-direction: column; align-items: center; white-space: nowrap; }
 .band > .lead, .band > .ctas, .band > .b-note { position: relative; }
 .b-note { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); white-space: nowrap; }

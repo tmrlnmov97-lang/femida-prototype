@@ -1,5 +1,6 @@
 <script setup lang="ts">
-// Features bento (Figma 36:336) — six tiles, visuals transcribed 1:1 (absolute positions inside each tile's visual).
+// Features bento (Figma 36:336) on a fluid 3-column grid; each visual is the Figma composition 1:1
+// (absolute positions on a 790 / 382 px stage) centred in its tile, so the grid can widen without the visuals drifting.
 const A = useLandingAsset();
 </script>
 
@@ -7,8 +8,8 @@ const A = useLandingAsset();
   <div class="bento">
     <!-- Row 1 -->
     <div class="row">
-      <div class="tile w792 h420">
-        <div class="visual">
+      <div class="tile wide h420">
+        <div class="visual"><div class="stage">
           <img class="glow" :src="A('658fa')" alt="" style="left: 39.6px; width: 712.8px" />
           <p class="answer">An employee can contest a dismissal in court within one month of receiving the order <b>[1]</b>. If the order was not handed over, the period runs from the day they learned of it <b>[2]</b>.</p>
           <div class="src-card">
@@ -18,12 +19,12 @@ const A = useLandingAsset();
             <div class="quote">“…a claim may be filed with the court within one month of the day the order was handed over…”</div>
             <div class="link">Open official text<img :src="A('83908')" alt="" width="16" height="16" /></div>
           </div>
-        </div>
+        </div></div>
         <div class="text"><p class="t">Answers with citations</p><p class="b">Each statement carries a marker. Tap it and the exact article or decision opens beside the answer — highlighted.</p></div>
       </div>
 
-      <div class="tile w384 h420">
-        <div class="visual">
+      <div class="tile h420">
+        <div class="visual"><div class="stage">
           <img class="glow" :src="A('4195d')" alt="" style="left: 19.2px; width: 345.6px" />
           <div class="date"><img :src="A('db2ef')" alt="" width="18" height="18" /><span>15 March 2019</span></div>
           <div class="abs line" style="left: 40px; top: 176px; width: 304px; height: 2px" />
@@ -36,15 +37,15 @@ const A = useLandingAsset();
           <img class="abs" :src="A('baf05')" alt="" width="14" height="14" style="left: 329px; top: 170px" />
           <span class="abs cap" style="left: 285px; top: 194px">Edition 3</span>
           <span class="abs cap on" style="left: 148.5px; top: 224px">In force on that date</span>
-        </div>
+        </div></div>
         <div class="text"><p class="t">Law on a date</p><p class="b">Pick a date and see which version of the law was in force then.</p></div>
       </div>
     </div>
 
     <!-- Row 2 -->
     <div class="row">
-      <div class="tile w384 h400">
-        <div class="visual">
+      <div class="tile h400">
+        <div class="visual"><div class="stage">
           <img class="glow" :src="A('4195d')" alt="" style="left: 19.2px; width: 345.6px" />
           <div class="file abs" style="left: 32px; top: 36px">
             <img :src="A('067e5')" alt="" width="24" height="24" />
@@ -54,12 +55,12 @@ const A = useLandingAsset();
           <div class="clause abs" style="top: 112px"><span class="tag amber">Deadline</span><span class="bone8" style="width: 170px" /></div>
           <div class="clause abs" style="top: 160px"><span class="tag accent">Obligation</span><span class="bone8" style="width: 150px" /></div>
           <div class="clause abs" style="top: 208px"><span class="tag red">Risk</span><span class="bone8" style="width: 190px" /></div>
-        </div>
+        </div></div>
         <div class="text"><p class="t">Document analysis</p><p class="b">Upload a contract or a decision. Deadlines, obligations and risks come back flagged.</p></div>
       </div>
 
-      <div class="tile w384 h400">
-        <div class="visual">
+      <div class="tile h400">
+        <div class="visual"><div class="stage">
           <img class="glow" :src="A('4195d')" alt="" style="left: 19.2px; width: 345.6px" />
           <div class="abs line" style="left: 44px; top: 55px; width: 296px; height: 2px" />
           <div class="abs acc" style="left: 44px; top: 55px; width: 222px; height: 2px" />
@@ -81,25 +82,25 @@ const A = useLandingAsset();
               <span class="chip"><img :src="A('b78bc')" alt="" width="14" height="14" />PDF</span>
             </div>
           </div>
-        </div>
+        </div></div>
         <div class="text"><p class="t">Drafting wizard</p><p class="b">Five steps from a short description to an appeal or a claim. Export to Word or PDF.</p></div>
       </div>
 
-      <div class="tile w384 h400">
-        <div class="visual">
+      <div class="tile h400">
+        <div class="visual"><div class="stage">
           <img class="glow" :src="A('4195d')" alt="" style="left: 19.2px; width: 345.6px" />
           <div class="search abs"><img :src="A('d38e7')" alt="" width="18" height="18" /><span>missed deadline restored, illness</span></div>
           <div class="result abs" style="top: 96px"><div class="r-top"><span class="tag">Cassation</span><span class="r-meta">Civil · 2021</span></div><p class="r-title">Deadline restored: hospital stay</p></div>
           <div class="result abs" style="top: 168px"><div class="r-top"><span class="tag">Appeal</span><span class="r-meta">Civil · 2020</span></div><p class="r-title">Restoration refused: no proof</p></div>
-        </div>
+        </div></div>
         <div class="text"><p class="t">Court practice search</p><p class="b">Find how courts actually decided cases like yours — Court of Cassation, appeals, first instance.</p></div>
       </div>
     </div>
 
     <!-- Row 3 -->
     <div class="row">
-      <div class="tile w792 h400">
-        <div class="visual">
+      <div class="tile wide h400">
+        <div class="visual"><div class="stage">
           <img class="glow" :src="A('658fa')" alt="" style="left: 39.6px; width: 712.8px" />
           <div class="deep abs">
             <div class="d-head"><img :src="A('9e325')" alt="" width="20" height="20" /><p class="d-title">Deep research · about 4 min left</p><span class="d-found">12 sources found</span></div>
@@ -114,17 +115,17 @@ const A = useLandingAsset();
             <p class="d-note">You can leave this page — we'll notify you and mark the chat when the answer is ready.</p>
           </div>
           <div class="fade abs" />
-        </div>
+        </div></div>
         <div class="text"><p class="t">Deep research</p><p class="b">For hard questions it plans the research, works through legislation, cassation practice and ECHR — and you can leave while it works.</p></div>
       </div>
 
-      <div class="tile w384 h400">
-        <div class="visual">
+      <div class="tile h400">
+        <div class="visual"><div class="stage">
           <img class="glow" :src="A('4195d')" alt="" style="left: 19.2px; width: 345.6px" />
           <div class="avatars abs"><span class="av">AH</span><span class="av">DK</span><span class="av">MS</span><span class="av more">+3</span></div>
           <div class="invite abs"><img :src="A('82125')" alt="" width="16" height="16" /><span>Invite a colleague</span></div>
           <div class="seats abs"><p>Organisation seats</p><div class="bar"><span style="width: 224px" /></div></div>
-        </div>
+        </div></div>
         <div class="text"><p class="t">Built for firms</p><p class="b">Shared seats and invites for your team. Counsel mode works under an organisation contract.</p></div>
       </div>
     </div>
@@ -135,10 +136,12 @@ const A = useLandingAsset();
 p { margin: 0; }
 img { display: block; flex-shrink: 0; }
 .bento { display: flex; flex-direction: column; gap: 24px; }
-.row { display: flex; gap: 24px; align-items: flex-start; }
-.tile { display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; border-radius: 16px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
-.w792 { width: 792px; } .w384 { width: 384px; } .h420 { height: 420px; } .h400 { height: 400px; }
+.row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.tile { display: flex; flex-direction: column; min-width: 0; overflow: hidden; border-radius: 16px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
+.tile.wide { grid-column: span 2; } .h420 { height: 420px; } .h400 { height: 400px; }
 .visual { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.stage { position: absolute; top: 0; bottom: 0; left: 50%; width: 382px; transform: translateX(-50%); }
+.wide .stage { width: 790px; }
 .glow { position: absolute; top: -170px; height: 300px; max-width: none; }
 .abs { position: absolute; }
 .text { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding: 0 32px 32px; }
