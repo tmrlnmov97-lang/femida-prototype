@@ -86,7 +86,7 @@ const open = ref<number | null>(0);
           <h2 class="section-title" style="width: 760px">One assistant for the whole legal question.</h2>
           <p class="lead" style="width: 620px">From a quick answer to a drafted appeal — every step stays tied to the law it rests on.</p>
         </div>
-        <FeatureBento />
+        <FeatureShowcase />
       </div>
     </section>
 
@@ -315,7 +315,7 @@ a { color: inherit; text-decoration: none; }
 
 /* ============ Features ============ */
 .features { padding: 96px 0; }
-.f-head { display: flex; flex-direction: column; gap: 16px; margin-bottom: 48px; }
+.f-head { display: flex; flex-direction: column; gap: 16px; margin-bottom: 96px; }
 
 /* ============ Manifesto ============ */
 .manifesto { position: relative; padding: 96px 0; background: var(--fd-panel); overflow: hidden; }
