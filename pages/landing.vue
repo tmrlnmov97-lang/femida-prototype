@@ -43,7 +43,6 @@ const open = ref<number | null>(0);
   <div class="site">
     <!-- ============ Hero ============ -->
     <section class="hero">
-      <img class="hero-glow-window" :src="A('9bcd9')" alt="" />
       <img class="hero-glow-top" :src="A('b18b6')" alt="" />
 
       <header class="header">
@@ -69,17 +68,6 @@ const open = ref<number | null>(0);
         </div>
       </div>
 
-      <div class="product"><HeroWindow /></div>
-
-      <div class="hero-fade" />
-      <div class="callout left">
-        <span class="c-mark"><img :src="A('a9eab')" alt="" width="18" height="18" /></span>
-        <span class="c-text"><b>Every claim, linked</b><span>Tap [1] to open the exact article</span></span>
-      </div>
-      <div class="callout right">
-        <span class="c-mark"><img :src="A('6abec')" alt="" width="18" height="18" /></span>
-        <span class="c-text"><b>No source? No answer.</b><span>It tells you instead of guessing</span></span>
-      </div>
     </section>
 
     <!-- ============ Grounded in ============ -->
@@ -300,11 +288,9 @@ a { color: inherit; text-decoration: none; }
 .tag.amber { background: var(--fd-amber-soft); color: var(--fd-amber); }
 .tag.accent { background: var(--fd-accent-soft); color: var(--fd-accent-text); }
 
-/* ============ Hero (1387 tall, glows and callouts placed against a 1440 frame) ============ */
-/* Height follows the content (the chat box is taller than the two buttons it replaced); the glow, fade and callouts
-   below the intro are anchored to the bottom, at the same distances as in the 1387px Figma frame */
-.hero { position: relative; display: flex; flex-direction: column; align-items: center; gap: 51px; overflow: hidden; }
-.hero-glow-window { position: absolute; left: calc(50% - 500px); bottom: 303px; width: 1000px; height: 420px; }
+/* ============ Hero ============ */
+/* Header + intro with the chat box (the static product shot was removed on user request); height follows the content */
+.hero { position: relative; display: flex; flex-direction: column; align-items: center; gap: 51px; padding-bottom: 96px; overflow: hidden; }
 .hero-glow-top { position: absolute; left: calc(50% - 650px); top: -300px; width: 1300px; height: 780px; }
 .header { position: relative; display: flex; justify-content: center; width: 100%; height: 72px; flex-shrink: 0; background: var(--fd-bg); }
 .h-in { display: flex; align-items: center; gap: 32px; width: 1200px; }
@@ -320,15 +306,6 @@ a { color: inherit; text-decoration: none; }
 .hero-chat { width: 720px; text-align: left; }
 .notes { display: flex; align-items: center; gap: 24px; }
 .note { display: flex; align-items: center; gap: 8px; color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); white-space: nowrap; }
-.product { position: relative; display: flex; flex-direction: column; height: 695px; padding-top: 64px; flex-shrink: 0; }
-.hero-fade { position: absolute; left: 0; bottom: -41px; width: 100%; height: 280px; background: linear-gradient(180deg, transparent, var(--fd-bg)); pointer-events: none; }
-.callout { position: absolute; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 12px; border-radius: 12px; border: 1px solid var(--fd-line); background: var(--fd-panel); backdrop-filter: blur(12px); box-shadow: 0 16px 40px 0 rgba(0, 0, 0, .35); }
-.callout.left { left: calc(50% - 680px); bottom: 45px; }
-.callout.right { left: calc(50% + 401px); bottom: 3px; }
-.c-mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 999px; background: var(--fd-accent-soft); }
-.c-text { display: flex; flex-direction: column; line-height: 20px; white-space: nowrap; }
-.c-text b { color: var(--fd-ink); font: 500 15px/20px var(--fd-font-sans); }
-.c-text span { color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); }
 
 /* ============ Grounded in ============ */
 .grounded { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 48px 0; }
