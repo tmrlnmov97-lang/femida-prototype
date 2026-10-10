@@ -23,6 +23,7 @@ const usagePop = ref();
 
 /* ---------- account menu ---------- */
 const accountPop = ref();
+const requestOpen = useState('fd-request-open', () => false); // phone / tablet: no floating button, the form opens from here
 
 onMounted(() => {
   syncTheme();
@@ -108,7 +109,7 @@ onBeforeUnmount(() => themeObs?.disconnect());
             <button :class="{ on: light }" :aria-pressed="light" aria-label="Light theme" @click="setTheme(true)"><i class="pi pi-sun" />Light</button>
           </div>
         </div>
-        <button class="a-item narrow-only" role="menuitem"><i class="pi pi-comment" />Send feedback</button>
+        <button class="a-item narrow-only" role="menuitem" @click="accountPop.hide(); requestOpen = true"><i class="pi pi-envelope" />Send a request</button>
         <div class="a-sep" />
         <button class="a-item danger" role="menuitem"><i class="pi pi-sign-out" />Log out</button>
       </div>
