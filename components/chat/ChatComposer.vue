@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
-import { MODES } from '~/data/mock';
+import { MODES, FILES, CASES } from '~/data/mock';
 
 const props = withDefaults(defineProps<{ variant?: 'hero' | 'dock'; placeholder?: string }>(), { variant: 'hero', placeholder: 'Ask a legal question or attach a document…' });
 const emit = defineEmits<{ (e: 'lift', px: number): void }>();
@@ -77,6 +77,21 @@ function attach(name: string, size: string) {
   attachPop.value?.hide(); state.file = { name, size }; uploading.value = 0;
   const t = setInterval(() => { uploading.value = Math.min(100, uploading.value + 9); if (uploading.value >= 100) clearInterval(t); }, 60);
 }
+/* "Choose from Documents": the same popover switches to a searchable list of your files (like Claude's file picker).
+   A file from Documents is already uploaded, so it attaches at once — no progress bar. */
+const attachView = ref<'menu' | 'docs'>('menu');
+const docQuery = ref('');
+const docSearch = ref<HTMLInputElement>();
+const isWord = (n: string) => /\.docx?$/i.test(n);
+const caseOf = (id?: string) => (id ? CASES.find((c) => c.id === id)?.name : undefined);
+const docs = computed(() => { const q = docQuery.value.trim().toLowerCase(); return [...FILES].sort((a, b) => b.ts - a.ts).filter((f) => !q || f.name.toLowerCase().includes(q) || (caseOf(f.caseId) ?? '').toLowerCase().includes(q)); });
+function openDocs() {
+  attachView.value = 'docs'; docQuery.value = '';
+  nextTick(() => { attachPop.value?.alignOverlay?.(); docSearch.value?.focus({ preventScroll: true }); });
+}
+function backToMenu() { attachView.value = 'menu'; nextTick(() => attachPop.value?.alignOverlay?.()); }
+function pickDoc(f: { name: string; size: string }) { attachPop.value?.hide(); state.file = { name: f.name, size: f.size }; uploading.value = 100; }
+function onAttachHide() { menu.value = null; setTimeout(() => (attachView.value = 'menu'), 150); }
 const route = useRoute();
 onMounted(() => {
   document.addEventListener('pointerdown', onDocDown); document.addEventListener('keydown', onDocKey);
@@ -120,15 +135,39 @@ defineExpose({ prefill });
       <button ref="plusBtn" class="plus" :class="{ open: menu === 'attach' }" aria-label="Attach" aria-haspopup="menu" :aria-expanded="menu === 'attach'" @click="attachPop.toggle($event)">
         <i class="pi pi-plus" />
       </button>
-      <PPopover ref="attachPop" class="fd-pop" @show="menu = 'attach'" @hide="menu = null">
-        <div class="menu-body" role="menu" style="min-width: 260px">
+      <PPopover ref="attachPop" class="fd-pop" @show="menu = 'attach'" @hide="onAttachHide">
+        <div v-if="attachView === 'menu'" class="menu-body" role="menu" style="min-width: 260px">
           <div class="menu-title t-eyebrow">Attach</div>
           <button class="menu-item" role="menuitem" @click="attach('Appeal_Avagyan_v_Poghosyan.pdf', '2.4 MB')">
             <i class="pi pi-paperclip" /><span class="text"><span class="t-label">Upload file</span><span class="hint">PDF, Word · up to 25 MB, encrypted</span></span>
           </button>
-          <button class="menu-item" role="menuitem" @click="attach('Lease_agreement_2024.docx', '312 KB')">
-            <i class="pi pi-folder" /><span class="text"><span class="t-label">Choose from Documents</span><span class="hint">Files you already uploaded</span></span>
+          <button class="menu-item" role="menuitem" aria-haspopup="listbox" @click="openDocs">
+            <i class="pi pi-folder" /><span class="text"><span class="t-label">Choose from Documents</span><span class="hint">Files you already uploaded</span></span><i class="pi pi-angle-right go" />
           </button>
+        </div>
+
+        <!-- Your Documents, searchable; one click attaches -->
+        <div v-else class="docs" @keydown.esc.stop="backToMenu">
+          <div class="docs-head">
+            <button class="docs-back" aria-label="Back" @click="backToMenu"><i class="pi pi-arrow-left" /></button>
+            <span class="t-label">Choose from Documents</span>
+          </div>
+          <label class="docs-search">
+            <i class="pi pi-search" />
+            <input ref="docSearch" v-model="docQuery" type="search" placeholder="Search files or cases" aria-label="Search your documents" />
+          </label>
+          <div class="docs-list" role="listbox" aria-label="Your documents">
+            <button v-for="f in docs" :key="f.id" class="doc" role="option" :aria-selected="state.file?.name === f.name" @click="pickDoc(f)">
+              <span class="doc-ic"><i class="pi" :class="isWord(f.name) ? 'pi-file-word' : 'pi-file-pdf'" /></span>
+              <span class="doc-text">
+                <span class="doc-name">{{ f.name }}</span>
+                <span class="doc-meta">{{ caseOf(f.caseId) ? `${caseOf(f.caseId)} · ` : '' }}{{ f.size }} · {{ f.date }}</span>
+              </span>
+              <i v-if="state.file?.name === f.name" class="pi pi-check doc-check" />
+            </button>
+            <p v-if="!docs.length" class="docs-empty">No files match «{{ docQuery.trim() }}»</p>
+          </div>
+          <NuxtLink to="/documents" class="docs-foot" @click="attachPop?.hide()">Open Documents<i class="pi pi-arrow-right" /></NuxtLink>
         </div>
       </PPopover>
 
@@ -268,6 +307,32 @@ defineExpose({ prefill });
 :deep(.p-button.send.ready) { box-shadow: 0 0 22px var(--fd-glow); }
 :deep(.p-button.send:active:not(:disabled)) { transform: scale(.97); }
 :deep(.p-button.send .p-button-icon) { font-size: 13px; }
+/* Attach → Choose from Documents */
+.menu-item .go { margin-left: auto; font-size: 12px !important; }
+.docs { display: flex; flex-direction: column; width: min(360px, calc(100vw - 56px)); padding: 4px; } /* fits a 390 phone with the popover's own padding */
+.docs-head { display: flex; align-items: center; gap: 6px; padding: 4px 8px 8px 4px; color: var(--fd-ink); }
+.docs-back { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--fd-muted); cursor: pointer; }
+.docs-back:hover { background: color-mix(in srgb, var(--fd-ink) 8%, transparent); color: var(--fd-ink); }
+.docs-back .pi { font-size: 12px; }
+.docs-search { display: flex; align-items: center; gap: 10px; height: 40px; margin: 0 4px 6px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--fd-line); background: var(--fd-bg); cursor: text; }
+.docs-search:focus-within { border-color: var(--fd-accent); }
+.docs-search .pi { font-size: 13px; color: var(--fd-muted); }
+.docs-search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; color: var(--fd-ink); font: 400 14px/20px var(--fd-font-sans); }
+.docs-search input::placeholder { color: var(--fd-muted); }
+.docs-search input::-webkit-search-cancel-button { display: none; }
+.docs-list { display: flex; flex-direction: column; gap: 2px; height: 264px; /* fixed: filtering must not resize (and re-place) the popover */ overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--fd-line) transparent; }
+.doc { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px; border: 0; border-radius: var(--fd-radius-md); background: transparent; color: var(--fd-ink); text-align: left; cursor: pointer; }
+.doc:hover, .doc:focus-visible { background: color-mix(in srgb, var(--fd-ink) 6%, transparent); outline: none; }
+.doc-ic { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px; background: var(--fd-panel-2); color: var(--fd-muted); }
+.doc-ic .pi { font-size: 14px; }
+.doc-text { display: grid; gap: 1px; flex: 1; min-width: 0; }
+.doc-name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font: 500 14px/20px var(--fd-font-sans); }
+.doc-meta { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--fd-muted); font: 400 12px/16px var(--fd-font-sans); }
+.doc-check { flex-shrink: 0; font-size: 13px; color: var(--fd-accent-text); }
+.docs-empty { margin: 0; padding: 20px 12px; color: var(--fd-muted); text-align: center; font: 400 14px/20px var(--fd-font-sans); }
+.docs-foot { display: flex; align-items: center; justify-content: center; gap: 6px; height: 40px; margin-top: 4px; border-top: 1px solid var(--fd-line); color: var(--fd-muted); text-decoration: none; font: 500 13px/18px var(--fd-font-sans); }
+.docs-foot:hover { color: var(--fd-ink); }
+.docs-foot .pi { font-size: 11px; }
 .file {
   display: flex; align-items: center; gap: 12px; margin: 12px 12px 0; padding: 8px 8px 8px 12px; border-radius: var(--fd-radius-md);
   background: var(--fd-panel-2); max-width: 360px;
