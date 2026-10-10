@@ -4,12 +4,10 @@ import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 // "Send a request" — a proper form in a centred dialog (user: "a request form, not a chat"). Opened by the floating
 // button bottom-right and by "Send a request" in the account menu (phone / tablet). The draft survives closing.
 const open = useState('fd-request-open', () => false);
-const route = useRoute();
 
 const subject = ref('');
 const details = ref('');
 const email = ref('dev@femid.ai');
-const withPage = ref(true);
 const files = ref<{ name: string; size: string }[]>([]);
 const tried = ref(false);
 const sending = ref(false);
@@ -30,7 +28,7 @@ watch(open, (v) => {
   } else nextTick(() => opener?.focus?.());
 });
 function close() { open.value = false; }
-function reset() { subject.value = ''; details.value = ''; files.value = []; withPage.value = true; tried.value = false; sentNo.value = null; }
+function reset() { subject.value = ''; details.value = ''; files.value = []; tried.value = false; sentNo.value = null; }
 function attach() { files.value.push({ name: files.value.length ? `Screenshot_${files.value.length + 1}.png` : 'Screenshot.png', size: '240 KB' }); }
 function submit() {
   tried.value = true;
@@ -95,8 +93,6 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
                 <span v-if="tried && errors.email" class="err"><i class="pi pi-exclamation-circle" />{{ errors.email }}</span>
               </label>
 
-              <label class="check"><input v-model="withPage" type="checkbox" />Include the address of this page<span v-if="withPage" class="muted">{{ route.path }}</span></label>
-
               <div class="rq-foot">
                 <button type="button" class="btn ghost" @click="close">Cancel</button>
                 <button type="submit" class="btn primary" :disabled="sending">
@@ -150,9 +146,6 @@ h2 { margin: 0; color: var(--fd-ink); font: 600 20px/28px var(--fd-font-sans); }
 .chip button { display: grid; place-items: center; width: 24px; height: 24px; border: 0; border-radius: 6px; background: transparent; color: var(--fd-muted); cursor: pointer; }
 .chip button:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 8%, transparent); }
 .chip button .pi { font-size: 9px; }
-.check { display: flex; align-items: center; gap: 8px; color: var(--fd-ink); cursor: pointer; font: 400 14px/20px var(--fd-font-sans); }
-.check input { width: 16px; height: 16px; margin: 0; accent-color: var(--fd-accent); }
-.check .muted { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 .rq-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--fd-line); }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 10px; cursor: pointer; font: 500 14px/20px var(--fd-font-sans); }
