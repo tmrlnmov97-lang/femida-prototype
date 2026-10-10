@@ -2,21 +2,21 @@
 :root {
   /* Dark — default theme */
   color-scheme: dark;
-  --fd-bg: #131517;
-  --fd-panel: #1B1E21;
-  --fd-panel-2: #24282C;
-  --fd-line: #2F343A;
+  --fd-bg: #1F2225;
+  --fd-panel: #272A2E;
+  --fd-panel-2: #30343A;
+  --fd-line: #3A3F46;
   --fd-ink: #F3F4F5;
-  --fd-muted: #AAAFB5;
+  --fd-muted: #B0B5BB;
   --fd-accent: #73C99E;
   --fd-accent-hover: #8CD9B2;
-  --fd-accent-soft: #1C3126;
+  --fd-accent-soft: #21392D;
   --fd-accent-text: #8ED7B2;
   --fd-on-accent: #0C1A12;
   --fd-amber: #F5B547;
-  --fd-amber-soft: #33270F;
+  --fd-amber-soft: #3A2E14;
   --fd-red: #FF7A85;
-  --fd-red-soft: #3A1A1E;
+  --fd-red-soft: #3D2226;
   --fd-focus: #8ED7B2;
   --fd-shadow: none;
   /* Scales — theme-independent */
