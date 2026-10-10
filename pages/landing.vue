@@ -60,7 +60,7 @@ const open = ref<number | null>(0);
 
       <div class="intro">
         <h1 class="headline"><span class="l1">Legal answers</span><span class="l2 grad">you can verify.</span></h1>
-        <p class="lead hero-lead">Ask in Armenian. femid.ai searches legislation, court practice and ECHR decisions — and cites the exact source behind every statement.</p>
+        <p class="lead hero-lead">Ask in Armenian — every answer cites the law, court practice and ECHR decisions behind&nbsp;it.</p>
         <!-- The landing starts with the chat: type a question, sending it asks to sign up (or log in) first -->
         <div class="hero-chat"><ChatComposer variant="hero" gate @ask="openAuth('register', $event)" /></div>
         <div class="notes">
