@@ -2,22 +2,22 @@
 :root {
   /* Dark — default theme */
   color-scheme: dark;
-  --fd-bg: #141516;
-  --fd-panel: #1B1D1F;
-  --fd-panel-2: #232528;
-  --fd-line: #2C2F33;
-  --fd-ink: #ECEDEE;
-  --fd-muted: #9EA2A8;
-  --fd-accent: #7FB89A;
-  --fd-accent-hover: #93C7AB;
-  --fd-accent-soft: #1E2A24;
-  --fd-accent-text: #8FC7A8;
-  --fd-on-accent: #0F1A14;
+  --fd-bg: #131517;
+  --fd-panel: #1B1E21;
+  --fd-panel-2: #24282C;
+  --fd-line: #2F343A;
+  --fd-ink: #F3F4F5;
+  --fd-muted: #AAAFB5;
+  --fd-accent: #73C99E;
+  --fd-accent-hover: #8CD9B2;
+  --fd-accent-soft: #1C3126;
+  --fd-accent-text: #8ED7B2;
+  --fd-on-accent: #0C1A12;
   --fd-amber: #F5B547;
   --fd-amber-soft: #33270F;
   --fd-red: #FF7A85;
   --fd-red-soft: #3A1A1E;
-  --fd-focus: #8FC7A8;
+  --fd-focus: #8ED7B2;
   --fd-shadow: none;
   /* Scales — theme-independent */
   --fd-font-sans: 'Noto Sans Armenian','Noto Sans',system-ui,sans-serif;
@@ -91,21 +91,21 @@
 :root.fd-light {
   /* Light — toggled by class on <html> */
   color-scheme: light;
-  --fd-bg: #F6F6F5;
+  --fd-bg: #F7F8F7;
   --fd-panel: #FFFFFF;
-  --fd-panel-2: #EFEFED;
-  --fd-line: #DEDEDB;
-  --fd-ink: #17181A;
-  --fd-muted: #5F636A;
-  --fd-accent: #3F7A5C;
-  --fd-accent-hover: #356B50;
-  --fd-accent-soft: #E6F0EA;
-  --fd-accent-text: #2F6B4D;
+  --fd-panel-2: #EFF1EE;
+  --fd-line: #DCDFDA;
+  --fd-ink: #141517;
+  --fd-muted: #565B62;
+  --fd-accent: #2C7753;
+  --fd-accent-hover: #246646;
+  --fd-accent-soft: #E2F3EB;
+  --fd-accent-text: #216343;
   --fd-on-accent: #FFFFFF;
   --fd-amber: #8F5400;
   --fd-amber-soft: #FFF3DF;
   --fd-red: #B42335;
   --fd-red-soft: #FDE8EB;
-  --fd-focus: #2F6B4D;
+  --fd-focus: #216343;
   --fd-shadow: 0 1px 2px rgba(23,24,26,.06), 0 4px 12px rgba(23,24,26,.06);
 }

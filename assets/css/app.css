@@ -1,7 +1,7 @@
 /* Prototype styles — tokens only. Glow/rim values mirror the fd/marketing/* Figma styles. */
 :root {
-  --fd-glow: rgb(127 184 154 / 0.18);
-  --fd-glow-soft: rgb(127 184 154 / 0.06);
+  --fd-glow: rgb(115 201 158 / 0.18);
+  --fd-glow-soft: rgb(115 201 158 / 0.06);
   --fd-rim-top: rgb(255 255 255 / 0.14);
   --fd-rim-bottom: rgb(255 255 255 / 0.04);
   --fd-overlay-shadow: 0 16px 40px rgb(0 0 0 / 0.35);
@@ -9,8 +9,8 @@
   --fd-sidebar: 264px; --fd-sources: 360px; --fd-topbar: 64px;
 }
 :root.fd-light {
-  --fd-glow: rgb(63 122 92 / 0.10);
-  --fd-glow-soft: rgb(63 122 92 / 0.04);
+  --fd-glow: rgb(44 119 83 / 0.10);
+  --fd-glow-soft: rgb(44 119 83 / 0.04);
   --fd-rim-top: rgb(23 24 26 / 0.12);
   --fd-rim-bottom: rgb(23 24 26 / 0.06);
   --fd-overlay-shadow: 0 16px 40px rgb(23 24 26 / 0.12);
