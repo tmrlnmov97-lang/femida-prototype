@@ -40,6 +40,7 @@ const light = ref(false);
 function openAccount() { light.value = document.documentElement.classList.contains('fd-light'); acctSheet.value = true; }
 function setTheme(toLight: boolean) { document.documentElement.classList.toggle('fd-light', toLight); light.value = toLight; }
 const requestOpen = useState('fd-request-open', () => false);
+function goAccount(to: string) { acctSheet.value = false; emit('toggle'); navigateTo(to); }
 function sendRequest() { acctSheet.value = false; emit('toggle'); requestOpen.value = true; }
 // Skeleton rows only on the first load of the session — moving between pages must not make the list blink and jump
 const ready = useState('fd-chats-ready', () => false);
@@ -230,8 +231,8 @@ onBeforeUnmount(() => {
             <span class="acct-av lg">DE</span>
             <span class="acct-text"><span class="acct-mail">dev@femid.ai</span><span class="acct-plan">Trial plan · {{ chatState.remaining }} of {{ LIMIT }} credits</span></span>
           </div>
-          <button class="as-item" role="menuitem"><i class="pi pi-user" />Account</button>
-          <button class="as-item" role="menuitem"><i class="pi pi-credit-card" />Plans</button>
+          <button class="as-item" role="menuitem" @click="goAccount('/account')"><i class="pi pi-user" />Account</button>
+          <button class="as-item" role="menuitem" @click="goAccount('/account?tab=plan')"><i class="pi pi-credit-card" />Plans</button>
           <button class="as-item" role="menuitem"><i class="pi pi-building" />Organisation</button>
           <div class="as-row">
             <span class="as-label"><i class="pi pi-palette" />Theme</span>

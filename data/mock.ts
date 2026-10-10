@@ -311,3 +311,25 @@ export const TEMPORAL_SAMPLE: TemporalAct[] = [
   { id: 't4', title: 'Government decision on the minimum monthly wage (earlier version)', match: 'Minimum wage amount', from: '01.07.2015', to: '31.12.2018', status: 'repealed' },
   { id: 't5', title: 'Labour Code amendment on remote work', match: 'Remote and distance work', from: '01.09.2023', to: null, status: 'later' },
 ];
+
+// Account — live screen (hy|en/app-account.jpg + the user's screenshots, 10.10.2026): title, intro, section names, field labels,
+// Armenian placeholders, two-step / password / history copy are 1:1 with the live page. The counter is shown as credits
+// (user decision 09.10.2026), the same number as in the top bar. Name "Dev Femida", trial date and referral link are from the live test account.
+export const ACCOUNT = {
+  email: 'dev@femid.ai',
+  role: 'User',
+  plan: 'Trial',
+  validUntil: '13 Oct 2026',
+  sessions: 1,
+  invited: 0,
+  refLink: 'https://femid.ai/register?ref=pk4p52ol',
+  details: { name: 'Dev Femida', position: '', firm: '', address: '', licence: '', phone: '' },
+};
+export const DETAIL_FIELDS = [
+  { key: 'name', label: 'Full name', ph: 'Արամ Աբրահամյան' },
+  { key: 'position', label: 'Position / status', ph: 'Փաստաբան' },
+  { key: 'firm', label: 'Firm or organisation name', ph: '«Աբրահամյան և գործընկերներ» իրավաբանական ընկերություն' },
+  { key: 'address', label: 'Office address', ph: 'ք. Երևան, Բաղրամյան պող. 24' },
+  { key: 'licence', label: 'Licence / permit number', ph: '1234' },
+  { key: 'phone', label: 'Phone number', ph: '+374 …' },
+] as const;

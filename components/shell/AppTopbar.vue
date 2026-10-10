@@ -78,7 +78,7 @@ onBeforeUnmount(() => themeObs?.disconnect());
         <p v-if="tone === 'low'" class="u-note"><i class="pi pi-exclamation-circle" />Running low. Choose a plan so you aren't stopped in the middle of a&nbsp;case.</p>
         <p v-else-if="tone === 'empty'" class="u-note"><i class="pi pi-exclamation-circle" />You're out of credits. Choose a plan to keep&nbsp;asking.</p>
         <p v-else class="u-hint t-caption muted">Your Trial includes {{ props.limit }} credits, one per question. You'll see the same number in Account and in&nbsp;emails.</p>
-        <PButton label="See plans" icon="pi pi-arrow-right" icon-pos="right" size="small" class="u-cta" :severity="tone === 'normal' ? 'secondary' : undefined" @click="usagePop.hide()" />
+        <PButton label="See plans" icon="pi pi-arrow-right" icon-pos="right" size="small" class="u-cta" :severity="tone === 'normal' ? 'secondary' : undefined" @click="usagePop.hide(); navigateTo('/account?tab=plan')" />
       </div>
     </PPopover>
 
@@ -99,8 +99,8 @@ onBeforeUnmount(() => themeObs?.disconnect());
           <span class="a-id"><span class="email">dev@femid.ai</span><span class="t-caption muted">Trial plan · {{ props.remaining }} of {{ props.limit }} credits</span></span>
         </div>
         <div class="a-sep" />
-        <button class="a-item" role="menuitem"><i class="pi pi-user" />Account</button>
-        <button class="a-item" role="menuitem"><i class="pi pi-credit-card" />Plans</button>
+        <button class="a-item" role="menuitem" @click="accountPop.hide(); navigateTo('/account')"><i class="pi pi-user" />Account</button>
+        <button class="a-item" role="menuitem" @click="accountPop.hide(); navigateTo('/account?tab=plan')"><i class="pi pi-credit-card" />Plans</button>
         <button class="a-item" role="menuitem"><i class="pi pi-building" />Organisation</button>
         <div class="a-sep" />
         <!-- Theme lives here, out of the bar (user decision 09.10.2026); the product is Armenian-only, so no language switch -->
