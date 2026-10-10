@@ -65,6 +65,39 @@ const items = computed(() => [
 const wrapName = (f: string) => f.replace(/_/g, '_\u200b').replace(/\.(\w+)$/, '\u200b.$1');
 const typeOf = (f: string) => (/\.docx?$/i.test(f) ? 'DOCX' : /\.pdf$/i.test(f) ? 'PDF' : 'FILE');
 function removeFile(i: number) { c.value?.files.splice(i, 1); }
+
+/* Dossier — the key facts of the case, kept in mind in every answer here (user request; not on the live site).
+   Read mode is a short list; an empty value is a link that opens editing right on that field. */
+const FIELDS = [
+  { key: 'client', label: 'Client', ph: 'Name and role, e.g. Avagyan — employee' },
+  { key: 'other', label: 'Other side', ph: 'e.g. Poghosyan — employer' },
+  { key: 'court', label: 'Court', ph: 'Where the case is heard' },
+  { key: 'caseNo', label: 'Case number', ph: 'As on the court papers' },
+  { key: 'stage', label: 'Stage', ph: 'e.g. Preparing the claim' },
+  { key: 'deadline', label: 'Next deadline', ph: 'What is due, and when' },
+] as const;
+type DKey = typeof FIELDS[number]['key'];
+const dossier = computed(() => c.value?.dossier ?? {});
+const filled = computed(() => FIELDS.filter((f) => dossier.value[f.key]?.trim()).length);
+const dEditing = ref(false);
+const dDraft = ref<Record<DKey, string>>({ client: '', other: '', court: '', caseNo: '', stage: '', deadline: '' });
+const dossierEl = ref<HTMLElement>();
+function editDossier(focus?: DKey) {
+  if (!c.value) return;
+  FIELDS.forEach((f) => (dDraft.value[f.key] = dossier.value[f.key] ?? ''));
+  dEditing.value = true;
+  nextTick(() => dossierEl.value?.querySelector<HTMLInputElement>(`[data-k="${focus ?? 'client'}"]`)?.focus());
+}
+function saveDossier() {
+  if (!c.value) return;
+  const d: Record<string, string> = {};
+  FIELDS.forEach((f) => { const v = dDraft.value[f.key].trim(); if (v) d[f.key] = v; });
+  c.value.dossier = d; dEditing.value = false;
+}
+function onDossierKey(e: KeyboardEvent) {
+  if (e.key === 'Escape') { e.preventDefault(); dEditing.value = false; }
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); saveDossier(); }
+}
 </script>
 
 <template>
@@ -105,7 +138,7 @@ function removeFile(i: number) { c.value?.files.splice(i, 1); }
             <template v-else>
               <ChatComposer variant="hero" placeholder="Ask a question about this case…" />
               <p class="ground"><i class="pi pi-shield" />
-                <template v-if="c.files.length">Answers use this case’s {{ c.files.length === 1 ? 'document' : `${c.files.length} documents` }} and cite the&nbsp;law.</template>
+                <template v-if="c.files.length">Answers use {{ filled ? 'the dossier and ' : '' }}this case’s {{ c.files.length === 1 ? 'document' : `${c.files.length} documents` }}{{ filled ? ',' : '' }} and cite the&nbsp;law.</template>
                 <template v-else>No documents yet, so answers use the law only. Add documents on the&nbsp;right.</template>
               </p>
             </template>
@@ -126,8 +159,43 @@ function removeFile(i: number) { c.value?.files.splice(i, 1); }
             </section>
           </div>
 
+          <aside class="side">
+          <!-- Dossier: key facts (like a project's instructions) -->
+          <section ref="dossierEl" class="knowledge dossier" aria-labelledby="dossier-h" @keydown="onDossierKey">
+            <div class="k-head">
+              <h2 id="dossier-h">Dossier</h2>
+              <button v-if="!dEditing && filled" class="k-edit" @click="editDossier()"><i class="pi pi-pencil" />Edit</button>
+            </div>
+            <p class="k-note">Key facts of the case. Femida keeps them in mind in every answer&nbsp;here.</p>
+
+            <form v-if="dEditing" class="d-form" @submit.prevent="saveDossier">
+              <label v-for="f in FIELDS" :key="f.key" class="d-field">
+                <span class="d-lbl">{{ f.label }}</span>
+                <input v-model="dDraft[f.key]" :data-k="f.key" class="d-input" :placeholder="f.ph" maxlength="120" />
+              </label>
+              <div class="d-foot">
+                <button type="button" class="d-btn ghost" @click="dEditing = false">Cancel</button>
+                <button type="submit" class="d-btn primary">Save</button>
+              </div>
+            </form>
+
+            <dl v-else-if="filled" class="facts">
+              <div v-for="f in FIELDS" :key="f.key" class="fact">
+                <dt>{{ f.label }}</dt>
+                <dd v-if="dossier[f.key]">{{ dossier[f.key] }}</dd>
+                <dd v-else><button class="add-fact" @click="editDossier(f.key)"><i class="pi pi-plus" />Add</button></dd>
+              </div>
+            </dl>
+
+            <button v-else class="k-empty" @click="editDossier()">
+              <span class="k-empty-ic"><i class="pi pi-id-card" /></span>
+              <span class="k-empty-t">No facts yet</span>
+              <span class="k-empty-s">Add the parties, court, case number and the next deadline, so every answer starts from&nbsp;them.</span>
+            </button>
+          </section>
+
           <!-- Like "Project knowledge" -->
-          <aside class="knowledge" aria-label="Case documents">
+          <section class="knowledge" aria-label="Case documents">
             <div class="k-head">
               <h2>Case documents</h2>
               <button class="k-add" aria-label="Add documents" v-tooltip.left="'Add documents'" @click="addFile(c)"><i class="pi pi-plus" /></button>
@@ -146,6 +214,7 @@ function removeFile(i: number) { c.value?.files.splice(i, 1); }
               <span class="k-empty-t">No documents yet</span>
               <span class="k-empty-s">Add the contract, claim or court decision. PDF or Word · up to 25&nbsp;MB · encrypted</span>
             </button>
+          </section>
           </aside>
         </div>
       </div>
@@ -193,8 +262,34 @@ h1 { flex: 1; margin: 0; color: var(--fd-ink); font: 600 32px/40px var(--fd-font
 .no-chats { display: flex; align-items: center; gap: 12px; padding: 20px; border-radius: var(--fd-radius-lg); border: 1px dashed var(--fd-line); color: var(--fd-muted); }
 .no-chats p { margin: 0; font: 400 14px/21px var(--fd-font-sans); text-wrap: pretty; }
 
+/* Right column: Dossier + Case documents */
+.side { display: grid; gap: 16px; } /* not sticky: with the dossier it can be taller than the screen */
+.k-edit { display: inline-flex; align-items: center; gap: 6px; height: 30px; margin-right: -6px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--fd-muted); cursor: pointer; font: 500 13px/18px var(--fd-font-sans); }
+.k-edit:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 6%, transparent); }
+.k-edit .pi { font-size: 11px; }
+.facts { display: grid; margin: 0; }
+.fact { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid color-mix(in srgb, var(--fd-line) 60%, transparent); }
+.fact dt { color: var(--fd-muted); font: 400 13px/20px var(--fd-font-sans); }
+.fact dd { margin: 0; color: var(--fd-ink); font: 500 14px/20px var(--fd-font-sans); overflow-wrap: anywhere; text-wrap: pretty; }
+.add-fact { display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0; border: 0; background: transparent; color: var(--fd-muted); cursor: pointer; font: 400 13px/20px var(--fd-font-sans); }
+.add-fact:hover { color: var(--fd-accent-text); }
+.add-fact .pi { font-size: 9px; }
+.d-form { display: grid; gap: 10px; }
+.d-field { display: grid; gap: 4px; }
+.d-lbl { color: var(--fd-muted); font: 500 12px/16px var(--fd-font-sans); }
+.d-input { height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--fd-line); background: var(--fd-bg); color: var(--fd-ink); outline: none; font: 400 14px/20px var(--fd-font-sans); transition: border-color .15s, box-shadow .15s; }
+.d-input::placeholder { color: var(--fd-muted); }
+.d-input:focus { border-color: var(--fd-accent); box-shadow: 0 0 0 3px var(--fd-accent-soft); }
+.d-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.d-btn { height: 34px; padding: 0 14px; border-radius: 10px; cursor: pointer; font: 500 13px/18px var(--fd-font-sans); }
+.d-btn.ghost { border: 0; background: transparent; color: var(--fd-muted); }
+.d-btn.ghost:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 6%, transparent); }
+.d-btn.primary { border: 0; background: var(--fd-accent); color: var(--fd-on-accent); font-weight: 600; }
+.d-btn.primary:hover { background: var(--fd-accent-hover); }
+.k-edit:focus-visible, .add-fact:focus-visible, .d-btn:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
+
 /* Case documents panel */
-.knowledge { position: sticky; top: 20px; padding: 18px; border-radius: 16px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
+.knowledge { padding: 18px; border-radius: 16px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
 .k-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .k-head h2 { margin: 0; color: var(--fd-ink); font: 600 16px/22px var(--fd-font-sans); }
 .k-add { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--fd-line); border-radius: 10px; background: transparent; color: var(--fd-ink); cursor: pointer; transition: background-color .15s, border-color .15s; }
@@ -225,7 +320,6 @@ h1 { flex: 1; margin: 0; color: var(--fd-ink); font: 600 32px/40px var(--fd-font
 @media (max-width: 1023px) {
   .page { padding: 0 24px; }
   .layout { grid-template-columns: 1fr; }
-  .knowledge { position: static; }
 }
 @media (max-width: 767px) {
   .page { padding: 0 16px; }

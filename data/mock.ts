@@ -137,19 +137,25 @@ export const PLAN_STEPS = [
 // (Petrosyan v. Alfa is from the live list; Avagyan v. Poghosyan matches the two case chats in CHATS).
 export interface CaseChat { id: string; title: string; when: string }
 export interface CaseFile { name: string; size: string; added: string }
-export interface CaseItem { id: string; name: string; description?: string; updated: string; ts: number; archived?: boolean; chats: CaseChat[]; files: CaseFile[] }
+// Dossier: the key facts of a case (user request 10.10.2026 — not on the live site). Values are SAMPLE, taken only from the
+// case names and descriptions; court and case number are left empty on purpose (unknown).
+export interface Dossier { client?: string; other?: string; court?: string; caseNo?: string; stage?: string; deadline?: string }
+export interface CaseItem { id: string; name: string; description?: string; updated: string; ts: number; archived?: boolean; chats: CaseChat[]; files: CaseFile[]; dossier?: Dossier }
 export const CASES: CaseItem[] = [
   { id: 'k1', name: 'Avagyan v. Poghosyan', description: 'Employee dismissed while in hospital. Contesting the dismissal and restoring the missed one-month deadline.', updated: 'Today', ts: 20261009,
     chats: [{ id: 'c1', title: 'Contesting a dismissal', when: 'Today' }, { id: 'c5', title: 'Statement of claim', when: '5 Oct' }],
-    files: [{ name: 'Appeal_Avagyan_v_Poghosyan.pdf', size: '2.4 MB', added: '5 Oct' }] },
+    files: [{ name: 'Appeal_Avagyan_v_Poghosyan.pdf', size: '2.4 MB', added: '5 Oct' }],
+    dossier: { client: 'Avagyan — employee', other: 'Poghosyan — employer', stage: 'Preparing the claim', deadline: 'Motion to restore the missed one-month deadline' } },
   { id: 'k2', name: 'Petrosyan v. Alfa — lease termination', description: 'Tenant wants to end a commercial lease early; the landlord claims a penalty and keeps the deposit.', updated: 'Yesterday', ts: 20261008,
     chats: [{ id: 'c3', title: 'Lease agreement review', when: 'Yesterday' }, { id: 'x1', title: 'Notice period for termination', when: '7 Oct' },
       { id: 'x3', title: 'Penalty for early termination', when: '6 Oct' }, { id: 'x4', title: 'Return of the security deposit', when: '4 Oct' }, { id: 'x5', title: 'Landlord access to the premises', when: '2 Oct' }],
-    files: [{ name: 'Lease_agreement_2024.docx', size: '312 KB', added: '2 Oct' }, { name: 'Termination_notice.pdf', size: '180 KB', added: '6 Oct' }, { name: 'Payment_history.pdf', size: '96 KB', added: '7 Oct' }] },
+    files: [{ name: 'Lease_agreement_2024.docx', size: '312 KB', added: '2 Oct' }, { name: 'Termination_notice.pdf', size: '180 KB', added: '6 Oct' }, { name: 'Payment_history.pdf', size: '96 KB', added: '7 Oct' }],
+    dossier: { client: 'Petrosyan — tenant', other: 'Alfa — landlord', stage: 'Pre-trial: penalty claim received' } },
   { id: 'k3', name: 'Harutyunyan — inheritance', updated: '6 Oct', ts: 20261006, chats: [], files: [] },
   { id: 'k4', name: 'Grigoryan — labour dispute', description: 'Unpaid overtime and a disputed dismissal. Claim filed in September.', updated: '12 Sep', ts: 20260912, archived: true,
     chats: [{ id: 'x2', title: 'Unpaid overtime claim', when: '12 Sep' }],
-    files: [{ name: 'Employment_contract.pdf', size: '410 KB', added: '3 Sep' }, { name: 'Timesheets_2026.pdf', size: '1.1 MB', added: '3 Sep' }] },
+    files: [{ name: 'Employment_contract.pdf', size: '410 KB', added: '3 Sep' }, { name: 'Timesheets_2026.pdf', size: '1.1 MB', added: '3 Sep' }],
+    dossier: { client: 'Grigoryan — employee', stage: 'Claim filed in September' } },
 ];
 
 // Documents — live product screen (hz.femid.ai, 09.10.2026): intro copy and "Up to 25 MB · encrypted" are 1:1 with the live page
