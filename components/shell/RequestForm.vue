@@ -6,14 +6,6 @@ import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 const open = useState('fd-request-open', () => false);
 const route = useRoute();
 
-const TOPICS = [
-  { id: 'problem', label: 'Problem', icon: 'pi pi-exclamation-circle', subject: 'E.g. The answer stopped halfway', details: 'What happened, what you expected, and the steps to repeat it' },
-  { id: 'question', label: 'Question', icon: 'pi pi-question-circle', subject: 'E.g. How are credits counted?', details: 'Ask anything about Femida, your plan or your account' },
-  { id: 'idea', label: 'Idea', icon: 'pi pi-lightbulb', subject: 'E.g. Pin a case to the top of My cases', details: 'What would make Femida better for your work?' },
-] as const;
-type TopicId = typeof TOPICS[number]['id'];
-
-const topic = ref<TopicId>('problem');
 const subject = ref('');
 const details = ref('');
 const email = ref('dev@femid.ai');
@@ -22,7 +14,6 @@ const files = ref<{ name: string; size: string }[]>([]);
 const tried = ref(false);
 const sending = ref(false);
 const sentNo = ref<string | null>(null);
-const t = computed(() => TOPICS.find((x) => x.id === topic.value)!);
 const errors = computed(() => ({
   subject: !subject.value.trim() ? 'Add a short subject' : '',
   details: !details.value.trim() ? 'Describe it in a few words' : '',
@@ -39,7 +30,7 @@ watch(open, (v) => {
   } else nextTick(() => opener?.focus?.());
 });
 function close() { open.value = false; }
-function reset() { topic.value = 'problem'; subject.value = ''; details.value = ''; files.value = []; withPage.value = true; tried.value = false; sentNo.value = null; }
+function reset() { subject.value = ''; details.value = ''; files.value = []; withPage.value = true; tried.value = false; sentNo.value = null; }
 function attach() { files.value.push({ name: files.value.length ? `Screenshot_${files.value.length + 1}.png` : 'Screenshot.png', size: '240 KB' }); }
 function submit() {
   tried.value = true;
@@ -76,25 +67,15 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
             </header>
 
             <form class="rq-form" novalidate @submit.prevent="submit">
-              <fieldset class="f">
-                <legend class="lbl">Topic</legend>
-                <div class="topics" role="radiogroup" aria-label="Topic">
-                  <button v-for="(x, i) in TOPICS" :key="x.id" type="button" class="topic" :class="{ on: topic === x.id }" role="radio" :aria-checked="topic === x.id"
-                          :data-first="i === 0 ? '' : undefined" @click="topic = x.id">
-                    <i :class="x.icon" /><span>{{ x.label }}</span>
-                  </button>
-                </div>
-              </fieldset>
-
               <label class="f">
                 <span class="lbl">Subject</span>
-                <input v-model="subject" data-f="subject" class="in" :class="{ bad: tried && errors.subject }" :placeholder="t.subject" maxlength="120" :aria-invalid="!!(tried && errors.subject)" />
+                <input v-model="subject" data-f="subject" data-first class="in" :class="{ bad: tried && errors.subject }" placeholder="Briefly, what is it about?" maxlength="120" :aria-invalid="!!(tried && errors.subject)" />
                 <span v-if="tried && errors.subject" class="err"><i class="pi pi-exclamation-circle" />{{ errors.subject }}</span>
               </label>
 
               <label class="f">
                 <span class="lbl">Details</span>
-                <textarea v-model="details" data-f="details" class="in area" :class="{ bad: tried && errors.details }" rows="4" :placeholder="t.details" :aria-invalid="!!(tried && errors.details)" />
+                <textarea v-model="details" data-f="details" class="in area" :class="{ bad: tried && errors.details }" rows="4" placeholder="What happened, or what you need" :aria-invalid="!!(tried && errors.details)" />
                 <span v-if="tried && errors.details" class="err"><i class="pi pi-exclamation-circle" />{{ errors.details }}</span>
               </label>
 
@@ -151,12 +132,6 @@ h2 { margin: 0; color: var(--fd-ink); font: 600 20px/28px var(--fd-font-sans); }
 .f { display: grid; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
 .lbl { display: flex; align-items: baseline; gap: 8px; padding: 0; color: var(--fd-ink); font: 500 14px/20px var(--fd-font-sans); }
 .opt, .muted { color: var(--fd-muted); font-weight: 400; font-size: 13px; }
-.topics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.topic { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--fd-line); background: var(--fd-bg); color: var(--fd-ink); cursor: pointer; text-align: left; font: 500 14px/18px var(--fd-font-sans); transition: border-color .12s, background-color .12s; }
-.topic .pi { flex-shrink: 0; font-size: 14px; color: var(--fd-muted); }
-.topic:hover { border-color: color-mix(in srgb, var(--fd-ink) 25%, transparent); }
-.topic.on { border-color: var(--fd-accent); background: var(--fd-accent-soft); }
-.topic.on .pi { color: var(--fd-accent-text); }
 .in { width: 100%; height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--fd-line); background: var(--fd-bg); color: var(--fd-ink); outline: none; font: 400 15px/22px var(--fd-font-sans); transition: border-color .15s, box-shadow .15s; }
 .in.area { height: auto; min-height: 112px; padding: 10px 14px; resize: vertical; line-height: 24px; }
 .in::placeholder { color: var(--fd-muted); }
@@ -186,7 +161,7 @@ h2 { margin: 0; color: var(--fd-ink); font: 600 20px/28px var(--fd-font-sans); }
 .btn.primary:disabled { opacity: .6; cursor: default; }
 .btn.ghost { border: 0; background: transparent; color: var(--fd-muted); }
 .btn.ghost:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 6%, transparent); }
-.btn:focus-visible, .topic:focus-visible, .attach:focus-visible, .rq-x:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
+.btn:focus-visible, .attach:focus-visible, .rq-x:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
 .dots { display: inline-flex; gap: 3px; }
 .dots i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; animation: blink 1s infinite; }
 .dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
@@ -206,7 +181,6 @@ h2 { margin: 0; color: var(--fd-ink); font: 600 20px/28px var(--fd-font-sans); }
 @media (max-width: 767px) {
   .rq-wrap { align-items: end; padding: 12px; }
   .rq { max-height: calc(100dvh - 24px); padding: 20px; border-radius: 20px; }
-  .topic { justify-content: center; padding: 8px; }
-  .attach .muted { display: none; }
+    .attach .muted { display: none; }
 }
 </style>
