@@ -3,7 +3,8 @@ import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { MODES, FILES, CASES } from '~/data/mock';
 
 // gate: on the website the guest can type and pick a mode, but sending opens sign-in instead (emits `ask`)
-const props = withDefaults(defineProps<{ variant?: 'hero' | 'dock'; placeholder?: string; gate?: boolean }>(), { variant: 'hero', placeholder: 'Ask a legal question or attach a document…', gate: false });
+// inputId: a page with two composers (the landing hero + final CTA) needs distinct ids
+const props = withDefaults(defineProps<{ variant?: 'hero' | 'dock'; placeholder?: string; gate?: boolean; inputId?: string }>(), { variant: 'hero', placeholder: 'Ask a legal question or attach a document…', gate: false, inputId: 'composer-input' });
 const emit = defineEmits<{ (e: 'lift', px: number): void; (e: 'ask', text: string): void }>();
 const { state, modeObj, send } = useChat();
 
@@ -130,8 +131,8 @@ defineExpose({ prefill });
       </div>
     </Transition>
 
-    <label class="sr-only" for="composer-input">Your question</label>
-    <PTextarea id="composer-input" v-model="text" class="input" :placeholder="props.placeholder" auto-resize rows="1" @keydown="onKey" />
+    <label class="sr-only" :for="props.inputId">Your question</label>
+    <PTextarea :id="props.inputId" v-model="text" class="input" :placeholder="props.placeholder" auto-resize rows="1" @keydown="onKey" />
 
     <div class="toolbar">
       <button ref="plusBtn" class="plus" :class="{ open: menu === 'attach' }" aria-label="Attach" aria-haspopup="menu" :aria-expanded="menu === 'attach'" @click="attachPop.toggle($event)">
