@@ -47,9 +47,14 @@ const { state } = useChat();
 h2 { margin: 0; font: 600 40px/48px var(--fd-font-serif); letter-spacing: -.01em; }
 .trust { position: relative; display: flex; align-items: center; gap: 8px; margin: 0; color: var(--fd-muted); text-align: center; }
 .trust .pi { color: var(--fd-accent-text); font-size: 13px; }
+/* Phone (like the Claude app): the greeting sits in the middle, the composer is docked at the bottom, under the thumb */
 @media (max-width: 767px) {
-  .empty { gap: 20px; padding: 16px 0 24px; }
-  h2 { font-size: 30px; line-height: 38px; }
-  .trust { font-size: 13px; }
+  .empty { flex: 1; justify-content: flex-end; gap: 0; margin: 0 auto; padding: 0 0 calc(12px + env(safe-area-inset-bottom)); transform: none !important; }
+  .greeting { order: 1; margin-top: auto; gap: 12px; }
+  .mark { width: 48px; height: 48px; }
+  h2 { font-size: 28px; line-height: 36px; }
+  .trust { order: 2; display: block; max-width: 300px; margin: 12px auto auto; font-size: 13px; line-height: 19px; text-wrap: balance; }
+  .trust .pi { margin-right: 6px; vertical-align: -1px; font-size: 12px; }
+  .hero-composer { order: 3; }
 }
 </style>

@@ -2,7 +2,7 @@
 import { ref, reactive, computed, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { NAV, TOOLS, CHATS } from '~/data/mock';
 
-const props = defineProps<{ collapsed?: boolean; activeChat?: string | null; activeStatus?: 'running' | null }>();
+const props = defineProps<{ collapsed?: boolean; activeChat?: string | null; activeStatus?: 'running' | null; mobile?: boolean }>();
 const emit = defineEmits<{ (e: 'toggle'): void; (e: 'new-chat'): void; (e: 'select', id: string): void }>();
 const periods = ['Today', 'Previous 7 days'] as const;
 const root = ref<HTMLElement>();
@@ -33,6 +33,14 @@ function select(id: string) {
   flyout.value = null;
   emit('select', id);
 }
+/* Phone drawer (like Claude's app): the account lives at the bottom of the drawer and opens a bottom sheet */
+const { state: chatState, LIMIT } = useChat();
+const acctSheet = ref(false);
+const light = ref(false);
+function openAccount() { light.value = document.documentElement.classList.contains('fd-light'); acctSheet.value = true; }
+function setTheme(toLight: boolean) { document.documentElement.classList.toggle('fd-light', toLight); light.value = toLight; }
+const requestOpen = useState('fd-request-open', () => false);
+function sendRequest() { acctSheet.value = false; emit('toggle'); requestOpen.value = true; }
 // Skeleton rows only on the first load of the session — moving between pages must not make the list blink and jump
 const ready = useState('fd-chats-ready', () => false);
 
@@ -96,11 +104,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <aside ref="root" class="sidebar" :class="{ collapsed: props.collapsed }" aria-label="Navigation">
+  <aside ref="root" class="sidebar" :class="{ collapsed: props.collapsed, mobile: props.mobile }" aria-label="Navigation">
     <div class="top">
       <span v-if="!props.collapsed" class="wordmark">femid<span>.ai</span></span>
       <span v-else class="wordmark small">f<span>.</span></span>
-      <button class="icon-btn collapse" :aria-label="props.collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+      <button v-if="props.mobile" class="icon-btn collapse" aria-label="Close menu" @click="emit('toggle')"><i class="pi pi-times" /></button>
+      <button v-else class="icon-btn collapse" :aria-label="props.collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
               v-tooltip.right="props.collapsed ? 'Expand' : 'Collapse'" @click="emit('toggle')">
         <i class="pi" :class="props.collapsed ? 'pi-angle-double-right' : 'pi-angle-double-left'" />
       </button>
@@ -187,7 +196,8 @@ onBeforeUnmount(() => {
             <input v-if="editingId === c.id" ref="renameInput" v-model="draft" class="rename" aria-label="Chat name" maxlength="80"
                    @keydown.enter.prevent="commitRename" @keydown.esc.prevent="editingId = null" @blur="commitRename" />
             <template v-else>
-              <button class="chat-item" :title="c.caseName ? `${c.title} · Case: ${c.caseName}` : c.title" :aria-current="c.id === props.activeChat ? 'page' : undefined" @click="select(c.id)">
+              <button class="chat-item" :title="c.caseName ? `${c.title} · Case: ${c.caseName}` : c.title" :aria-current="c.id === props.activeChat ? 'page' : undefined"
+                      @click="select(c.id)" @contextmenu.prevent="openMenu($event, c.id)">
                 <span class="title">{{ c.title }}</span>
               </button>
               <span class="slot">
@@ -206,6 +216,36 @@ onBeforeUnmount(() => {
     </div>
     <div v-else class="spacer" />
     <PMenu ref="menu" :model="menuItems" :popup="true" @hide="menuChat = null" />
+
+    <!-- Phone: account at the bottom of the drawer → bottom sheet -->
+    <template v-if="props.mobile">
+      <button class="acct-row" aria-haspopup="dialog" @click="openAccount">
+        <span class="acct-av">DE</span>
+        <span class="acct-text"><span class="acct-mail">dev@femid.ai</span><span class="acct-plan">Trial · {{ chatState.remaining }} of {{ LIMIT }} credits</span></span>
+        <i class="pi pi-angle-up" />
+      </button>
+      <PDrawer v-model:visible="acctSheet" position="bottom" class="fd-sheet" :show-close-icon="false" :block-scroll="true">
+        <div class="acct-sheet" role="menu">
+          <div class="as-head">
+            <span class="acct-av lg">DE</span>
+            <span class="acct-text"><span class="acct-mail">dev@femid.ai</span><span class="acct-plan">Trial plan · {{ chatState.remaining }} of {{ LIMIT }} credits</span></span>
+          </div>
+          <button class="as-item" role="menuitem"><i class="pi pi-user" />Account</button>
+          <button class="as-item" role="menuitem"><i class="pi pi-credit-card" />Plans</button>
+          <button class="as-item" role="menuitem"><i class="pi pi-building" />Organisation</button>
+          <div class="as-row">
+            <span class="as-label"><i class="pi pi-palette" />Theme</span>
+            <div class="as-seg" role="group" aria-label="Theme">
+              <button :class="{ on: !light }" :aria-pressed="!light" @click="setTheme(false)"><i class="pi pi-moon" />Dark</button>
+              <button :class="{ on: light }" :aria-pressed="light" @click="setTheme(true)"><i class="pi pi-sun" />Light</button>
+            </div>
+          </div>
+          <button class="as-item" role="menuitem" @click="sendRequest"><i class="pi pi-envelope" />Send a request</button>
+          <div class="as-sep" />
+          <button class="as-item danger" role="menuitem"><i class="pi pi-sign-out" />Log out</button>
+        </div>
+      </PDrawer>
+    </template>
 
     <Teleport to="body">
       <Transition name="fly">
@@ -402,4 +442,30 @@ onBeforeUnmount(() => {
 
 /* touch: no hover, keep the actions reachable */
 @media (hover: none) { .more { position: static; opacity: 1; background: transparent; margin-right: 4px; } .slot { margin-right: 4px; } }
+
+/* ---------- Phone drawer ---------- */
+.sidebar.mobile { width: 100%; padding: calc(12px + env(safe-area-inset-top)) 12px 0; border-right: 0; gap: 14px; }
+.sidebar.mobile .more { display: none; } /* long-press a chat for Rename / Delete, like the Claude app */
+.sidebar.mobile .chat-item { min-height: 44px; }
+.acct-row { display: flex; align-items: center; gap: 12px; flex-shrink: 0; margin: 0 -12px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border: 0; border-top: 1px solid var(--fd-line); background: var(--fd-panel); color: var(--fd-ink); cursor: pointer; text-align: left; }
+.acct-row > .pi { margin-left: auto; font-size: 12px; color: var(--fd-muted); }
+.acct-av { display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--fd-accent); color: var(--fd-on-accent); font: 600 13px/1 var(--fd-font-sans); }
+.acct-av.lg { width: 44px; height: 44px; font-size: 15px; }
+.acct-text { display: grid; gap: 1px; min-width: 0; }
+.acct-mail { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font: 500 15px/20px var(--fd-font-sans); }
+.acct-plan { color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); }
+.acct-sheet { display: grid; gap: 2px; padding: 4px 8px calc(12px + env(safe-area-inset-bottom)); }
+.as-head { display: flex; align-items: center; gap: 12px; padding: 4px 8px 14px; margin-bottom: 6px; border-bottom: 1px solid var(--fd-line); color: var(--fd-ink); }
+.as-item { display: flex; align-items: center; gap: 14px; min-height: 48px; padding: 0 8px; border: 0; border-radius: 10px; background: transparent; color: var(--fd-ink); cursor: pointer; text-align: left; font: 400 16px/22px var(--fd-font-sans); }
+.as-item .pi { width: 20px; font-size: 16px; color: var(--fd-muted); text-align: center; }
+.as-item:active { background: color-mix(in srgb, var(--fd-ink) 6%, transparent); }
+.as-item.danger, .as-item.danger .pi { color: var(--fd-red); }
+.as-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 0 8px; }
+.as-label { display: flex; align-items: center; gap: 14px; color: var(--fd-ink); font: 400 16px/22px var(--fd-font-sans); }
+.as-label .pi { width: 20px; font-size: 16px; color: var(--fd-muted); text-align: center; }
+.as-seg { display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--fd-panel-2); }
+.as-seg button { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: var(--fd-muted); cursor: pointer; font: 500 14px/18px var(--fd-font-sans); }
+.as-seg button .pi { font-size: 12px; }
+.as-seg button.on { background: var(--fd-panel); color: var(--fd-ink); box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+.as-sep { height: 1px; margin: 6px 8px; background: var(--fd-line); }
 </style>

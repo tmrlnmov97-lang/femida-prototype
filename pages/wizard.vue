@@ -438,7 +438,7 @@ h3 { margin: 0 0 12px; color: var(--fd-ink); font: 600 15px/22px var(--fd-font-s
 @media (max-width: 1023px) { .wrap, .foot-in { padding-left: 24px; padding-right: 24px; max-width: 808px; } }
 @media (max-width: 767px) {
   .wrap { padding: 24px 16px 32px; }
-  .foot-in { padding: 12px 16px; }
+  .foot-in { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
   .head { margin-bottom: 28px; }
   h1 { font-size: 26px; line-height: 34px; }
   .lead { font-size: 15px; line-height: 24px; }

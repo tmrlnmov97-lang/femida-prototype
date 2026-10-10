@@ -308,7 +308,7 @@ h2 .n { display: grid; place-items: center; width: 24px; height: 24px; border-ra
 @media (max-width: 1023px) { .wrap, .foot-in { padding-left: 24px; padding-right: 24px; max-width: 808px; } .kinds { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 767px) {
   .wrap { padding: 24px 16px 32px; }
-  .foot-in { padding: 12px 16px; }
+  .foot-in { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
   .head { margin-bottom: 28px; }
   h1 { font-size: 26px; line-height: 34px; }
   .r-head h1 { font-size: 22px; line-height: 30px; }

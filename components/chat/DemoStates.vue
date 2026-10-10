@@ -32,5 +32,5 @@ function pick(id: string) { open.value = false; router.replace({ query: id === '
   border: 1px dashed var(--fd-line); background: var(--fd-panel); color: var(--fd-muted);
 }
 .toggle:hover { color: var(--fd-ink); }
-@media (max-width: 767px) { .demo { left: 12px; bottom: 12px; } }
+@media (max-width: 767px) { .demo { display: none; } } /* reviewer tool; on a phone it covered the composer's + */
 </style>

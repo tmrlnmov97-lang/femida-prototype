@@ -167,7 +167,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure));
 @media (max-width: 767px) {
   .conversation { padding: 0 16px; }
   .thread { padding-top: 20px; }
-  .dock { padding: 0 12px 12px; }
+  .dock { padding: 0 16px calc(12px + env(safe-area-inset-bottom)); }
   .sources-wrap { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; box-shadow: none; }
   .backdrop { display: block; position: absolute; inset: 0; background: rgb(0 0 0 / .5); }
   .sources-wrap :deep(.sources) { position: relative; }

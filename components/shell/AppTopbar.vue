@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 
 const props = defineProps<{ remaining: number; limit: number; sourcesCount?: number | null; sourcesOpen?: boolean; crumbs?: { label: string; to?: string }[] }>();
-const emit = defineEmits<{ (e: 'menu'): void; (e: 'sources'): void }>();
+const emit = defineEmits<{ (e: 'menu'): void; (e: 'sources'): void; (e: 'new-chat'): void }>();
 
 /* ---------- theme (the brief: users switch it in the top bar) ---------- */
 const light = ref(false);
@@ -90,6 +90,8 @@ onBeforeUnmount(() => themeObs?.disconnect());
       <span class="meta"><span class="email">dev@femid.ai</span><span class="plan">Trial</span></span>
       <i class="pi pi-angle-down chev" />
     </button>
+    <!-- Phone (like the Claude app): New chat on the right; the account moves to the bottom of the drawer -->
+    <button class="icon-btn new-btn" aria-label="New chat" @click="emit('new-chat')"><i class="pi pi-pen-to-square" /></button>
     <PPopover ref="accountPop" class="fd-pop">
       <div class="account" role="menu">
         <div class="a-head">
@@ -124,6 +126,7 @@ onBeforeUnmount(() => themeObs?.disconnect());
 }
 .spacer { flex: 1; }
 .menu-btn { display: none; }
+.new-btn { display: none; }
 
 /* Breadcrumbs: My cases / Case / Chat */
 .crumbs { display: flex; align-items: center; gap: 2px; min-width: 0; margin-left: -8px; }
@@ -242,6 +245,8 @@ a.crumb:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-in
   .sources-btn { padding: 0 6px 0 10px; }
   .counter { gap: 6px; padding: 0 12px 0 10px; }
   .counter .full { display: none; } .counter .short { display: inline; }
-  .user { padding: 0; height: 38px; }
+  .user { display: none; }
+  .new-btn { display: inline-grid; margin-right: -6px; }
+  .new-btn .pi { font-size: 17px; }
 }
 </style>

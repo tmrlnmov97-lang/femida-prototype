@@ -32,12 +32,12 @@ function select() {
   <div class="app" :class="{ collapsed }">
     <AppSidebar class="desk-sidebar" :collapsed="collapsed" :active-chat="props.activeChat" :active-status="props.activeStatus" @toggle="collapsed = !collapsed" @new-chat="start" @select="select" />
     <PDrawer v-model:visible="drawer" class="nav-drawer" :show-close-icon="false" position="left">
-      <AppSidebar :active-chat="props.activeChat" :active-status="props.activeStatus" @toggle="drawer = false" @new-chat="start" @select="select" />
+      <AppSidebar mobile :active-chat="props.activeChat" :active-status="props.activeStatus" @toggle="drawer = false" @new-chat="start" @select="select" />
     </PDrawer>
 
     <main class="main">
       <AppTopbar :remaining="state.remaining" :limit="LIMIT" :sources-count="props.sourcesCount" :sources-open="!!props.sourcesOpen" :crumbs="props.crumbs"
-                 @menu="drawer = true" @sources="emit('sources')" />
+                 @menu="drawer = true" @sources="emit('sources')" @new-chat="start" />
       <div class="body"><slot /></div>
     </main>
 
@@ -59,7 +59,7 @@ function select() {
 .feedback:hover, .feedback.open { background: var(--fd-panel); color: var(--fd-ink); }
 .feedback:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
 .feedback .pi { font-size: 16px; }
-:global(.nav-drawer.p-drawer) { width: var(--fd-sidebar) !important; background: var(--fd-panel); border: 0; }
+:global(.nav-drawer.p-drawer) { width: min(320px, 86vw) !important; background: var(--fd-panel); border: 0; }
 :global(.nav-drawer .p-drawer-header) { display: none; }
 :global(.nav-drawer .p-drawer-content) { padding: 0; }
 @media (max-width: 1279px) { .feedback { display: none; } } /* there: account menu → Send a request */
