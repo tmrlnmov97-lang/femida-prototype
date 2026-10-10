@@ -28,6 +28,7 @@ const state = reactive({
   caseCtx: null as null | { id: string; name: string; docs: number }, // chat that belongs to a case
   chatTitle: null as null | string, // shown as the last breadcrumb
   draft: '' as string, // text to put into the composer when the chat opens (e.g. from Watch)
+  pendingAsk: '' as string, // a guest's question from the website, sent as soon as the app opens after sign-in
 });
 
 let seq = 1;

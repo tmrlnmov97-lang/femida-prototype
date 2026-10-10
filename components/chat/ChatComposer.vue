@@ -2,8 +2,9 @@
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { MODES, FILES, CASES } from '~/data/mock';
 
-const props = withDefaults(defineProps<{ variant?: 'hero' | 'dock'; placeholder?: string }>(), { variant: 'hero', placeholder: 'Ask a legal question or attach a document…' });
-const emit = defineEmits<{ (e: 'lift', px: number): void }>();
+// gate: on the website the guest can type and pick a mode, but sending opens sign-in instead (emits `ask`)
+const props = withDefaults(defineProps<{ variant?: 'hero' | 'dock'; placeholder?: string; gate?: boolean }>(), { variant: 'hero', placeholder: 'Ask a legal question or attach a document…', gate: false });
+const emit = defineEmits<{ (e: 'lift', px: number): void; (e: 'ask', text: string): void }>();
 const { state, modeObj, send } = useChat();
 
 const text = ref('');
@@ -14,6 +15,7 @@ const canSend = computed(() => (text.value.trim().length > 0 || !!state.file) &&
 
 function submit() {
   if (!canSend.value) return;
+  if (props.gate) { emit('ask', text.value.trim() || 'Please analyse the attached document.'); return; } // text stays in the field
   send(text.value);
   text.value = '';
 }
@@ -141,7 +143,7 @@ defineExpose({ prefill });
           <button class="menu-item" role="menuitem" @click="attach('Appeal_Avagyan_v_Poghosyan.pdf', '2.4 MB')">
             <i class="pi pi-paperclip" /><span class="text"><span class="t-label">Upload file</span><span class="hint">PDF, Word · up to 25 MB, encrypted</span></span>
           </button>
-          <button class="menu-item" role="menuitem" aria-haspopup="listbox" @click="openDocs">
+          <button v-if="!props.gate" class="menu-item" role="menuitem" aria-haspopup="listbox" @click="openDocs">
             <i class="pi pi-folder" /><span class="text"><span class="t-label">Choose from Documents</span><span class="hint">Files you already uploaded</span></span><i class="pi pi-angle-right go" />
           </button>
         </div>

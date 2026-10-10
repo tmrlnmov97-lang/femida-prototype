@@ -3,7 +3,7 @@ import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { MODES } from '~/data/mock';
 import type { AssistantMsg } from '~/composables/useChat';
 
-const { state, isEmpty, outOfQuestions, low, newChat, demo, LIMIT } = useChat();
+const { state, isEmpty, outOfQuestions, low, newChat, demo, send, LIMIT } = useChat();
 const route = useRoute();
 const scroller = ref<HTMLElement>();
 const dockComposer = ref();
@@ -85,6 +85,8 @@ onMounted(() => {
   // phone: the sources sheet opens only on demand (citation tap / Sources button)
   if (window.innerWidth < 768 && d !== 'fragment' && d !== 'sheet') state.sourcesOpen = false;
   if (d === 'sheet') { demo('answer'); state.sourcesOpen = true; }
+  // Signed in from the website with a question: send it right away (mode and attached file came along in the store)
+  if (state.pendingAsk) { const q = state.pendingAsk, file = state.file; state.pendingAsk = ''; newChat(); state.file = file; send(q); }
   pinLast('auto'); // an opened chat starts at its last question, not cut off at the bottom
 });
 onBeforeUnmount(() => window.removeEventListener('resize', measure));

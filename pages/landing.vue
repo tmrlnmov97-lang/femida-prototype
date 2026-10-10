@@ -7,9 +7,13 @@ useHead({ title: 'femid.ai — Legal answers you can verify' });
 const A = useLandingAsset();
 
 const light = ref(false);
-onMounted(() => { light.value = document.documentElement.classList.contains('fd-light'); });
+onMounted(() => {
+  if (useRoute().query.theme === 'light') document.documentElement.classList.add('fd-light'); // same review switch as in the app
+  light.value = document.documentElement.classList.contains('fd-light');
+});
 function toggleTheme() { light.value = !light.value; document.documentElement.classList.toggle('fd-light', light.value); }
-const toApp = () => navigateTo('/');
+// Every sign-up / log-in entry opens the same dialog; the hero composer passes the guest's question along
+const { openAuth } = useAuthDialog();
 
 const SOURCES = [
   { i: 'c261e', t: 'Legislation of the RA' }, { i: '30ee6', t: 'Court practice' }, { i: '7ff71', t: 'Tax rulings' },
@@ -49,8 +53,8 @@ const open = ref<number | null>(0);
           <div class="grow" />
           <div class="h-actions">
             <button class="theme" :aria-label="light ? 'Dark theme' : 'Light theme'" @click="toggleTheme"><img :src="A('462e3')" alt="" width="20" height="20" /></button>
-            <button class="btn secondary" @click="toApp">Log in</button>
-            <button class="btn primary" @click="toApp">Try free</button>
+            <button class="btn secondary" @click="openAuth('login')">Log in</button>
+            <button class="btn primary" @click="openAuth('register')">Try free</button>
           </div>
         </div>
       </header>
@@ -58,10 +62,8 @@ const open = ref<number | null>(0);
       <div class="intro">
         <h1 class="headline"><span class="l1">Legal answers</span><span class="l2 grad">you can verify.</span></h1>
         <p class="lead hero-lead">Ask in Armenian. femid.ai searches legislation, court practice and ECHR decisions — and cites the exact source behind every statement.</p>
-        <div class="ctas">
-          <button class="btn primary" @click="toApp">Start free</button>
-          <a class="btn secondary" href="#how">See it in action</a>
-        </div>
+        <!-- The landing starts with the chat: type a question, sending it asks to sign up (or log in) first -->
+        <div class="hero-chat"><ChatComposer variant="hero" gate @ask="openAuth('register', $event)" /></div>
         <div class="notes">
           <span v-for="n in ['50 free questions', 'No card needed', 'Armenian interface']" :key="n" class="note"><img :src="A('d13ff')" alt="" width="16" height="16" />{{ n }}</span>
         </div>
@@ -185,7 +187,7 @@ const open = ref<number | null>(0);
         <div class="trial">
           <img :src="A('d50e7')" alt="" width="24" height="24" />
           <span class="tr-text"><b>Free trial — 50 questions</b><span>No card needed — try it on your own cases.</span></span>
-          <button class="btn primary" @click="toApp">Start free</button>
+          <button class="btn primary" @click="openAuth('register')">Start free</button>
         </div>
         <div class="plans">
           <div v-for="p in PLANS" :key="p.name" class="plan">
@@ -202,7 +204,7 @@ const open = ref<number | null>(0);
             <p class="pl-desc">In-depth legal research with full sources</p>
             <div class="pl-div" />
             <div class="pl-feats"><span v-for="f in ['Document analysis', 'Drafting', 'Priority support']" :key="f" class="pl-feat"><img :src="A('109fc')" alt="" width="20" height="20" />{{ f }}</span></div>
-            <button class="btn primary full" @click="toApp">Choose Davit</button>
+            <button class="btn primary full" @click="openAuth('register')">Choose Davit</button>
           </div>
         </div>
       </div>
@@ -236,7 +238,7 @@ const open = ref<number | null>(0);
         <h2 class="section-title center b-title"><span>Ask your first question</span><span class="grad">today.</span></h2>
         <p class="lead nowrap">For lawyers, advocates and law firms in Armenia.</p>
         <div class="ctas">
-          <button class="btn primary" @click="toApp">Start free</button>
+          <button class="btn primary" @click="openAuth('register')">Start free</button>
           <a class="btn secondary" href="mailto:femidai@femid.ai">Talk to us</a>
         </div>
         <p class="b-note">50 free questions · No card needed</p>
@@ -261,6 +263,7 @@ const open = ref<number | null>(0);
       </div>
     </footer>
     <div class="wordmark"><p>femid.ai</p></div>
+    <AuthDialog />
   </div>
 </template>
 
@@ -298,8 +301,10 @@ a { color: inherit; text-decoration: none; }
 .tag.accent { background: var(--fd-accent-soft); color: var(--fd-accent-text); }
 
 /* ============ Hero (1387 tall, glows and callouts placed against a 1440 frame) ============ */
-.hero { position: relative; display: flex; flex-direction: column; align-items: center; gap: 51px; height: 1387px; overflow: hidden; }
-.hero-glow-window { position: absolute; left: calc(50% - 500px); top: 664px; width: 1000px; height: 420px; }
+/* Height follows the content (the chat box is taller than the two buttons it replaced); the glow, fade and callouts
+   below the intro are anchored to the bottom, at the same distances as in the 1387px Figma frame */
+.hero { position: relative; display: flex; flex-direction: column; align-items: center; gap: 51px; overflow: hidden; }
+.hero-glow-window { position: absolute; left: calc(50% - 500px); bottom: 303px; width: 1000px; height: 420px; }
 .hero-glow-top { position: absolute; left: calc(50% - 650px); top: -300px; width: 1300px; height: 780px; }
 .header { position: relative; display: flex; justify-content: center; width: 100%; height: 72px; flex-shrink: 0; background: var(--fd-bg); }
 .h-in { display: flex; align-items: center; gap: 32px; width: 1200px; }
@@ -312,13 +317,14 @@ a { color: inherit; text-decoration: none; }
 .headline .l1 { color: var(--fd-ink); }
 .hero-lead { width: 580px; text-align: center; }
 .ctas { display: flex; gap: 12px; align-items: flex-start; }
+.hero-chat { width: 720px; text-align: left; }
 .notes { display: flex; align-items: center; gap: 24px; }
 .note { display: flex; align-items: center; gap: 8px; color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); white-space: nowrap; }
 .product { position: relative; display: flex; flex-direction: column; height: 695px; padding-top: 64px; flex-shrink: 0; }
-.hero-fade { position: absolute; left: 0; top: 1148px; width: 100%; height: 280px; background: linear-gradient(180deg, transparent, var(--fd-bg)); pointer-events: none; }
+.hero-fade { position: absolute; left: 0; bottom: -41px; width: 100%; height: 280px; background: linear-gradient(180deg, transparent, var(--fd-bg)); pointer-events: none; }
 .callout { position: absolute; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 12px; border-radius: 12px; border: 1px solid var(--fd-line); background: var(--fd-panel); backdrop-filter: blur(12px); box-shadow: 0 16px 40px 0 rgba(0, 0, 0, .35); }
-.callout.left { left: calc(50% - 680px); top: 1276px; }
-.callout.right { left: calc(50% + 401px); top: 1318px; }
+.callout.left { left: calc(50% - 680px); bottom: 45px; }
+.callout.right { left: calc(50% + 401px); bottom: 3px; }
 .c-mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 999px; background: var(--fd-accent-soft); }
 .c-text { display: flex; flex-direction: column; line-height: 20px; white-space: nowrap; }
 .c-text b { color: var(--fd-ink); font: 500 15px/20px var(--fd-font-sans); }
