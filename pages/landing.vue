@@ -10,12 +10,32 @@ useHead({ title: 'femid.ai — Legal answers you can verify' });
 const light = ref(false);
 const menuOpen = ref(false);
 function onKey(e: KeyboardEvent) { if (e.key === 'Escape') menuOpen.value = false; }
+
+// Header micro-interactions: a highlight that slides between nav links on hover, the current section marked while
+// scrolling (scroll-spy), and a slightly tighter, denser pill once the page moves.
+const scrolled = ref(false);
+function onScroll(e: Event) { scrolled.value = (e.target as HTMLElement).scrollTop > 8; }
+const hl = ref({ x: 0, w: 0, on: false, instant: false });
+function onNavEnter(e: MouseEvent) {
+  const a = e.currentTarget as HTMLElement;
+  const instant = !hl.value.on; // first hover: appear in place, then slide between links
+  hl.value = { x: a.offsetLeft, w: a.offsetWidth, on: true, instant };
+  if (instant) requestAnimationFrame(() => { hl.value.instant = false; });
+}
+function onNavLeave() { hl.value.on = false; }
+const activeSection = ref('');
+let spy: IntersectionObserver | null = null;
+
 onMounted(() => {
   if (useRoute().query.theme === 'light') document.documentElement.classList.add('fd-light'); // same review switch as in the app
   light.value = document.documentElement.classList.contains('fd-light');
   document.addEventListener('keydown', onKey);
+  spy = new IntersectionObserver((entries) => {
+    entries.forEach((en) => { if (en.isIntersecting) activeSection.value = `#${en.target.id}`; else if (activeSection.value === `#${en.target.id}`) activeSection.value = ''; });
+  }, { root: document.querySelector('.site'), rootMargin: '-45% 0px -50% 0px' });
+  ['product', 'pricing', 'faq'].forEach((id) => { const el = document.getElementById(id); if (el) spy!.observe(el); });
 });
-onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
+onBeforeUnmount(() => { document.removeEventListener('keydown', onKey); spy?.disconnect(); });
 function toggleTheme() { light.value = !light.value; document.documentElement.classList.toggle('fd-light', light.value); }
 // Every sign-up / log-in entry opens the same dialog; both composers pass the guest's question along
 const { openAuth } = useAuthDialog();
@@ -75,27 +95,37 @@ const open = ref<number | null>(0);
 </script>
 
 <template>
-  <div v-tie class="site">
+  <div v-tie class="site" @scroll.passive="onScroll">
     <div class="glow fade" style="animation-duration: 1.2s" aria-hidden="true" />
 
     <!-- ============ 00 Header — floating pill ============ -->
-    <header class="header">
+    <header class="header" :class="{ scrolled }">
       <div class="pill">
         <a class="logo" href="#top">femid<span>.ai</span></a>
-        <nav class="nav" aria-label="Main"><a v-for="[l, h] in NAV" :key="l" :href="h">{{ l }}</a></nav>
+        <nav class="nav" aria-label="Main" @mouseleave="onNavLeave">
+          <span class="nav-hl" :class="{ on: hl.on, instant: hl.instant }" :style="{ transform: `translateX(${hl.x}px)`, width: `${hl.w}px` }" aria-hidden="true" />
+          <a v-for="[l, h] in NAV" :key="l" :href="h" :class="{ active: activeSection === h }" :aria-current="activeSection === h ? 'location' : undefined"
+             @mouseenter="onNavEnter">{{ l }}</a>
+        </nav>
         <div class="p-actions">
-          <button class="icon-btn hide-m" :aria-label="light ? 'Dark theme' : 'Light theme'" @click="toggleTheme"><i class="pi" :class="light ? 'pi-moon' : 'pi-sun'" /></button>
+          <button class="icon-btn hide-m" :aria-label="light ? 'Dark theme' : 'Light theme'" @click="toggleTheme">
+            <Transition name="spin" mode="out-in"><i :key="String(light)" class="pi" :class="light ? 'pi-moon' : 'pi-sun'" /></Transition>
+          </button>
           <button class="btn ghost hide-m" @click="openAuth('login')">Log in</button>
-          <button class="btn primary" @click="openAuth('register')">Try free</button>
-          <button class="icon-btn show-m" :aria-label="menuOpen ? 'Close menu' : 'Menu'" :aria-expanded="menuOpen" @click="menuOpen = !menuOpen"><i class="pi" :class="menuOpen ? 'pi-times' : 'pi-bars'" /></button>
+          <button class="btn primary try" @click="openAuth('register')">Try free<i class="pi pi-arrow-right go" /></button>
+          <button class="icon-btn show-m" :aria-label="menuOpen ? 'Close menu' : 'Menu'" :aria-expanded="menuOpen" @click="menuOpen = !menuOpen">
+            <Transition name="spin" mode="out-in"><i :key="String(menuOpen)" class="pi" :class="menuOpen ? 'pi-times' : 'pi-bars'" /></Transition>
+          </button>
         </div>
       </div>
       <Transition name="drop">
         <div v-if="menuOpen" class="m-menu">
-          <a v-for="[l, h] in NAV" :key="l" :href="h" @click="menuOpen = false">{{ l }}</a>
+          <a v-for="([l, h], i) in NAV" :key="l" :href="h" :style="{ '--i': i }" @click="menuOpen = false">{{ l }}</a>
           <div class="m-row">
             <button class="btn secondary grow" @click="menuOpen = false; openAuth('login')">Log in</button>
-            <button class="icon-btn" :aria-label="light ? 'Dark theme' : 'Light theme'" @click="toggleTheme"><i class="pi" :class="light ? 'pi-moon' : 'pi-sun'" /></button>
+            <button class="icon-btn" :aria-label="light ? 'Dark theme' : 'Light theme'" @click="toggleTheme">
+              <Transition name="spin" mode="out-in"><i :key="String(light)" class="pi" :class="light ? 'pi-moon' : 'pi-sun'" /></Transition>
+            </button>
           </div>
         </div>
       </Transition>
@@ -308,7 +338,10 @@ section { scroll-margin-top: 88px; }
 .fade { animation: fd-fade .6s ease-out both; }
 @keyframes fd-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 @keyframes fd-fade { from { opacity: 0; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .w, .rise, .fade { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .w, .rise, .fade, .pill, .m-menu a { animation: none; }
+  .pill, .header, .nav-hl, .try .go, .nav a::after, .spin-enter-active, .spin-leave-active { transition: none; }
+}
 .h2 { color: var(--fd-ink); font: 600 52px/58px var(--fd-font-serif); letter-spacing: -.8px; text-align: center; text-wrap: balance; }
 .grad { background: linear-gradient(90deg, var(--fd-accent-text), var(--fd-accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .eyebrow { color: var(--fd-accent-text); font: 600 13px/18px var(--fd-font-sans); letter-spacing: 1.4px; text-transform: uppercase; }
@@ -338,17 +371,47 @@ section { scroll-margin-top: 88px; }
 .show-m { display: none; }
 
 /* ============ 00 Header ============ */
-.header { position: sticky; top: 0; z-index: 30; display: flex; justify-content: center; padding-top: 16px; pointer-events: none; }
+.header { position: sticky; top: 0; z-index: 30; display: flex; justify-content: center; padding-top: 16px; pointer-events: none; transition: padding .3s var(--fd-easing); }
 .pill { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; width: min(1320px, calc(100% - 96px)); /* logo · nav in the middle · actions */ height: 60px; padding: 0 8px; /* symmetric so the nav sits exactly in the middle; on the page grid: same edges as the content */ border-radius: 999px; pointer-events: auto;
-  border: 1px solid var(--fd-line); background: color-mix(in srgb, var(--fd-panel) 82%, transparent); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); box-shadow: var(--soft); }
+  border: 1px solid var(--fd-line); background: color-mix(in srgb, var(--fd-panel) 82%, transparent); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); box-shadow: var(--soft);
+  animation: fd-drop .6s var(--fd-easing) .05s both; transition: height .3s var(--fd-easing), background-color .3s, box-shadow .3s; }
+/* scrolled: a little tighter and denser */
+.header.scrolled { padding-top: 10px; }
+.header.scrolled .pill { height: 52px; background: color-mix(in srgb, var(--fd-panel) 94%, transparent); box-shadow: var(--lift); }
+@keyframes fd-drop { from { opacity: 0; transform: translateY(-14px) scale(.985); } to { opacity: 1; transform: none; } }
 .pill .logo { justify-self: start; margin-left: 16px; }
 .p-actions { display: flex; align-items: center; justify-self: end; gap: 8px; }
-.nav { display: flex; gap: 28px; color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); white-space: nowrap; }
-.nav a:hover { color: var(--fd-ink); }
+.nav { position: relative; display: flex; gap: 4px; color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); white-space: nowrap; }
+.nav a { position: relative; z-index: 1; padding: 7px 12px; border-radius: 999px; transition: color .2s; } /* no per-link entrance: Chrome stops painting them under the pill's backdrop blur */
+.nav a:hover, .nav a.active { color: var(--fd-ink); }
+/* current section: a small accent dot under the link */
+.nav a::after { content: ''; position: absolute; left: 50%; bottom: -1px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--fd-accent);
+  opacity: 0; transform: scale(0); transition: opacity .2s, transform .25s var(--fd-easing); }
+.nav a.active::after { opacity: 1; transform: scale(1); }
+/* hover: a soft pill that slides between links */
+.nav-hl { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: color-mix(in srgb, var(--fd-ink) 8%, transparent); opacity: 0; pointer-events: none;
+  transition: transform .28s var(--fd-easing), width .28s var(--fd-easing), opacity .18s; }
+.nav-hl.on { opacity: 1; }
+.nav-hl.instant { transition: opacity .18s; }
+/* Try free: an arrow slides in on hover; every header button gives a little on press */
+.header .btn, .header .icon-btn { transition: background-color .15s, color .15s, transform .12s; }
+/* the button keeps its width: the label slides left and the arrow fades in on the right */
+.header .try { position: relative; padding: 10px 22px; transition: padding .22s var(--fd-easing), background-color .15s, transform .12s; }
+.header .try:hover, .header .try:focus-visible { padding-left: 10px; padding-right: 34px; }
+.try .go { position: absolute; right: 14px; top: 50%; margin-top: -6px; font-size: 12px; opacity: 0; transform: translateX(-6px); transition: opacity .2s, transform .22s var(--fd-easing); }
+.try:hover .go, .try:focus-visible .go { opacity: 1; transform: none; }
+.header .btn:active, .header .icon-btn:active { transform: scale(.96); }
+.header .icon-btn .pi-sun { transition: transform .4s var(--fd-easing); }
+.header .icon-btn:hover .pi-sun { transform: rotate(45deg); }
+.spin-enter-active, .spin-leave-active { transition: opacity .16s, transform .22s var(--fd-easing); }
+.spin-enter-from { opacity: 0; transform: rotate(-90deg) scale(.6); }
+.spin-leave-to { opacity: 0; transform: rotate(90deg) scale(.6); }
 .m-menu { position: absolute; top: 84px; left: 16px; right: 16px; display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 24px; pointer-events: auto;
   border: 1px solid var(--fd-line); background: var(--fd-panel); box-shadow: var(--lift); }
-.m-menu a { padding: 12px 14px; border-radius: 14px; color: var(--fd-ink); font: 500 16px/24px var(--fd-font-sans); }
+.m-menu a { padding: 12px 14px; border-radius: 14px; color: var(--fd-ink); font: 500 16px/24px var(--fd-font-sans); animation: fd-slide .28s var(--fd-easing) both; animation-delay: calc(var(--i) * 35ms); }
+@keyframes fd-slide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 .m-menu a:hover { background: var(--fd-panel-2); }
+.header.scrolled .m-menu { top: 72px; }
 .m-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--fd-line); }
 .drop-enter-active, .drop-leave-active { transition: opacity .15s, transform .15s var(--fd-easing); }
 .drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-6px); }
