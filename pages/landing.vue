@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
 // Public website · Home v3 — the approved wireframe v2 (Figma MuXNHQVKOE55lGpjzUIOWt, page «Landing · Wireframe» 165:2, frames 170:93 / 170:405)
-// in the Sage palette. Order: floating header · hero with the chat · product window (chat with sources + tools) · pricing · FAQ · CTA with the chat · footer.
+// in the Sage palette. Order: floating header · hero with the chat · product window (chat with sources + tools) · pricing · FAQ · footer.
 // Copy comes from the Figma Home (33:2) and the app mock — nothing new is claimed. Sample content is marked SAMPLE.
 useHead({ title: 'femid.ai — Legal answers you can verify' });
 
@@ -164,16 +164,6 @@ const open = ref<number | null>(0);
             <div :id="`faq-a${i}`" class="faq-a" role="region" :aria-labelledby="`faq-q${i}`"><div><p>{{ f.a }}</p></div></div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- ============ 07 CTA — the chat right here ============ -->
-    <section class="cta container">
-      <div class="cta-panel">
-        <h2 class="h2 no-tie">Ask&nbsp;your first&nbsp;question</h2>
-        <p class="lead">For lawyers, advocates and law firms in&nbsp;Armenia.</p>
-        <div class="chat-wrap cta-chat"><ChatComposer variant="hero" gate input-id="cta-input" :placeholder="PH" @ask="openAuth('register', $event)" /></div>
-        <p class="cta-note">50 free questions · No card needed</p>
       </div>
     </section>
 
@@ -352,7 +342,7 @@ section { scroll-margin-top: 88px; }
 .pl-soon { display: flex; align-items: center; justify-content: center; height: 46px; margin-top: auto; color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); }
 
 /* ============ 06 FAQ ============ */
-.faq { padding: 120px 0; background: var(--band); } /* sections alternate: hero · product (band) · pricing · FAQ (band) · CTA */
+.faq { padding: 120px 0; background: var(--band); } /* sections alternate: hero · product (band) · pricing · FAQ (band) · footer */
 .faq-in { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; gap: 64px; }
 .faq-intro { position: sticky; top: 112px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 .faq-intro .h2 { text-align: left; }
@@ -375,17 +365,6 @@ section { scroll-margin-top: 88px; }
 .open .faq-a { grid-template-rows: 1fr; }
 .open .faq-a p { opacity: 1; transition-delay: .06s; }
 
-/* ============ 07 CTA ============ */
-.cta { padding: 40px 0 120px; }
-.cta-panel { position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px; overflow: hidden; padding: 88px 48px; border-radius: 32px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
-.cta-panel::before { content: ''; position: absolute; inset: 0; pointer-events: none;
-  background-image: linear-gradient(90deg, color-mix(in srgb, var(--fd-ink) 7%, transparent) 1px, transparent 1px), linear-gradient(180deg, color-mix(in srgb, var(--fd-ink) 7%, transparent) 1px, transparent 1px);
-  background-size: 56px 56px; -webkit-mask-image: radial-gradient(70% 80% at 50% 0%, #000, transparent 75%); mask-image: radial-gradient(70% 80% at 50% 0%, #000, transparent 75%); }
-.cta-panel::after { content: ''; position: absolute; top: -260px; left: 50%; width: 900px; height: 520px; transform: translateX(-50%); pointer-events: none;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--fd-accent) 18%, transparent), transparent); }
-.cta-panel > * { position: relative; z-index: 1; }
-.cta-chat { width: min(720px, 100%); margin-top: 16px; }
-.cta-note { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
 
 /* ============ 08 Footer ============ */
 .footer { padding: 48px 0 40px; border-top: 1px solid var(--fd-line); }
@@ -441,8 +420,6 @@ section { scroll-margin-top: 88px; }
   .faq-intro { position: static; }
   .faq-row { gap: 16px; padding: 18px 0; font-size: 16px; line-height: 24px; }
   .faq-a p { padding: 0 0 20px; font-size: 15px; line-height: 24px; }
-  .cta { padding: 16px 0 72px; }
-  .cta-panel { padding: 48px 18px 36px; border-radius: 24px; }
   .ft-top { flex-direction: column; gap: 28px; }
   .ft-bottom { flex-direction: column; align-items: flex-start; }
 }
