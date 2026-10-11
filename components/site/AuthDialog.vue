@@ -262,7 +262,7 @@ p { margin: 0; }
 .resend .pi { font-size: 12px; }
 
 /* the one action */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; margin-top: 4px; border: 0; border-radius: 999px; background: var(--fd-accent); color: var(--fd-on-accent); cursor: pointer; font: 600 15px/20px var(--fd-font-sans); transition: background-color .15s; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; margin-top: 22px; border: 0; border-radius: 999px; background: var(--fd-accent); color: var(--fd-on-accent); cursor: pointer; font: 600 15px/20px var(--fd-font-sans); transition: background-color .15s; }
 .btn:hover:not(:disabled) { background: var(--fd-accent-hover); }
 .btn:disabled { opacity: .7; cursor: default; }
 .dots { display: inline-flex; gap: 3px; }
