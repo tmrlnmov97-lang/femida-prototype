@@ -75,7 +75,7 @@ const open = ref<number | null>(0);
 </script>
 
 <template>
-  <div class="site">
+  <div v-tie class="site">
     <div class="glow fade" style="animation-duration: 1.2s" aria-hidden="true" />
 
     <!-- ============ 00 Header — floating pill ============ -->
