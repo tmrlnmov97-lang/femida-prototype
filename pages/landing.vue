@@ -83,11 +83,12 @@ const open = ref<number | null>(0);
       <div class="pill">
         <a class="logo" href="#top">femid<span>.ai</span></a>
         <nav class="nav" aria-label="Main"><a v-for="[l, h] in NAV" :key="l" :href="h">{{ l }}</a></nav>
-        <div class="grow" />
-        <button class="icon-btn hide-m" :aria-label="light ? 'Dark theme' : 'Light theme'" @click="toggleTheme"><i class="pi" :class="light ? 'pi-moon' : 'pi-sun'" /></button>
-        <button class="btn ghost hide-m" @click="openAuth('login')">Log in</button>
-        <button class="btn primary" @click="openAuth('register')">Try free</button>
-        <button class="icon-btn show-m" :aria-label="menuOpen ? 'Close menu' : 'Menu'" :aria-expanded="menuOpen" @click="menuOpen = !menuOpen"><i class="pi" :class="menuOpen ? 'pi-times' : 'pi-bars'" /></button>
+        <div class="p-actions">
+          <button class="icon-btn hide-m" :aria-label="light ? 'Dark theme' : 'Light theme'" @click="toggleTheme"><i class="pi" :class="light ? 'pi-moon' : 'pi-sun'" /></button>
+          <button class="btn ghost hide-m" @click="openAuth('login')">Log in</button>
+          <button class="btn primary" @click="openAuth('register')">Try free</button>
+          <button class="icon-btn show-m" :aria-label="menuOpen ? 'Close menu' : 'Menu'" :aria-expanded="menuOpen" @click="menuOpen = !menuOpen"><i class="pi" :class="menuOpen ? 'pi-times' : 'pi-bars'" /></button>
+        </div>
       </div>
       <Transition name="drop">
         <div v-if="menuOpen" class="m-menu">
@@ -338,9 +339,11 @@ section { scroll-margin-top: 88px; }
 
 /* ============ 00 Header ============ */
 .header { position: sticky; top: 0; z-index: 30; display: flex; justify-content: center; padding-top: 16px; pointer-events: none; }
-.pill { display: flex; align-items: center; gap: 8px; width: min(1320px, calc(100% - 96px)); height: 60px; padding: 0 8px 0 24px; /* on the page grid: same edges as the content */ border-radius: 999px; pointer-events: auto;
+.pill { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; width: min(1320px, calc(100% - 96px)); /* logo · nav in the middle · actions */ height: 60px; padding: 0 8px; /* symmetric so the nav sits exactly in the middle; on the page grid: same edges as the content */ border-radius: 999px; pointer-events: auto;
   border: 1px solid var(--fd-line); background: color-mix(in srgb, var(--fd-panel) 82%, transparent); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); box-shadow: var(--soft); }
-.nav { display: flex; gap: 28px; margin-left: 28px; color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); white-space: nowrap; }
+.pill .logo { justify-self: start; margin-left: 16px; }
+.p-actions { display: flex; align-items: center; justify-self: end; gap: 8px; }
+.nav { display: flex; gap: 28px; color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); white-space: nowrap; }
 .nav a:hover { color: var(--fd-ink); }
 .m-menu { position: absolute; top: 84px; left: 16px; right: 16px; display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 24px; pointer-events: auto;
   border: 1px solid var(--fd-line); background: var(--fd-panel); box-shadow: var(--lift); }
@@ -495,7 +498,7 @@ section { scroll-margin-top: 88px; }
 
 /* ============ 1024 ============ */
 @media (max-width: 1100px) {
-  .nav { gap: 20px; margin-left: 16px; }
+  .nav { gap: 20px; }
   .h1 { font-size: 68px; line-height: 72px; }
   .h2 { font-size: 44px; line-height: 50px; }
   .d-body { grid-template-columns: minmax(0, 1fr) 320px; }
@@ -510,7 +513,8 @@ section { scroll-margin-top: 88px; }
   section { scroll-margin-top: 80px; }
   .hide-m, .nav { display: none; }
   .show-m { display: grid; }
-  .pill { width: calc(100% - 32px); height: 56px; padding-left: 20px; }
+  .pill { grid-template-columns: 1fr auto; width: calc(100% - 32px); height: 56px; }
+  .pill .logo { margin-left: 12px; }
   .h1 { font-size: 44px; line-height: 48px; letter-spacing: -.9px; }
   .h2 { font-size: 32px; line-height: 38px; letter-spacing: -.4px; }
   .lead { font-size: 17px; line-height: 27px; }
