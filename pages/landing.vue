@@ -116,7 +116,6 @@ const open = ref<number | null>(0);
     <section id="product" class="band">
       <div class="container">
         <div class="head">
-          <p class="eyebrow">How femid.ai answers</p>
           <h2 class="h2">If we can’t cite it, <span class="grad">we don’t say&nbsp;it.</span></h2>
           <p class="lead head-lead">femid.ai answers only when it can point to a law, a court decision or ECHR practice. Otherwise it tells you&nbsp;so.</p>
         </div>
