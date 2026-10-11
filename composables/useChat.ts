@@ -1,13 +1,17 @@
 import { reactive, computed } from 'vue';
-import { ANSWER, SOURCES, MODES, DEEP_STEPS, type ModeId, type Source } from '~/data/mock';
+import { ANSWER, SOURCES, MODES, DEEP_STEPS, PLAN_QUESTION, type ModeId, type Source } from '~/data/mock';
 
 export type ErrorKind = 'temporary' | 'quota' | 'service';
-export type AssistantStatus = 'searching' | 'plan' | 'deep' | 'streaming' | 'done' | 'refused' | 'error';
+export type AssistantStatus = 'searching' | 'planning' | 'plan' | 'deep' | 'streaming' | 'done' | 'refused' | 'error' | 'stopped';
+// Plan first (live product): search the sources → draft the plan → the user edits and approves it (or answers directly)
+export interface PlanProgress { phase: 'search' | 'draft'; read: number; steps: number; secs: number }
+export type PlanApproval = { steps: number; sources: number } | 'direct';
 
 export interface UserMsg { id: number; role: 'user'; text: string; mode: ModeId; file?: string }
 export interface AssistantMsg {
   id: number; role: 'assistant'; mode: ModeId; status: AssistantStatus;
   progress: number; sources: Source[]; errorKind?: ErrorKind; deepStep: number; question: string;
+  planning?: PlanProgress; approved?: PlanApproval; noQuestions?: boolean; // plan mode only
 }
 export type Msg = UserMsg | AssistantMsg;
 
@@ -74,7 +78,16 @@ export function useChat() {
       return;
     }
     if (state.mode === 'plan') {
-      later(() => { msg.status = 'plan'; finish(); }, 1100); // user reviews the plan first
+      // the user reviews the plan first; "Skip clarifying questions" leaves the questions out of it
+      msg.status = 'planning'; msg.noQuestions = state.skipClarifying;
+      msg.planning = { phase: 'search', read: 0, steps: 0, secs: 0 };
+      let n = 0;
+      const draft = () => { msg.planning!.secs++; if (msg.planning!.secs < 4) later(draft, 1000); else { msg.status = 'plan'; finish(); } };
+      const search = () => {
+        n++; const p = msg.planning!; p.read = Math.min(7, Math.ceil(n * .7)); p.steps = Math.min(16, Math.round(n * 1.6));
+        if (n < 10) later(search, 280); else { p.phase = 'draft'; later(draft, 1000); }
+      };
+      later(search, 400);
       return;
     }
     if (autoSources()) state.sourcesOpen = true;
@@ -96,10 +109,18 @@ export function useChat() {
     state.messages = []; state.busy = false; state.sourcesOpen = false; state.activeSource = null; state.file = null; state.caseCtx = null; state.chatTitle = null;
   }
 
-  function approvePlan(msg: AssistantMsg) {
+  function approvePlan(msg: AssistantMsg, how: PlanApproval = 'direct') {
     if (msg.status !== 'plan') return;
+    msg.approved = how;
     state.busy = true; if (autoSources()) state.sourcesOpen = true; msg.status = 'searching';
     later(() => stream(msg, () => { state.remaining--; state.busy = false; }), 900);
+  }
+
+  /** Stop drafting the plan — nothing is counted. */
+  function stop() {
+    const m = last();
+    if (!m || m.status !== 'planning') return;
+    clearTimers(); m.status = 'stopped'; state.busy = false;
   }
 
   function openSource(n: number) { state.sourcesOpen = true; state.activeSource = n; }
@@ -118,9 +139,9 @@ export function useChat() {
     newChat();
     state.remaining = 42;
     const q = 'Can an employee contest a dismissal after the one-month deadline if they were in hospital?';
-    const push = (status: AssistantStatus, extra: Partial<AssistantMsg> = {}) => {
-      state.messages.push({ id: seq++, role: 'user', text: q, mode: extra.mode || 'legal' });
-      state.messages.push(reactive<AssistantMsg>({ id: seq++, role: 'assistant', mode: extra.mode || 'legal', status, progress: 0, sources: [], deepStep: 0, question: q, ...extra }));
+    const push = (status: AssistantStatus, extra: Partial<AssistantMsg> = {}, text = q) => {
+      state.messages.push({ id: seq++, role: 'user', text, mode: extra.mode || 'legal' });
+      state.messages.push(reactive<AssistantMsg>({ id: seq++, role: 'assistant', mode: extra.mode || 'legal', status, progress: 0, sources: [], deepStep: 0, question: text, ...extra }));
     };
     switch (name) {
       case 'answer': push('done', { progress: ANSWER_LENGTH, sources: [...SOURCES] }); state.sourcesOpen = true; break;
@@ -128,7 +149,8 @@ export function useChat() {
       case 'streaming': push('streaming', { progress: 150, sources: SOURCES.slice(0, 2) }); state.sourcesOpen = true; break;
       case 'searching': push('searching'); state.sourcesOpen = true; break;
       case 'deep': push('deep', { mode: 'deep', deepStep: 2 }); state.sourcesOpen = true; break;
-      case 'plan': push('plan', { mode: 'plan' }); break;
+      case 'planning': state.mode = 'plan'; push('planning', { mode: 'plan', planning: { phase: 'draft', read: 7, steps: 16, secs: 19 } }, PLAN_QUESTION); break;
+      case 'plan': state.mode = 'plan'; push('plan', { mode: 'plan' }, PLAN_QUESTION); break;
       case 'mode-menu': break;
       case 'refused': state.messages.push({ id: seq++, role: 'user', text: 'How to bake a cake?', mode: 'auto' });
         state.messages.push(reactive<AssistantMsg>({ id: seq++, role: 'assistant', mode: 'auto', status: 'refused', progress: 0, sources: [], deepStep: 0, question: 'How to bake a cake?' })); break;
@@ -141,5 +163,5 @@ export function useChat() {
     }
   }
 
-  return { state, modeObj, isEmpty, outOfQuestions, low, send, newChat, openSource, retry, demo, approvePlan, LIMIT };
+  return { state, modeObj, isEmpty, outOfQuestions, low, send, newChat, openSource, retry, demo, approvePlan, stop, LIMIT };
 }

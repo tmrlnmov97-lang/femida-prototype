@@ -133,6 +133,45 @@ export const PLAN_STEPS = [
   'Summarise what to file and which documents to attach',
 ];
 
+// "Plan first" in the Chat — the live product's research plan (screenshots 11.10.2026: hz.femid.ai, Armenian output, translated to EN for the
+// build). Section names and hints are 1:1 with the live card; the content is that real sample, shortened to the items visible on screen.
+const LC = { act: 'Labour Code of the RA', meta: 'HO-124-N · adopted 09.11.2004 · in force 21.06.2005 · version from 10.07.2026' }; // the live card repeats this header on every row
+export const PLAN_QUESTION = 'Our LLC dismissed me as an accountant for absence without a valid reason, but I was ill those days and have a doctor’s note. Can I contest it, and what can I claim?';
+export const RESEARCH_PLAN = {
+  goal: 'Find out whether the LLC lawfully dismissed the accountant for absence without a valid reason if she was ill on those days and has a doctor’s note. Determine how and within what period to contest the dismissal, what can be claimed (salary, average pay for forced absence, penalty, final settlement) and whether the employer can claim damages for the late report.',
+  issues: [
+    'Within what period, and counted from which day, must the employee go to court to contest the dismissal — and has that period not yet passed?',
+    'Are all the conditions met for terminating the contract for absence from work, including absence for the whole working day and the reason being unexcused?',
+    'Is a doctor’s note enough for the absence to count as excused, or is an official temporary incapacity certificate needed — and who must prove the reason for the absence?',
+    'Did the dismissal happen during the employee’s temporary incapacity, when termination on the employer’s initiative is prohibited?',
+    'Was the procedure for a disciplinary penalty followed (asking for a written explanation, giving reasonable time) and the deadline for applying it?',
+    'If the dismissal is unlawful, what can the employee claim: reinstatement, average pay for forced absence or compensation instead of reinstatement?',
+  ],
+  sources: [
+    { ...LC, article: 'Article 265', note: 'Deadline to contest a dismissal, reinstatement, average pay for forced absence and compensation instead of reinstatement' },
+    { ...LC, article: 'Article 113', note: 'Grounds for termination on the employer’s initiative, including absence from work without a valid reason' },
+    { ...LC, article: 'Article 114', note: 'Termination during temporary incapacity is prohibited' },
+    { ...LC, article: 'Article 226', note: 'Procedure for a disciplinary penalty, asking for a written explanation' },
+    { ...LC, article: 'Article 227', note: 'Deadline for applying a disciplinary penalty' },
+    { ...LC, article: 'Article 130', note: 'Procedure and deadline for the final settlement' },
+  ],
+  questions: [
+    { q: 'On what day did you receive the dismissal order (the individual legal act), and did you receive it in writing?' },
+    { q: 'Is your document an official temporary incapacity certificate or an ordinary doctor’s note? Which days does it cover, and did you inform the employer (when and how)?', hint: 'This decides whether the absence is excused and whether the dismissal fell in a prohibited period.' },
+    { q: 'Before the dismissal, did the employer ask in writing for an explanation of the absence, and did you give one?', hint: 'This decides whether the procedure for a disciplinary penalty was followed.' },
+    { q: 'Do you have a written agreement on material liability, and has the employer already withheld any money for damages?', hint: 'This decides the basis and the amount of the damages claim and whether the withholding is lawful.' },
+  ],
+  steps: [
+    'Assess how far the doctor’s note proves a valid reason and who bears the burden of proof. Search Court of Cassation practice as an additional source without adding it to the initial list.',
+    'Find the limitation period or the filing deadline for the unpaid salary claim. Search for the act needed if it is not on the sources list.',
+    'Draft the list of claims and the list of evidence: the order, the incapacity document, salary statements, correspondence. Assess whether all claims can be combined in one lawsuit.',
+  ],
+  assumptions: [
+    'It is assumed that the employee acts in their own name against the LLC and the employment contract was signed in writing.',
+    'It is assumed that the dismissal was formalised as termination on the employer’s initiative for absence from work without a valid reason.',
+  ],
+};
+
 // My cases — live product screen (hz.femid.ai, 09.10.2026). Intro copy is 1:1 with the live page; everything else here is SAMPLE
 // (Petrosyan v. Alfa is from the live list; Avagyan v. Poghosyan matches the two case chats in CHATS).
 export interface CaseChat { id: string; title: string; when: string }

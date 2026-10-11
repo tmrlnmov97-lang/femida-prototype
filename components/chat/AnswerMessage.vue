@@ -4,8 +4,14 @@ import { ANSWER, MODES, DEEP_STEPS } from '~/data/mock';
 import { ANSWER_BLOCKS, type AssistantMsg } from '~/composables/useChat';
 
 const props = defineProps<{ msg: AssistantMsg }>();
-const { state, openSource, retry, approvePlan } = useChat();
-const planned = computed(() => props.msg.mode === 'plan' && props.msg.status !== 'plan');
+const { state, openSource, retry, approvePlan, stop } = useChat();
+// Plan first: once the plan is approved (or skipped) the answer carries a one-line note about it
+const planned = computed(() => props.msg.mode === 'plan' && !!props.msg.approved);
+const plannedText = computed(() => {
+  const a = props.msg.approved;
+  if (!a) return '';
+  return a === 'direct' ? 'Answered directly, without the plan' : `Plan approved · ${a.steps} ${a.steps === 1 ? 'step' : 'steps'} · ${a.sources} ${a.sources === 1 ? 'source' : 'sources'}`;
+});
 const showHow = ref(false);
 const copied = ref(false);
 // "Save to notes" really saves into My notes (shared store)
@@ -55,15 +61,17 @@ function copy() { copied.value = true; setTimeout(() => (copied.value = false), 
       <span v-if="msg.sources.length" class="tag accent">{{ msg.sources.length }} {{ msg.sources.length === 1 ? 'source' : 'sources' }}</span>
     </header>
 
-    <div v-if="planned" class="plan-done t-caption"><i class="pi pi-check-circle" />Plan approved · 5 steps</div>
+    <div v-if="planned" class="plan-done t-caption"><i class="pi" :class="msg.approved === 'direct' ? 'pi-bolt' : 'pi-check-circle'" />{{ plannedText }}</div>
     <!-- searching -->
     <div v-if="msg.status === 'searching'" class="searching">
       <span class="t-body-lg shimmer">Searching legislation and court practice…</span>
       <div class="sk"><PSkeleton width="92%" height="14px" /><PSkeleton width="80%" height="14px" /><PSkeleton width="60%" height="14px" /></div>
     </div>
 
-    <!-- plan first: review before answering -->
-    <PlanCard v-else-if="msg.status === 'plan'" @approve="approvePlan(msg)" />
+    <!-- plan first: drafting (with Stop), then review before answering -->
+    <PlanProgress v-else-if="msg.status === 'planning' && msg.planning" :p="msg.planning" @stop="stop" />
+    <PlanCard v-else-if="msg.status === 'plan'" :no-questions="msg.noQuestions" @approve="approvePlan(msg, $event)" />
+    <p v-else-if="msg.status === 'stopped'" class="stopped t-body-sm"><i class="pi pi-stop-circle" />Stopped. No credits were&nbsp;used.</p>
 
     <!-- deep research -->
     <DeepResearch v-else-if="msg.status === 'deep'" :step="msg.deepStep" :found="msg.deepStep * 4" />
@@ -128,6 +136,7 @@ function copy() { copied.value = true; setTimeout(() => (copied.value = false), 
 }
 .mark .pi { font-size: 13px; }
 .searching { display: grid; gap: 14px; }
+.stopped { display: inline-flex; align-items: center; gap: 8px; margin: 0; color: var(--fd-muted); } .stopped .pi { font-size: 14px; }
 .plan-done { display: inline-flex; align-items: center; gap: 8px; color: var(--fd-accent-text); } .plan-done .pi { font-size: 13px; }
 .sk { display: grid; gap: 10px; }
 .short {

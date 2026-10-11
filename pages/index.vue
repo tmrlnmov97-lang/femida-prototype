@@ -114,12 +114,13 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure));
           </div>
           <div v-if="!isEmpty" class="dock">
             <Transition name="fade">
-              <button v-if="below" class="to-bottom" aria-label="Scroll to the end of the answer" v-tooltip.top="'Scroll down'" @click="toBottom"><i class="pi pi-arrow-down" /></button>
+              <button v-if="below && lastAssistant?.status !== 'plan'" class="to-bottom" aria-label="Scroll to the end of the answer" v-tooltip.top="'Scroll down'" @click="toBottom"><i class="pi pi-arrow-down" /></button>
             </Transition>
             <div class="dock-inner">
               <div v-if="low" class="low t-body-sm"><i class="pi pi-database" />{{ state.remaining }} of {{ LIMIT }} credits left<a href="#" class="t-label" @click.prevent>View plans</a></div>
               <OutOfQuestions v-if="outOfQuestions" />
               <ChatComposer v-else ref="dockComposer" variant="dock" placeholder="Ask a follow-up…" />
+              <SkipClarifying v-if="!outOfQuestions" />
             </div>
           </div>
         </div>

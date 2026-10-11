@@ -18,6 +18,7 @@ const { state } = useChat();
         <button aria-label="Ask outside the case" v-tooltip.top="'Ask outside the case'" @click="state.caseCtx = null"><i class="pi pi-times" /></button>
       </div>
       <ChatComposer variant="hero" @lift="lift = $event" />
+      <SkipClarifying />
     </div>
     <p class="trust t-caption"><i class="pi pi-shield" />Answers cite legislation, court practice and ECHR decisions. No source — no&nbsp;answer.</p>
   </section>
