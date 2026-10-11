@@ -51,11 +51,6 @@ const PLANS = [
   { name: 'Mets Mher', price: '20,000', desc: 'Extended features for medium\u00a0workloads', feats: ['Extended features', 'For medium workloads'], soon: true },
   { name: 'Davit', price: '200,000', desc: 'In-depth legal research with full\u00a0sources', feats: ['Document analysis', 'Drafting', 'Priority support'], featured: true },
 ];
-const SAFE = [
-  { i: 'pi-lock', t: 'Files up to 25 MB, stored encrypted' },
-  { i: 'pi-credit-card', t: 'Payments go through the bank — femid.ai never sees card data' },
-  { i: 'pi-building', t: 'FEMIDAI LLC · registration no. 02337069' },
-];
 const FAQ = [
   { q: 'Where do the answers come\u00a0from?', a: 'From Armenian legislation, court practice, tax rulings and ECHR decisions. Every statement in an answer links to the source it is based on.' },
   { q: 'What happens if there is no\u00a0source?', a: 'We don’t answer. You get a clear “no source found” message with ideas for rephrasing — never a guess.' },
@@ -131,7 +126,6 @@ const open = ref<number | null>(0);
     <section id="pricing" class="cap">
       <div class="container col">
         <div class="head">
-          <p class="eyebrow">Pricing</p>
           <h2 class="h2">Start free. Pay when it works for&nbsp;you.</h2>
           <p class="lead head-lead">Monthly plans in Armenian dram, taxes included. Pay by Visa, Mastercard or&nbsp;ArCa.</p>
         </div>
@@ -152,13 +146,6 @@ const open = ref<number | null>(0);
             <button v-else class="pl-btn" disabled>Coming soon</button>
             <ul class="pl-feats"><li v-for="f in p.feats" :key="f"><i class="pi pi-check" />{{ f }}</li></ul>
           </div>
-        </div>
-        <article class="firms">
-          <div class="f-copy"><h3 class="t-title">Built for firms</h3><p class="t-body">Shared seats and invites. Counsel works under an organisation&nbsp;contract.</p></div>
-          <a class="btn secondary" href="mailto:femidai@femid.ai">Talk to us</a>
-        </article>
-        <div class="safe">
-          <span v-for="s in SAFE" :key="s.t"><i class="pi" :class="s.i" />{{ s.t }}</span>
         </div>
       </div>
     </section>
@@ -333,14 +320,6 @@ section { scroll-margin-top: 88px; }
 .band { padding: 120px 0; background: var(--band); }
 .cap { padding: 120px 0; }
 .tour-block { margin-top: 56px; }
-.t-title { color: var(--fd-ink); font: 600 21px/28px var(--fd-font-sans); }
-.t-body { color: var(--fd-muted); font: 400 16px/26px var(--fd-font-sans); text-wrap: pretty; }
-.firms { align-self: stretch; display: flex; align-items: center; gap: 20px; padding: 24px 28px; border-radius: 20px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
-.firms .t-title { font-size: 17px; line-height: 24px; }
-.firms .t-body { font-size: 15px; line-height: 23px; }
-.f-ic { display: grid; place-items: center; width: 52px; height: 52px; flex-shrink: 0; border-radius: 999px; background: var(--fd-panel); color: var(--fd-accent-text); }
-.f-ic .pi { font-size: 18px; }
-.f-copy { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
 
 /* ============ 05 Pricing ============ */
 .trial { display: flex; align-items: center; gap: 24px; padding: 8px 8px 8px 24px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
@@ -366,9 +345,6 @@ section { scroll-margin-top: 88px; }
 .pl-feats { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; padding: 24px 0 0; border-top: 1px solid var(--fd-line); list-style: none; }
 .pl-feats li { display: flex; align-items: center; gap: 10px; color: var(--fd-ink); font: 400 14px/22px var(--fd-font-sans); }
 .pl-feats .pi { color: var(--fd-muted); font-size: 11px; }
-.safe { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 32px; }
-.safe span { display: flex; align-items: center; gap: 10px; color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
-.safe .pi { color: var(--fd-muted); font-size: 13px; }
 
 /* ============ 06 FAQ ============ */
 .faq { padding: 120px 0; background: var(--band); } /* sections alternate: hero · product (band) · pricing · FAQ (band) · CTA */
@@ -438,7 +414,6 @@ section { scroll-margin-top: 88px; }
   .band, .cap { padding: 72px 0; }
   .col { gap: 28px; }
   .tour-block { margin-top: 36px; }
-  .firms { flex-direction: column; align-items: flex-start; gap: 14px; padding: 24px; }
   .trial { flex-direction: column; gap: 12px; width: 100%; padding: 18px; border-radius: 22px; text-align: center; }
   .tr-text { justify-content: center; }
   .plans { grid-template-columns: minmax(0, 1fr); gap: 12px; }
@@ -446,7 +421,6 @@ section { scroll-margin-top: 88px; }
   .plan.featured { order: -1; } /* the plan you can buy comes first on a phone */
   .pl-price { margin: 22px 0 20px; }
   .pl-num { font-size: 36px; }
-  .safe { flex-direction: column; align-items: flex-start; gap: 10px; }
   .faq { padding: 72px 0; }
   .faq-list { margin-top: 32px; gap: 10px; }
   .faq-row { padding: 16px 16px 16px 18px; font-size: 16px; line-height: 24px; }
