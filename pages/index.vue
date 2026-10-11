@@ -9,6 +9,8 @@ const scroller = ref<HTMLElement>();
 const dockComposer = ref();
 
 const lastAssistant = computed(() => [...state.messages].reverse().find((m) => m.role === 'assistant') as AssistantMsg | undefined);
+// Plan first waits for the user in the dock (questions / proceed) — no scroll-down button over the plan
+const planWaiting = computed(() => lastAssistant.value?.status === 'asking' || lastAssistant.value?.status === 'plan');
 const sourcesVisible = computed(() => !isEmpty.value && state.sourcesOpen && lastAssistant.value && !['refused', 'error'].includes(lastAssistant.value.status));
 // Top-bar Sources toggle: shown once the answer has sources (the count grows while it streams)
 const sourcesCount = computed(() => {
@@ -114,13 +116,18 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure));
           </div>
           <div v-if="!isEmpty" class="dock">
             <Transition name="fade">
-              <button v-if="below && lastAssistant?.status !== 'plan'" class="to-bottom" aria-label="Scroll to the end of the answer" v-tooltip.top="'Scroll down'" @click="toBottom"><i class="pi pi-arrow-down" /></button>
+              <button v-if="below && !planWaiting" class="to-bottom" aria-label="Scroll to the end of the answer" v-tooltip.top="'Scroll down'" @click="toBottom"><i class="pi pi-arrow-down" /></button>
             </Transition>
             <div class="dock-inner">
               <div v-if="low" class="low t-body-sm"><i class="pi pi-database" />{{ state.remaining }} of {{ LIMIT }} credits left<a href="#" class="t-label" @click.prevent>View plans</a></div>
-              <OutOfQuestions v-if="outOfQuestions" />
-              <ChatComposer v-else ref="dockComposer" variant="dock" placeholder="Ask a follow-up…" />
-              <SkipClarifying v-if="!outOfQuestions" />
+              <!-- Plan first: the questions and "Would you like to proceed?" take the composer's place, like in Claude -->
+              <PlanQuestions v-if="lastAssistant?.status === 'asking'" :key="'q' + lastAssistant.id" :msg="lastAssistant" />
+              <PlanProceed v-else-if="lastAssistant?.status === 'plan'" :key="`p${lastAssistant.id}-${lastAssistant.revisions?.length || 0}`" :msg="lastAssistant" />
+              <template v-else>
+                <OutOfQuestions v-if="outOfQuestions" />
+                <ChatComposer v-else ref="dockComposer" variant="dock" placeholder="Ask a follow-up…" />
+                <SkipClarifying v-if="!outOfQuestions" />
+              </template>
             </div>
           </div>
         </div>

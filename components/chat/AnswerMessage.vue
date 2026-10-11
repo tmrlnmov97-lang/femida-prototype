@@ -4,14 +4,10 @@ import { ANSWER, MODES, DEEP_STEPS } from '~/data/mock';
 import { ANSWER_BLOCKS, type AssistantMsg } from '~/composables/useChat';
 
 const props = defineProps<{ msg: AssistantMsg }>();
-const { state, openSource, retry, approvePlan, stop } = useChat();
-// Plan first: once the plan is approved (or skipped) the answer carries a one-line note about it
-const planned = computed(() => props.msg.mode === 'plan' && !!props.msg.approved);
-const plannedText = computed(() => {
-  const a = props.msg.approved;
-  if (!a) return '';
-  return a === 'direct' ? 'Answered directly, without the plan' : `Plan approved · ${a.steps} ${a.steps === 1 ? 'step' : 'steps'} · ${a.sources} ${a.sources === 1 ? 'source' : 'sources'}`;
-});
+const { state, openSource, retry } = useChat();
+// Plan first: the plan stages render in PlanFlow; once approved the plan folds into one line above the answer
+const PLAN_STAGES = ['planning', 'asking', 'plan', 'stopped'];
+const planStage = computed(() => PLAN_STAGES.includes(props.msg.status));
 const showHow = ref(false);
 const copied = ref(false);
 // "Save to notes" really saves into My notes (shared store)
@@ -61,17 +57,16 @@ function copy() { copied.value = true; setTimeout(() => (copied.value = false), 
       <span v-if="msg.sources.length" class="tag accent">{{ msg.sources.length }} {{ msg.sources.length === 1 ? 'source' : 'sources' }}</span>
     </header>
 
-    <div v-if="planned" class="plan-done t-caption"><i class="pi" :class="msg.approved === 'direct' ? 'pi-bolt' : 'pi-check-circle'" />{{ plannedText }}</div>
+    <PlanDoc v-if="msg.approved && msg.approved !== 'direct'" :msg="msg" collapsed />
+    <div v-else-if="msg.approved === 'direct'" class="plan-done t-caption"><i class="pi pi-bolt" />Answered directly, without the plan</div>
     <!-- searching -->
     <div v-if="msg.status === 'searching'" class="searching">
       <span class="t-body-lg shimmer">Searching legislation and court practice…</span>
       <div class="sk"><PSkeleton width="92%" height="14px" /><PSkeleton width="80%" height="14px" /><PSkeleton width="60%" height="14px" /></div>
     </div>
 
-    <!-- plan first: drafting (with Stop), then review before answering -->
-    <PlanProgress v-else-if="msg.status === 'planning' && msg.planning" :p="msg.planning" @stop="stop" />
-    <PlanCard v-else-if="msg.status === 'plan'" :no-questions="msg.noQuestions" @approve="approvePlan(msg, $event)" />
-    <p v-else-if="msg.status === 'stopped'" class="stopped t-body-sm"><i class="pi pi-stop-circle" />Stopped. No credits were&nbsp;used.</p>
+    <!-- plan first: reading → questions (dock) → plan document → proceed (dock) -->
+    <PlanFlow v-else-if="planStage" :msg="msg" />
 
     <!-- deep research -->
     <DeepResearch v-else-if="msg.status === 'deep'" :step="msg.deepStep" :found="msg.deepStep * 4" />

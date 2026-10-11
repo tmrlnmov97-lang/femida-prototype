@@ -2,16 +2,19 @@ import { reactive, computed } from 'vue';
 import { ANSWER, SOURCES, MODES, DEEP_STEPS, PLAN_QUESTION, type ModeId, type Source } from '~/data/mock';
 
 export type ErrorKind = 'temporary' | 'quota' | 'service';
-export type AssistantStatus = 'searching' | 'planning' | 'plan' | 'deep' | 'streaming' | 'done' | 'refused' | 'error' | 'stopped';
-// Plan first (live product): search the sources → draft the plan → the user edits and approves it (or answers directly)
+export type AssistantStatus = 'searching' | 'planning' | 'asking' | 'plan' | 'deep' | 'streaming' | 'done' | 'refused' | 'error' | 'stopped';
+// Plan first, the way Claude plans: read the sources → ask clarifying questions (options, like Claude's question picker) →
+// draft the plan → "Would you like to proceed?" (run / answer directly / keep planning with feedback)
 export interface PlanProgress { phase: 'search' | 'draft'; read: number; steps: number; secs: number }
 export type PlanApproval = { steps: number; sources: number } | 'direct';
+export interface PlanAnswer { h: string; a: string }
 
 export interface UserMsg { id: number; role: 'user'; text: string; mode: ModeId; file?: string }
 export interface AssistantMsg {
   id: number; role: 'assistant'; mode: ModeId; status: AssistantStatus;
   progress: number; sources: Source[]; errorKind?: ErrorKind; deepStep: number; question: string;
-  planning?: PlanProgress; approved?: PlanApproval; noQuestions?: boolean; // plan mode only
+  // plan mode only
+  planning?: PlanProgress; approved?: PlanApproval; noQuestions?: boolean; answers?: PlanAnswer[]; revisions?: string[];
 }
 export type Msg = UserMsg | AssistantMsg;
 
@@ -78,14 +81,15 @@ export function useChat() {
       return;
     }
     if (state.mode === 'plan') {
-      // the user reviews the plan first; "Skip clarifying questions" leaves the questions out of it
+      // read the sources, then ask (unless "Skip clarifying questions"), then draft the plan for review
       msg.status = 'planning'; msg.noQuestions = state.skipClarifying;
       msg.planning = { phase: 'search', read: 0, steps: 0, secs: 0 };
       let n = 0;
-      const draft = () => { msg.planning!.secs++; if (msg.planning!.secs < 4) later(draft, 1000); else { msg.status = 'plan'; finish(); } };
       const search = () => {
         n++; const p = msg.planning!; p.read = Math.min(7, Math.ceil(n * .7)); p.steps = Math.min(16, Math.round(n * 1.6));
-        if (n < 10) later(search, 280); else { p.phase = 'draft'; later(draft, 1000); }
+        if (n < 10) later(search, 240);
+        else if (msg.noQuestions) draftPlan(msg);
+        else { msg.status = 'asking'; finish(); } // waits for the answers in the dock
       };
       later(search, 400);
       return;
@@ -109,6 +113,22 @@ export function useChat() {
     state.messages = []; state.busy = false; state.sourcesOpen = false; state.activeSource = null; state.file = null; state.caseCtx = null; state.chatTitle = null;
   }
 
+  /** Draft (or re-draft) the plan; ends with "Would you like to proceed?" in the dock. */
+  function draftPlan(msg: AssistantMsg) {
+    msg.status = 'planning'; state.busy = true;
+    msg.planning = { ...(msg.planning || { read: 7, steps: 16 }), phase: 'draft', secs: 0 };
+    const tick = () => { msg.planning!.secs++; if (msg.planning!.secs < 3) later(tick, 1000); else { msg.status = 'plan'; state.busy = false; } };
+    later(tick, 1000);
+  }
+  function answerQuestions(msg: AssistantMsg, answers: PlanAnswer[]) {
+    if (msg.status !== 'asking') return;
+    msg.answers = answers; draftPlan(msg);
+  }
+  function revisePlan(msg: AssistantMsg, text: string) {
+    if (msg.status !== 'plan' || !text.trim()) return;
+    msg.revisions = [...(msg.revisions || []), text.trim()]; draftPlan(msg);
+  }
+
   function approvePlan(msg: AssistantMsg, how: PlanApproval = 'direct') {
     if (msg.status !== 'plan') return;
     msg.approved = how;
@@ -119,7 +139,7 @@ export function useChat() {
   /** Stop drafting the plan — nothing is counted. */
   function stop() {
     const m = last();
-    if (!m || m.status !== 'planning') return;
+    if (!m || (m.status !== 'planning' && m.status !== 'asking')) return;
     clearTimers(); m.status = 'stopped'; state.busy = false;
   }
 
@@ -149,8 +169,10 @@ export function useChat() {
       case 'streaming': push('streaming', { progress: 150, sources: SOURCES.slice(0, 2) }); state.sourcesOpen = true; break;
       case 'searching': push('searching'); state.sourcesOpen = true; break;
       case 'deep': push('deep', { mode: 'deep', deepStep: 2 }); state.sourcesOpen = true; break;
-      case 'planning': state.mode = 'plan'; push('planning', { mode: 'plan', planning: { phase: 'draft', read: 7, steps: 16, secs: 19 } }, PLAN_QUESTION); break;
-      case 'plan': state.mode = 'plan'; push('plan', { mode: 'plan' }, PLAN_QUESTION); break;
+      case 'planning': state.mode = 'plan'; push('planning', { mode: 'plan', planning: { phase: 'search', read: 4, steps: 9, secs: 0 } }, PLAN_QUESTION); break;
+      case 'plan-questions': state.mode = 'plan'; push('asking', { mode: 'plan', planning: { phase: 'search', read: 7, steps: 16, secs: 0 } }, PLAN_QUESTION); break;
+      case 'plan': state.mode = 'plan';
+        push('plan', { mode: 'plan', planning: { phase: 'draft', read: 7, steps: 16, secs: 19 }, answers: [{ h: 'Order', a: 'Yes, in writing' }, { h: 'Sick note', a: 'Ordinary doctor’s note' }, { h: 'Explanation', a: 'Not asked' }, { h: 'Liability', a: 'No agreement' }] }, PLAN_QUESTION); break;
       case 'mode-menu': break;
       case 'refused': state.messages.push({ id: seq++, role: 'user', text: 'How to bake a cake?', mode: 'auto' });
         state.messages.push(reactive<AssistantMsg>({ id: seq++, role: 'assistant', mode: 'auto', status: 'refused', progress: 0, sources: [], deepStep: 0, question: 'How to bake a cake?' })); break;
@@ -163,5 +185,5 @@ export function useChat() {
     }
   }
 
-  return { state, modeObj, isEmpty, outOfQuestions, low, send, newChat, openSource, retry, demo, approvePlan, stop, LIMIT };
+  return { state, modeObj, isEmpty, outOfQuestions, low, send, newChat, openSource, retry, demo, approvePlan, answerQuestions, revisePlan, stop, LIMIT };
 }
