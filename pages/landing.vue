@@ -127,11 +127,7 @@ const open = ref<number | null>(0);
       <div class="container col">
         <div class="head">
           <h2 class="h2">Start free. Pay when it works for&nbsp;you.</h2>
-          <p class="lead head-lead">Monthly plans in Armenian dram, taxes included. Pay by Visa, Mastercard or&nbsp;ArCa.</p>
-        </div>
-        <div class="trial">
-          <span class="tr-text"><b>Free trial — 50 questions</b><span>No card needed — try it on your own&nbsp;cases.</span></span>
-          <button class="btn primary" @click="openAuth('register')">Start free</button>
+          <p class="lead head-lead">50 free questions to start, no card needed. Then a monthly plan — pay by Visa, Mastercard or&nbsp;ArCa.</p>
         </div>
         <div class="plans">
           <div v-for="p in PLANS" :key="p.name" class="plan" :class="{ featured: p.featured }">
@@ -145,7 +141,7 @@ const open = ref<number | null>(0);
             <p class="pl-bill">Billed monthly, taxes included</p>
             <ul class="pl-feats"><li v-for="f in p.feats" :key="f"><i class="pi pi-check" />{{ f }}</li></ul>
             <button v-if="p.featured" class="pl-btn go" @click="openAuth('register')">Choose {{ p.name }}<i class="pi pi-arrow-right" /></button>
-            <button v-else class="pl-btn" disabled>Coming soon</button>
+            <p v-else class="pl-soon">Coming soon</p>
           </div>
         </div>
       </div>
@@ -323,10 +319,6 @@ section { scroll-margin-top: 88px; }
 .tour-block { margin-top: 56px; }
 
 /* ============ 05 Pricing ============ */
-.trial { display: flex; align-items: center; gap: 24px; padding: 8px 8px 8px 24px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
-.tr-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
-.tr-text b { color: var(--fd-ink); font: 600 16px/24px var(--fd-font-sans); }
-.tr-text span { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
 /* plans in the landing's own style (rounded panels like the product window and FAQ, pill buttons, serif figures, hairlines,
    no glow / fills); from the user's reference: the billing line under the price and the action at the bottom.
    Davit, the plan on sale, gets a firmer border, the accent tag and the one accent button. */
@@ -352,6 +344,7 @@ section { scroll-margin-top: 88px; }
 .pl-btn.go:hover { background: var(--fd-accent-hover); }
 .pl-btn.go:hover .pi { transform: translateX(3px); }
 .pl-btn:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
+.pl-soon { display: flex; align-items: center; justify-content: center; height: 46px; margin-top: auto; color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); }
 
 /* ============ 06 FAQ ============ */
 .faq { padding: 120px 0; background: var(--band); } /* sections alternate: hero · product (band) · pricing · FAQ (band) · CTA */
@@ -422,8 +415,6 @@ section { scroll-margin-top: 88px; }
   .band, .cap { padding: 72px 0; }
   .col { gap: 28px; }
   .tour-block { margin-top: 36px; }
-  .trial { flex-direction: column; gap: 12px; width: 100%; padding: 18px; border-radius: 22px; text-align: center; }
-  .tr-text { justify-content: center; }
   .plans { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .plan { padding: 28px 22px 24px; }
   .plan.featured { order: -1; } /* the plan you can buy comes first on a phone */
