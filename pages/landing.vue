@@ -21,6 +21,7 @@ function toggleTheme() { light.value = !light.value; document.documentElement.cl
 const { openAuth } = useAuthDialog();
 
 const PH = 'Ask a legal question or attach a\u00a0document…';
+const HEADLINE = [['Legal', 'answers'], ['you', 'can', 'verify.']];
 const NAV = [['Product', '#product'], ['Pricing', '#pricing'], ['FAQ', '#faq'], ['About', '#'], ['Blog', '#']];
 const SOURCES = [
   { i: 'pi-book', t: 'Legislation of the RA' }, { i: 'pi-building-columns', t: 'Court practice' }, { i: 'pi-percentage', t: 'Tax rulings' },
@@ -79,7 +80,7 @@ const open = ref<number | null>(0);
 
 <template>
   <div class="site">
-    <div class="glow" aria-hidden="true" />
+    <div class="glow fade" style="animation-duration: 1.2s" aria-hidden="true" />
 
     <!-- ============ 00 Header — floating pill ============ -->
     <header class="header">
@@ -105,16 +106,19 @@ const open = ref<number | null>(0);
 
     <!-- ============ 01 Hero — the product is the first thing you see ============ -->
     <section id="top" class="hero container">
-      <h1 class="h1">Legal answers<br /><span class="grad">you can verify.</span></h1>
-      <p class="lead hero-lead">Ask in Armenian — every answer cites the law, court practice and ECHR decisions behind&nbsp;it.</p>
-      <div class="chat-wrap"><ChatComposer variant="hero" gate input-id="hero-input" :placeholder="PH" @ask="openAuth('register', $event)" /></div>
-      <div class="checks">
+      <!-- Intro on open (timings from the Hirael "Coming Soon 2" block): words rise one by one, then the lead, the chat, the notes -->
+      <h1 class="h1">
+        <span v-for="(line, l) in HEADLINE" :key="l" class="line"><template v-for="(w, i) in line" :key="w"><span class="w" :class="{ grad: l === 1 }" :style="{ animationDelay: `${0.2 + (l ? HEADLINE[0].length + i : i) * 0.08}s` }">{{ w }}</span>{{ i < line.length - 1 ? ' ' : '' }}</template></span>
+      </h1>
+      <p class="lead hero-lead fade" style="animation-delay: .8s">Ask in Armenian — every answer cites the law, court practice and ECHR decisions behind&nbsp;it.</p>
+      <div class="chat-wrap rise" style="animation-delay: 1s"><ChatComposer variant="hero" gate input-id="hero-input" :placeholder="PH" @ask="openAuth('register', $event)" /></div>
+      <div class="checks rise" style="animation-delay: 1.1s">
         <span v-for="n in ['50 free questions', 'No card needed', 'Armenian interface']" :key="n" class="check"><i class="pi pi-check" />{{ n }}</span>
       </div>
     </section>
 
     <!-- ============ 02 Sources — where a logo strip usually goes ============ -->
-    <section class="sources container">
+    <section class="sources container fade" style="animation-delay: 1.2s">
       <p class="s-label">Grounded in official Armenian sources</p>
       <div class="s-list">
         <span v-for="s in SOURCES" :key="s.t" class="s-chip"><i class="pi" :class="s.i" />{{ s.t }}</span>
@@ -309,6 +313,14 @@ section { scroll-margin-top: 88px; }
 
 /* Type */
 .h1 { font: 600 84px/88px var(--fd-font-serif); letter-spacing: -1.7px; text-align: center; }
+.h1 .line { display: block; }
+/* Intro on open — rise = fade + 16px up, ease-out, played once; nothing moves with reduced motion */
+.w { display: inline-block; animation: fd-rise .5s ease-out both; }
+.rise { animation: fd-rise .6s ease-out both; }
+.fade { animation: fd-fade .6s ease-out both; }
+@keyframes fd-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes fd-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .w, .rise, .fade { animation: none; } }
 .h2 { color: var(--fd-ink); font: 600 52px/58px var(--fd-font-serif); letter-spacing: -.8px; text-align: center; text-wrap: balance; }
 .grad { background: linear-gradient(90deg, var(--fd-accent-text), var(--fd-accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .eyebrow { color: var(--fd-accent-text); font: 600 13px/18px var(--fd-font-sans); letter-spacing: 1.4px; text-transform: uppercase; }
