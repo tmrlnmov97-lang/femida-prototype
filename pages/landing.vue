@@ -16,7 +16,7 @@ onMounted(() => {
   document.addEventListener('keydown', onKey);
 });
 onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
-function setTheme(l: boolean) { light.value = l; document.documentElement.classList.toggle('fd-light', l); }
+function toggleTheme() { light.value = !light.value; document.documentElement.classList.toggle('fd-light', light.value); }
 // Every sign-up / log-in entry opens the same dialog; both composers pass the guest's question along
 const { openAuth } = useAuthDialog();
 
@@ -78,24 +78,23 @@ const open = ref<number | null>(0);
   <div v-tie class="site">
     <div class="glow fade" style="animation-duration: 1.2s" aria-hidden="true" />
 
-    <!-- ============ 00 Header — a plain bar on the grid: logo + nav on the left, Log in + Try free on the right ============ -->
+    <!-- ============ 00 Header — floating pill ============ -->
     <header class="header">
-      <div class="container bar">
-        <div class="left">
-          <a class="logo" href="#top">femid<span>.ai</span></a>
-          <nav class="nav" aria-label="Main"><a v-for="[l, h] in NAV" :key="l" :href="h">{{ l }}</a></nav>
-        </div>
-        <div class="actions">
-          <button class="btn ghost hide-m" @click="openAuth('login')">Log in</button>
-          <button class="btn primary" @click="openAuth('register')">Try free</button>
-          <button class="icon-btn show-m" :aria-label="menuOpen ? 'Close menu' : 'Menu'" :aria-expanded="menuOpen" @click="menuOpen = !menuOpen"><i class="pi" :class="menuOpen ? 'pi-times' : 'pi-bars'" /></button>
-        </div>
+      <div class="pill">
+        <a class="logo" href="#top">femid<span>.ai</span></a>
+        <nav class="nav" aria-label="Main"><a v-for="[l, h] in NAV" :key="l" :href="h">{{ l }}</a></nav>
+        <div class="grow" />
+        <button class="icon-btn hide-m" :aria-label="light ? 'Dark theme' : 'Light theme'" @click="toggleTheme"><i class="pi" :class="light ? 'pi-moon' : 'pi-sun'" /></button>
+        <button class="btn ghost hide-m" @click="openAuth('login')">Log in</button>
+        <button class="btn primary" @click="openAuth('register')">Try free</button>
+        <button class="icon-btn show-m" :aria-label="menuOpen ? 'Close menu' : 'Menu'" :aria-expanded="menuOpen" @click="menuOpen = !menuOpen"><i class="pi" :class="menuOpen ? 'pi-times' : 'pi-bars'" /></button>
       </div>
       <Transition name="drop">
         <div v-if="menuOpen" class="m-menu">
           <a v-for="[l, h] in NAV" :key="l" :href="h" @click="menuOpen = false">{{ l }}</a>
           <div class="m-row">
             <button class="btn secondary grow" @click="menuOpen = false; openAuth('login')">Log in</button>
+            <button class="icon-btn" :aria-label="light ? 'Dark theme' : 'Light theme'" @click="toggleTheme"><i class="pi" :class="light ? 'pi-moon' : 'pi-sun'" /></button>
           </div>
         </div>
       </Transition>
@@ -278,11 +277,6 @@ const open = ref<number | null>(0);
           <p>© 2026 FEMIDAI LLC · registration no.&nbsp;02337069&nbsp;·&nbsp;femidai@femid.ai</p>
           <div class="grow" />
           <div class="marks"><span>VISA</span><span>Mastercard</span><span>ArCa</span></div>
-          <!-- theme: a labelled switch in the footer instead of a bare sun icon in the header -->
-          <div class="theme-sw" role="group" aria-label="Theme">
-            <button :class="{ on: !light }" :aria-pressed="!light" @click="setTheme(false)"><i class="pi pi-moon" />Dark</button>
-            <button :class="{ on: light }" :aria-pressed="light" @click="setTheme(true)"><i class="pi pi-sun" />Light</button>
-          </div>
         </div>
       </div>
     </footer>
@@ -343,22 +337,12 @@ section { scroll-margin-top: 88px; }
 .show-m { display: none; }
 
 /* ============ 00 Header ============ */
-.header { position: sticky; top: 0; z-index: 30; border-bottom: 1px solid var(--fd-line);
-  background: color-mix(in srgb, var(--fd-bg) 86%, transparent); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); }
-.bar { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 64px; }
-.left { display: flex; align-items: center; gap: 40px; }
-.bar .logo { font-size: 20px; }
-.nav { display: flex; gap: 4px; font: 500 15px/20px var(--fd-font-sans); white-space: nowrap; }
-.nav a { padding: 8px 12px; border-radius: 999px; color: var(--fd-muted); transition: color .15s, background-color .15s; }
-.nav a:hover { background: var(--fd-panel); color: var(--fd-ink); }
-.actions { display: flex; align-items: center; gap: 8px; }
-.actions .btn { height: 38px; padding: 0 16px; }
-.theme-sw { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; border: 1px solid var(--fd-line); }
-.theme-sw button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border: 0; border-radius: 999px; background: none; color: var(--fd-muted); cursor: pointer; font: 500 13px/18px var(--fd-font-sans); }
-.theme-sw button .pi { font-size: 12px; }
-.theme-sw button.on { background: var(--fd-panel-2); color: var(--fd-ink); }
-.theme-sw button:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
-.m-menu { position: absolute; top: 64px; left: 16px; right: 16px; display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 24px; pointer-events: auto;
+.header { position: sticky; top: 0; z-index: 30; display: flex; justify-content: center; padding-top: 16px; pointer-events: none; }
+.pill { display: flex; align-items: center; gap: 8px; width: min(1320px, calc(100% - 96px)); height: 60px; padding: 0 8px 0 24px; /* on the page grid: same edges as the content */ border-radius: 999px; pointer-events: auto;
+  border: 1px solid var(--fd-line); background: color-mix(in srgb, var(--fd-panel) 82%, transparent); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); box-shadow: var(--soft); }
+.nav { display: flex; gap: 28px; margin-left: 28px; color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); white-space: nowrap; }
+.nav a:hover { color: var(--fd-ink); }
+.m-menu { position: absolute; top: 84px; left: 16px; right: 16px; display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 24px; pointer-events: auto;
   border: 1px solid var(--fd-line); background: var(--fd-panel); box-shadow: var(--lift); }
 .m-menu a { padding: 12px 14px; border-radius: 14px; color: var(--fd-ink); font: 500 16px/24px var(--fd-font-sans); }
 .m-menu a:hover { background: var(--fd-panel-2); }
@@ -367,7 +351,7 @@ section { scroll-margin-top: 88px; }
 .drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-6px); }
 
 /* ============ 01 Hero ============ */
-.hero { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; min-height: calc(100dvh - 65px); padding: 40px 0 88px; } /* the first screen is the chat only — the next section starts below the fold */
+.hero { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; min-height: calc(100dvh - 76px); padding: 40px 0 88px; } /* the first screen is the chat only — the next section starts below the fold */
 .hero-lead { max-width: 580px; }
 .chat-wrap { width: min(800px, 100%); margin-top: 12px; text-align: left; }
 .chat-wrap :deep(.composer) { border-radius: 24px; }
@@ -511,7 +495,7 @@ section { scroll-margin-top: 88px; }
 
 /* ============ 1024 ============ */
 @media (max-width: 1100px) {
-  .left { gap: 24px; }
+  .nav { gap: 20px; margin-left: 16px; }
   .h1 { font-size: 68px; line-height: 72px; }
   .h2 { font-size: 44px; line-height: 50px; }
   .d-body { grid-template-columns: minmax(0, 1fr) 320px; }
@@ -526,13 +510,11 @@ section { scroll-margin-top: 88px; }
   section { scroll-margin-top: 80px; }
   .hide-m, .nav { display: none; }
   .show-m { display: grid; }
-  .bar { height: 56px; }
-  .actions { gap: 4px; }
-  .m-menu { top: 56px; }
+  .pill { width: calc(100% - 32px); height: 56px; padding-left: 20px; }
   .h1 { font-size: 44px; line-height: 48px; letter-spacing: -.9px; }
   .h2 { font-size: 32px; line-height: 38px; letter-spacing: -.4px; }
   .lead { font-size: 17px; line-height: 27px; }
-  .hero { gap: 20px; min-height: calc(100dvh - 57px); padding: 32px 0 64px; }
+  .hero { gap: 20px; min-height: calc(100dvh - 72px); padding: 32px 0 64px; }
   .checks { gap: 6px 18px; }
   .check { font-size: 14px; }
   .band, .cap { padding: 72px 0; }
