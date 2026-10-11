@@ -3,7 +3,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { SOURCES as SRC, ANSWER } from '~/data/mock';
 
 // Public website · Home v3 — the approved wireframe v2 (Figma MuXNHQVKOE55lGpjzUIOWt, page «Landing · Wireframe» 165:2, frames 170:93 / 170:405)
-// in the Sage palette. Order: floating header · hero with the chat · sources · proof demo · capabilities bento · pricing · FAQ · CTA with the chat · footer.
+// in the Sage palette. Order: floating header · hero with the chat · proof demo · capabilities bento · pricing · FAQ · CTA with the chat · footer.
 // Copy comes from the Figma Home (33:2) and the app mock — nothing new is claimed. Sample content is marked SAMPLE.
 useHead({ title: 'femid.ai — Legal answers you can verify' });
 
@@ -23,10 +23,6 @@ const { openAuth } = useAuthDialog();
 const PH = 'Ask a legal question or attach a\u00a0document…';
 const HEADLINE = [['Legal', 'answers'], ['you', 'can', 'verify.']];
 const NAV = [['Product', '#product'], ['Pricing', '#pricing'], ['FAQ', '#faq'], ['About', '#'], ['Blog', '#']];
-const SOURCES = [
-  { i: 'pi-book', t: 'Legislation of the RA' }, { i: 'pi-building-columns', t: 'Court practice' }, { i: 'pi-percentage', t: 'Tax rulings' },
-  { i: 'pi-globe', t: 'ECHR decisions' }, { i: 'pi-folder-open', t: 'Legal library' },
-];
 
 // Proof demo — the same SAMPLE answer and sources as the coded Chat (data/mock), real answer pending [OPEN — CTO Q11]
 const tab = ref<'answer' | 'refusal'>('answer');
@@ -115,15 +111,6 @@ const open = ref<number | null>(0);
       <div class="checks rise" style="animation-delay: 1.1s">
         <span v-for="n in ['50 free questions', 'No card needed', 'Armenian interface']" :key="n" class="check"><i class="pi pi-check" />{{ n }}</span>
       </div>
-    </section>
-
-    <!-- ============ 02 Sources — where a logo strip usually goes ============ -->
-    <section class="sources container fade" style="animation-delay: 1.2s">
-      <p class="s-label">Grounded in official Armenian sources</p>
-      <div class="s-list">
-        <span v-for="s in SOURCES" :key="s.t" class="s-chip"><i class="pi" :class="s.i" />{{ s.t }}</span>
-      </div>
-      <!-- [OPEN — CTO Q5] the size of the source base goes here once the CTO confirms the numbers -->
     </section>
 
     <!-- ============ 03 Proof — one product frame, two tabs ============ -->
@@ -364,7 +351,7 @@ section { scroll-margin-top: 88px; }
 .drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-6px); }
 
 /* ============ 01 Hero ============ */
-.hero { position: relative; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 112px 0 56px; }
+.hero { position: relative; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 112px 0 120px; }
 .hero-lead { max-width: 580px; }
 .chat-wrap { width: min(800px, 100%); margin-top: 12px; text-align: left; }
 .chat-wrap :deep(.composer) { border-radius: 24px; }
@@ -372,14 +359,6 @@ section { scroll-margin-top: 88px; }
 .checks { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 28px; }
 .check { display: flex; align-items: center; gap: 8px; color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); white-space: nowrap; }
 .check .pi { color: var(--fd-accent-text); font-size: 12px; }
-
-/* ============ 02 Sources ============ */
-.sources { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 24px 0 120px; }
-.s-label { color: var(--fd-muted); font: 600 13px/18px var(--fd-font-sans); letter-spacing: 1.4px; text-transform: uppercase; text-align: center; }
-.s-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-.s-chip { display: flex; align-items: center; gap: 10px; padding: 8px 18px 8px 8px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-panel);
-  color: var(--fd-ink); font: 500 15px/20px var(--fd-font-sans); white-space: nowrap; }
-.s-chip .pi { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 999px; background: var(--fd-accent-soft); color: var(--fd-accent-text); font-size: 13px; }
 
 /* ============ 03 Proof ============ */
 .band { padding: 120px 0; background: var(--band); }
@@ -535,13 +514,9 @@ section { scroll-margin-top: 88px; }
   .h1 { font-size: 44px; line-height: 48px; letter-spacing: -.9px; }
   .h2 { font-size: 32px; line-height: 38px; letter-spacing: -.4px; }
   .lead { font-size: 17px; line-height: 27px; }
-  .hero { gap: 20px; padding: 64px 0 40px; }
+  .hero { gap: 20px; padding: 64px 0 72px; }
   .checks { gap: 6px 18px; }
   .check { font-size: 14px; }
-  .sources { padding: 16px 0 72px; }
-  .s-list { gap: 8px; }
-  .s-chip { padding: 6px 14px 6px 6px; font-size: 14px; }
-  .s-chip .pi { width: 26px; height: 26px; font-size: 12px; }
   .band, .cap { padding: 72px 0; }
   .col { gap: 28px; }
   .tabs { width: 100%; }
