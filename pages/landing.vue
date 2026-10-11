@@ -167,21 +167,25 @@ const open = ref<number | null>(0);
       </div>
     </section>
 
-    <!-- ============ 08 Footer ============ -->
+    <!-- ============ 08 Footer — logo + one row of links, contact on the right; legal line + payment marks below.
+         Only what exists: no newsletter, no socials, no pages we don't have (user, 11.10) ============ -->
     <footer class="footer">
       <div class="container">
         <div class="ft-top">
-          <div class="ft-brand"><p class="logo">femid<span>.ai</span></p><p class="ft-tag">Armenian legal AI platform</p></div>
-          <div class="grow" />
-          <div class="ft-cols">
-            <div class="ft-col"><b>Product</b><a href="#product">Product</a><a href="#pricing">Pricing</a><a href="#">Blog</a></div>
-            <div class="ft-col"><b>Company</b><a href="#">About</a><a href="#">Contact</a></div>
-            <div class="ft-col"><b>Legal</b><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Personal data</a><a href="#">Cancellation / refund</a></div>
+          <div class="ft-left">
+            <a class="logo ft-logo" href="#top">femid<span>.ai</span></a>
+            <nav class="ft-links" aria-label="Footer">
+              <a href="#product">Product</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#">Terms</a><a href="#">Privacy</a>
+            </nav>
+          </div>
+          <div class="ft-right">
+            <p class="ft-h">Contact</p>
+            <a class="ft-mail" href="mailto:femidai@femid.ai">femidai@femid.ai<i class="pi pi-arrow-right" /></a>
           </div>
         </div>
         <div class="ft-bottom">
-          <p>© 2026 FEMIDAI LLC · registration no.&nbsp;02337069&nbsp;·&nbsp;femidai@femid.ai</p>
-          <div class="grow" />
+          <p>© 2026 FEMIDAI LLC · registration no.&nbsp;02337069</p>
+          <!-- payment marks: official logos pending [OPEN — CTO Q6] -->
           <div class="marks"><span>VISA</span><span>Mastercard</span><span>ArCa</span></div>
         </div>
       </div>
@@ -367,19 +371,23 @@ section { scroll-margin-top: 88px; }
 
 
 /* ============ 08 Footer ============ */
-.footer { padding: 48px 0 40px; border-top: 1px solid var(--fd-line); }
-.ft-top { display: flex; align-items: flex-start; gap: 48px; }
-.ft-brand { display: flex; flex-direction: column; gap: 6px; }
-.ft-tag { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
-.ft-cols { display: flex; flex-wrap: wrap; gap: 32px 64px; }
-.ft-col { display: flex; flex-direction: column; gap: 12px; white-space: nowrap; }
-.ft-col b { color: var(--fd-ink); font: 600 15px/20px var(--fd-font-sans); }
-.ft-col a { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
-.ft-col a:hover { color: var(--fd-ink); }
-.ft-bottom { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--fd-line); }
+.footer { padding: 64px 0 40px; border-top: 1px solid var(--fd-line); }
+.ft-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 48px; }
+.ft-left { display: flex; flex-direction: column; gap: 24px; }
+.ft-logo { font-size: 22px; }
+.ft-links { display: flex; flex-wrap: wrap; gap: 8px 28px; }
+.ft-links a { color: var(--fd-muted); font: 400 16px/24px var(--fd-font-sans); transition: color .15s; }
+.ft-links a:hover { color: var(--fd-ink); }
+.ft-right { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.ft-h { color: var(--fd-ink); font: 600 16px/24px var(--fd-font-sans); }
+.ft-mail { display: inline-flex; align-items: center; gap: 8px; padding-bottom: 2px; border-bottom: 1px solid var(--fd-line); color: var(--fd-ink); font: 500 15px/22px var(--fd-font-sans); transition: border-color .15s; }
+.ft-mail .pi { font-size: 11px; color: var(--fd-muted); transition: transform .2s var(--fd-easing); }
+.ft-mail:hover { border-color: var(--fd-ink); }
+.ft-mail:hover .pi { transform: translateX(3px); }
+.ft-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--fd-line); }
 .ft-bottom p { color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); }
 .marks { display: flex; gap: 8px; }
-.marks span { display: flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 999px; border: 1px dashed var(--fd-line); color: var(--fd-muted); font: 400 13px/20px var(--fd-font-sans); }
+.marks span { display: flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--fd-line); color: var(--fd-muted); font: 500 12px/18px var(--fd-font-sans); letter-spacing: .3px; }
 
 /* ============ 1024 ============ */
 @media (max-width: 1100px) {
@@ -420,7 +428,9 @@ section { scroll-margin-top: 88px; }
   .faq-intro { position: static; }
   .faq-row { gap: 16px; padding: 18px 0; font-size: 16px; line-height: 24px; }
   .faq-a p { padding: 0 0 20px; font-size: 15px; line-height: 24px; }
-  .ft-top { flex-direction: column; gap: 28px; }
-  .ft-bottom { flex-direction: column; align-items: flex-start; }
+  .footer { padding-top: 48px; }
+  .ft-top { flex-direction: column; gap: 32px; }
+  .ft-links { gap: 8px 22px; }
+  .ft-bottom { flex-direction: column; align-items: flex-start; margin-top: 40px; }
 }
 </style>
