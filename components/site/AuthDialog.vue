@@ -137,11 +137,7 @@ const HEAD = {
     <Transition name="au">
       <div v-if="auth.open" class="au-wrap" @pointerdown.self="closeAuth">
         <div ref="dialog" class="au-col" role="dialog" aria-modal="true" aria-labelledby="au-title">
-          <!-- The guest's question stays in view -->
-          <div v-if="auth.question" class="au-q">
-            <span class="au-q-label">Your question</span>
-            <p class="au-q-text">{{ auth.question }}</p>
-          </div>
+          <!-- the guest's question is not shown here (user, 11.10) — it is still kept and sent in the app after sign-in -->
 
           <div class="card">
             <button class="au-x" aria-label="Close" @click="closeAuth"><i class="pi pi-times" /></button>
@@ -216,9 +212,6 @@ const HEAD = {
 p { margin: 0; }
 .au-wrap { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px; overflow-y: auto; background: rgb(0 0 0 / .55); backdrop-filter: blur(3px); }
 .au-col { display: flex; flex-direction: column; gap: 12px; width: min(440px, calc(100vw - 24px)); }
-.au-q { display: grid; gap: 2px; padding: 12px 16px; border-radius: 14px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
-.au-q-label { color: var(--fd-muted); font: 500 13px/18px var(--fd-font-sans); }
-.au-q-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--fd-ink); font: 400 15px/22px var(--fd-font-sans); }
 
 /* card: one panel, generous padding, the page's radius */
 .card { position: relative; display: flex; flex-direction: column; gap: 28px; padding: 40px 36px 32px; border-radius: 20px; border: 1px solid var(--fd-line); background: var(--fd-panel); box-shadow: var(--fd-overlay-shadow); }
