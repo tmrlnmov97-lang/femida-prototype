@@ -147,26 +147,30 @@ const open = ref<number | null>(0);
       </div>
     </section>
 
-    <!-- ============ 06 FAQ — one centred column ============ -->
+    <!-- ============ 06 FAQ — heading on the left, a hairline accordion on the right ============ -->
     <section id="faq" class="faq">
-      <div class="container">
-        <div class="head"><p class="eyebrow">FAQ</p><h2 class="h2">Questions lawyers ask&nbsp;us</h2></div>
+      <div class="container faq-in">
+        <div class="faq-intro">
+          <h2 class="h2">Questions lawyers ask&nbsp;us</h2>
+          <p class="faq-more">Something else? Write to us and we’ll&nbsp;answer.</p>
+          <a class="faq-mail" href="mailto:femidai@femid.ai">femidai@femid.ai<i class="pi pi-arrow-right" /></a>
+        </div>
         <div class="faq-list">
           <div v-for="(f, i) in FAQ" :key="f.q" class="faq-item" :class="{ open: open === i }">
-            <button class="faq-row" :aria-expanded="open === i" @click="open = open === i ? null : i">
-              <span>{{ f.q }}</span><span class="faq-ic"><i class="pi pi-plus" /></span>
+            <button :id="`faq-q${i}`" class="faq-row" :aria-expanded="open === i" :aria-controls="`faq-a${i}`" @click="open = open === i ? null : i">
+              <span>{{ f.q }}</span><i class="pi pi-plus faq-ic" />
             </button>
-            <p v-if="open === i" class="faq-a">{{ f.a }}</p>
+            <!-- grid-rows trick: the answer opens and closes smoothly, no jump -->
+            <div :id="`faq-a${i}`" class="faq-a" role="region" :aria-labelledby="`faq-q${i}`"><div><p>{{ f.a }}</p></div></div>
           </div>
         </div>
-        <p class="faq-more">Something else? Write to <a href="mailto:femidai@femid.ai">femidai@femid.ai</a></p>
       </div>
     </section>
 
     <!-- ============ 07 CTA — the chat right here ============ -->
     <section class="cta container">
       <div class="cta-panel">
-        <h2 class="h2">Ask your first&nbsp;question</h2>
+        <h2 class="h2 no-tie">Ask&nbsp;your first&nbsp;question</h2>
         <p class="lead">For lawyers, advocates and law firms in&nbsp;Armenia.</p>
         <div class="chat-wrap cta-chat"><ChatComposer variant="hero" gate input-id="cta-input" :placeholder="PH" @ask="openAuth('register', $event)" /></div>
         <p class="cta-note">50 free questions · No card needed</p>
@@ -221,6 +225,7 @@ section { scroll-margin-top: 88px; }
 @keyframes fd-fade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .w, .rise, .fade, .pill, .m-menu a { animation: none; }
+  .faq-a, .faq-a p, .faq-ic { transition: none; }
   .pill, .header, .header::before, .nav-hl, .try .go, .nav a::after, .spin-enter-active, .spin-leave-active { transition: none; }
 }
 .h2 { color: var(--fd-ink); font: 600 52px/58px var(--fd-font-serif); letter-spacing: -.8px; text-align: center; text-wrap: balance; }
@@ -348,18 +353,27 @@ section { scroll-margin-top: 88px; }
 
 /* ============ 06 FAQ ============ */
 .faq { padding: 120px 0; background: var(--band); } /* sections alternate: hero · product (band) · pricing · FAQ (band) · CTA */
-.faq-list { display: flex; flex-direction: column; gap: 12px; width: min(820px, 100%); margin: 48px auto 0; }
-.faq-item { border-radius: 20px; border: 1px solid var(--fd-line); background: var(--fd-panel); transition: border-color .2s; }
-.faq-item.open { border-color: color-mix(in srgb, var(--fd-accent) 45%, var(--fd-line)); }
-.faq-row { display: flex; align-items: center; gap: 16px; width: 100%; padding: 20px 20px 20px 24px; border: 0; border-radius: 20px; background: none; cursor: pointer; text-align: left;
-  color: var(--fd-ink); font: 600 17px/26px var(--fd-font-sans); }
-.faq-row > span:first-child { flex: 1; min-width: 0; }
-.faq-ic { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 999px; border: 1px solid var(--fd-line); color: var(--fd-muted); transition: transform .2s var(--fd-easing), background-color .2s; }
-.faq-ic .pi { font-size: 12px; }
-.open .faq-ic { transform: rotate(45deg); border-color: transparent; background: var(--fd-accent-soft); color: var(--fd-accent-text); }
-.faq-a { margin-top: -6px; padding: 0 24px 22px; color: var(--fd-muted); font: 400 16px/26px var(--fd-font-sans); }
-.faq-more { margin-top: 28px; color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); text-align: center; }
-.faq-more a { color: var(--fd-accent-text); font-weight: 500; }
+.faq-in { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; gap: 64px; }
+.faq-intro { position: sticky; top: 112px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.faq-intro .h2 { text-align: left; }
+.faq-more { color: var(--fd-muted); font: 400 16px/26px var(--fd-font-sans); }
+.faq-mail { display: inline-flex; align-items: center; gap: 8px; color: var(--fd-ink); font: 500 15px/22px var(--fd-font-sans); border-bottom: 1px solid var(--fd-line); padding-bottom: 2px; transition: border-color .15s; }
+.faq-mail .pi { font-size: 11px; color: var(--fd-muted); transition: transform .2s var(--fd-easing); }
+.faq-mail:hover { border-color: var(--fd-ink); }
+.faq-mail:hover .pi { transform: translateX(3px); }
+.faq-list { border-top: 1px solid var(--fd-line); }
+.faq-item { border-bottom: 1px solid var(--fd-line); }
+.faq-row { display: flex; align-items: center; gap: 24px; width: 100%; padding: 24px 0; border: 0; background: none; cursor: pointer; text-align: left;
+  color: var(--fd-ink); font: 500 18px/26px var(--fd-font-sans); transition: color .15s; }
+.faq-row > span { flex: 1; min-width: 0; }
+.faq-ic { flex-shrink: 0; color: var(--fd-muted); font-size: 14px; transition: transform .25s var(--fd-easing), color .2s; }
+.faq-row:hover .faq-ic { color: var(--fd-ink); }
+.open .faq-ic { transform: rotate(45deg); color: var(--fd-accent-text); }
+.faq-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--fd-easing); }
+.faq-a > div { overflow: hidden; }
+.faq-a p { max-width: 620px; padding: 0 40px 26px 0; color: var(--fd-muted); font: 400 16px/26px var(--fd-font-sans); opacity: 0; transition: opacity .2s; }
+.open .faq-a { grid-template-rows: 1fr; }
+.open .faq-a p { opacity: 1; transition-delay: .06s; }
 
 /* ============ 07 CTA ============ */
 .cta { padding: 40px 0 120px; }
@@ -423,9 +437,10 @@ section { scroll-margin-top: 88px; }
   .pl-num { font-size: 44px; }
   .pl-feats { margin: 22px 0 26px; padding-top: 22px; }
   .faq { padding: 72px 0; }
-  .faq-list { margin-top: 32px; gap: 10px; }
-  .faq-row { padding: 16px 16px 16px 18px; font-size: 16px; line-height: 24px; }
-  .faq-a { padding: 0 18px 18px; font-size: 15px; line-height: 24px; }
+  .faq-in { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .faq-intro { position: static; }
+  .faq-row { gap: 16px; padding: 18px 0; font-size: 16px; line-height: 24px; }
+  .faq-a p { padding: 0 0 20px; font-size: 15px; line-height: 24px; }
   .cta { padding: 16px 0 72px; }
   .cta-panel { padding: 48px 18px 36px; border-radius: 24px; }
   .ft-top { flex-direction: column; gap: 28px; }
