@@ -351,7 +351,7 @@ section { scroll-margin-top: 88px; }
 .drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-6px); }
 
 /* ============ 01 Hero ============ */
-.hero { position: relative; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 112px 0 120px; }
+.hero { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; min-height: calc(100dvh - 76px); padding: 40px 0 88px; } /* the first screen is the chat only — the next section starts below the fold */
 .hero-lead { max-width: 580px; }
 .chat-wrap { width: min(800px, 100%); margin-top: 12px; text-align: left; }
 .chat-wrap :deep(.composer) { border-radius: 24px; }
@@ -514,7 +514,7 @@ section { scroll-margin-top: 88px; }
   .h1 { font-size: 44px; line-height: 48px; letter-spacing: -.9px; }
   .h2 { font-size: 32px; line-height: 38px; letter-spacing: -.4px; }
   .lead { font-size: 17px; line-height: 27px; }
-  .hero { gap: 20px; padding: 64px 0 72px; }
+  .hero { gap: 20px; min-height: calc(100dvh - 72px); padding: 32px 0 64px; }
   .checks { gap: 6px 18px; }
   .check { font-size: 14px; }
   .band, .cap { padding: 72px 0; }
