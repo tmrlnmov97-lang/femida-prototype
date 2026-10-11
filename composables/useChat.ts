@@ -26,6 +26,7 @@ export const ANSWER_LENGTH = ANSWER_BLOCKS.reduce((n, b) => n + b.length, 0);
 const state = reactive({
   messages: [] as Msg[],
   remaining: 42,
+  upsell: false, // out of credits → the plan picker over the chat (UpgradeDialog), like Claude
   mode: 'auto' as ModeId,
   skipClarifying: false,
   file: null as null | { name: string; size: string },
@@ -65,10 +66,13 @@ export function useChat() {
   const isEmpty = computed(() => state.messages.length === 0);
   const outOfQuestions = computed(() => state.remaining <= 0);
   const low = computed(() => state.remaining > 0 && state.remaining <= 10);
+  // one credit per answer; the last one opens the plan picker a moment after the answer lands
+  function spend() { state.remaining = Math.max(0, state.remaining - 1); if (state.remaining === 0) later(() => { state.upsell = true; }, 600); }
 
   function send(text: string) {
     const q = text.trim();
-    if ((!q && !state.file) || state.busy || outOfQuestions.value) return;
+    if (outOfQuestions.value) { state.upsell = true; return; } // asking with no credits left opens the plans
+    if ((!q && !state.file) || state.busy) return;
     state.messages.push({ id: seq++, role: 'user', text: q || 'Please analyse the attached document.', mode: state.mode, file: state.file?.name });
     const msg = reactive<AssistantMsg>({ id: seq++, role: 'assistant', mode: state.mode, status: 'searching', progress: 0, sources: [], deepStep: 0, question: q });
     state.messages.push(msg);
@@ -100,17 +104,17 @@ export function useChat() {
       const tick = () => {
         msg.deepStep++;
         if (msg.deepStep < DEEP_STEPS.length) later(tick, 900);
-        else stream(msg, () => { state.remaining--; finish(); });
+        else stream(msg, () => { spend(); finish(); });
       };
       later(tick, 900);
       return;
     }
-    later(() => stream(msg, () => { state.remaining--; finish(); }), 1100);
+    later(() => stream(msg, () => { spend(); finish(); }), 1100);
   }
 
   function newChat() {
     clearTimers();
-    state.messages = []; state.busy = false; state.sourcesOpen = false; state.activeSource = null; state.file = null; state.caseCtx = null; state.chatTitle = null;
+    state.messages = []; state.busy = false; state.sourcesOpen = false; state.activeSource = null; state.file = null; state.caseCtx = null; state.chatTitle = null; state.upsell = false;
   }
 
   /** Draft (or re-draft) the plan; ends with "Would you like to proceed?" in the dock. */
@@ -133,7 +137,7 @@ export function useChat() {
     if (msg.status !== 'plan') return;
     msg.approved = how;
     state.busy = true; if (autoSources()) state.sourcesOpen = true; msg.status = 'searching';
-    later(() => stream(msg, () => { state.remaining--; state.busy = false; }), 900);
+    later(() => stream(msg, () => { spend(); state.busy = false; }), 900);
   }
 
   /** Stop drafting the plan — nothing is counted. */
@@ -180,7 +184,8 @@ export function useChat() {
       case 'error-quota': push('error', { errorKind: 'quota' }); break;
       case 'error-service': push('error', { errorKind: 'service' }); break;
       case 'low': state.remaining = 8; break;
-      case 'out': state.remaining = 0; push('done', { progress: ANSWER_LENGTH, sources: [...SOURCES] }); break;
+      case 'out': state.remaining = 0; push('done', { progress: ANSWER_LENGTH, sources: [...SOURCES] }); later(() => { state.upsell = true; }, 400); break;
+      case 'last': state.remaining = 1; break; // one credit left: the next answer uses it and the plans pop up
       default: break;
     }
   }

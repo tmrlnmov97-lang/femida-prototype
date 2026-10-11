@@ -1,3 +1,7 @@
+<script setup lang="ts">
+const { state } = useChat();
+</script>
+
 <template>
   <div class="oq" role="status">
     <span class="mark"><i class="pi pi-database" /></span>
@@ -5,7 +9,7 @@
       <h3 class="t-label">You’ve used all 50 credits</h3>
       <p class="t-body-sm">Choose a plan to keep asking — your chats and documents&nbsp;stay.</p>
     </div>
-    <PButton label="View plans" icon="pi pi-arrow-right" icon-pos="right" rounded />
+    <PButton label="View plans" icon="pi pi-arrow-right" icon-pos="right" rounded @click="state.upsell = true" />
   </div>
 </template>
 

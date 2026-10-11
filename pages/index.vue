@@ -137,7 +137,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure));
             <SourcesPanel :sources="lastAssistant!.sources" :loading="sourcesLoading" />
           </div>
         </Transition>
-    <template #overlay><DemoStates /></template>
+    <template #overlay><DemoStates /><UpgradeDialog /></template>
   </AppShell>
 </template>
 
