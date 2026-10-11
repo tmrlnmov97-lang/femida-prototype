@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { SOURCES as SRC, ANSWER } from '~/data/mock';
 
 // Public website · Home v3 — the approved wireframe v2 (Figma MuXNHQVKOE55lGpjzUIOWt, page «Landing · Wireframe» 165:2, frames 170:93 / 170:405)
-// in the Sage palette. Order: floating header · hero with the chat · proof demo · capabilities bento · pricing · FAQ · CTA with the chat · footer.
+// in the Sage palette. Order: floating header · hero with the chat · product window (chat with sources + tools) · pricing · FAQ · CTA with the chat · footer.
 // Copy comes from the Figma Home (33:2) and the app mock — nothing new is claimed. Sample content is marked SAMPLE.
 useHead({ title: 'femid.ai — Legal answers you can verify' });
 
@@ -43,27 +42,6 @@ const { openAuth } = useAuthDialog();
 const PH = 'Ask a legal question or attach a\u00a0document…';
 const HEADLINE = [['Legal', 'answers'], ['you', 'can', 'verify.']];
 const NAV = [['Product', '#product'], ['Pricing', '#pricing'], ['FAQ', '#faq'], ['About', '#'], ['Blog', '#']];
-
-// Proof demo — the same SAMPLE answer and sources as the coded Chat (data/mock), real answer pending [OPEN — CTO Q11]
-const tab = ref<'answer' | 'refusal'>('answer');
-const QUESTION = 'Can an employee contest a dismissal after the one-month deadline if they were in hospital?';
-const CITED = SRC.slice(0, 2);
-const activeSrc = ref(1);
-// Text → segments; a citation keeps the word before it and the punctuation after it on one line ("request [2].")
-type Seg = { t: string } | { word: string; n: number; tail: string };
-function split(s: string): Seg[] {
-  const out: Seg[] = []; const re = /\s*\[(\d+)\]([.,;:]?)/g; let last = 0; let m: RegExpExecArray | null;
-  while ((m = re.exec(s))) {
-    const before = s.slice(last, m.index); const sp = before.lastIndexOf(' ');
-    if (sp >= 0) out.push({ t: before.slice(0, sp + 1) });
-    out.push({ word: before.slice(sp + 1), n: +m[1], tail: m[2] });
-    last = re.lastIndex;
-  }
-  if (last < s.length) out.push({ t: s.slice(last) });
-  return out;
-}
-const PARAS = [split(ANSWER.short), split(ANSWER.paragraphs[0])];
-const nb = (s: string) => s.replace(/ (?=\S+$)/, '\u00a0'); // no widows in mock strings
 
 const PLANS = [
   { name: 'Pokr Mher', price: '5,000', desc: 'Basic Q&A for individual\u00a0users', feats: ['Basic Q&A with sources', 'For individual users'] },
@@ -134,79 +112,15 @@ const open = ref<number | null>(0);
       </div>
     </section>
 
-    <!-- ============ 03 Proof — one product frame, two tabs ============ -->
-    <section class="band">
-      <div class="container col">
+    <!-- ============ 03 Product — one window: an answer with sources, a refusal and the tools (replaced the proof demo and the bento) ============ -->
+    <section id="product" class="cap">
+      <div class="container">
         <div class="head">
           <p class="eyebrow">How femid.ai answers</p>
           <h2 class="h2">If we can’t cite it, <span class="grad">we don’t say&nbsp;it.</span></h2>
           <p class="lead head-lead">femid.ai answers only when it can point to a law, a court decision or ECHR practice. Otherwise it tells you&nbsp;so.</p>
         </div>
-        <div class="tabs" role="tablist" aria-label="Example">
-          <button class="tab" role="tab" :class="{ on: tab === 'answer' }" :aria-selected="tab === 'answer'" @click="tab = 'answer'"><i class="pi pi-verified" />Answer with sources</button>
-          <button class="tab" role="tab" :class="{ on: tab === 'refusal' }" :aria-selected="tab === 'refusal'" @click="tab = 'refusal'"><i class="pi pi-shield" />No source → no answer</button>
-        </div>
-
-        <div class="demo">
-          <div class="d-bar">
-            <span class="dots"><span /><span /><span /></span>
-            <span class="d-title">{{ tab === 'answer' ? 'Contesting a dismissal' : 'New chat' }}</span>
-            <span class="tag sample">SAMPLE</span>
-          </div>
-          <Transition name="swap" mode="out-in">
-            <div v-if="tab === 'answer'" key="a" class="d-body">
-              <div class="d-chat">
-                <p class="bubble">{{ nb(QUESTION) }}</p>
-                <div class="who"><span class="who-ic"><i class="pi pi-shield" /></span><b>femid.ai</b><span class="tag">2 sources</span></div>
-                <div class="answer">
-                  <p v-for="(p, pi) in PARAS" :key="pi" :class="{ first: pi === 0 }">
-                    <template v-for="(seg, si) in p" :key="si">
-                      <span v-if="'n' in seg" class="nw">{{ seg.word }}&nbsp;<button class="cite" :class="{ on: activeSrc === seg.n }" :aria-label="`Source ${seg.n}`" @click="activeSrc = seg.n">{{ seg.n }}</button>{{ seg.tail }}</span>
-                      <template v-else>{{ seg.t }}</template>
-                    </template>
-                  </p>
-                </div>
-                <div class="acts" aria-hidden="true">
-                  <span><i class="pi pi-copy" />Copy</span><span><i class="pi pi-bookmark" />Save to notes</span><span><i class="pi pi-sitemap" />How this answer was found</span>
-                </div>
-              </div>
-              <aside class="d-src" aria-label="Sources">
-                <p class="d-src-h">Sources</p>
-                <button v-for="s in CITED" :key="s.n" class="src" :class="{ on: activeSrc === s.n }" @click="activeSrc = s.n">
-                  <span class="src-k"><span class="src-n">{{ s.n }}</span>{{ s.kind }}</span>
-                  <span class="src-t">{{ nb(s.title) }}</span>
-                  <span class="src-r">{{ s.ref }}</span>
-                  <span v-if="activeSrc === s.n" class="src-q">{{ nb(s.quote) }}</span>
-                </button>
-              </aside>
-            </div>
-            <div v-else key="r" class="d-body solo">
-              <div class="d-chat narrow">
-                <p class="bubble">How to bake a cake?</p>
-                <RefusalCard />
-              </div>
-            </div>
-          </Transition>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 04 Capabilities — bento ============ -->
-    <section id="product" class="cap">
-      <div class="container">
-        <div class="head">
-          <p class="eyebrow">What femid.ai does</p>
-          <h2 class="h2 cap-title">One assistant for the whole legal&nbsp;question.</h2>
-        </div>
-        <div class="bento">
-          <!-- the five tools as one live product window (replaces the screenshot placeholders) -->
-          <ProductTour class="tour-wrap" />
-          <article class="firms">
-            <span class="f-ic"><i class="pi pi-users" /></span>
-            <div class="f-copy"><h3 class="t-title">Built for firms</h3><p class="t-body">Shared seats and invites. Counsel works under an organisation&nbsp;contract.</p></div>
-            <a class="btn secondary" href="mailto:femidai@femid.ai">Talk to us</a>
-          </article>
-        </div>
+        <ProductTour class="tour-block" />
       </div>
     </section>
 
@@ -238,6 +152,11 @@ const open = ref<number | null>(0);
             <button class="btn primary" @click="openAuth('register')">Choose Davit</button>
           </div>
         </div>
+        <article class="firms">
+          <span class="f-ic"><i class="pi pi-users" /></span>
+          <div class="f-copy"><h3 class="t-title">Built for firms</h3><p class="t-body">Shared seats and invites. Counsel works under an organisation&nbsp;contract.</p></div>
+          <a class="btn secondary" href="mailto:femidai@femid.ai">Talk to us</a>
+        </article>
         <div class="safe">
           <span v-for="s in SAFE" :key="s.t"><i class="pi" :class="s.i" />{{ s.t }}</span>
         </div>
@@ -410,57 +329,13 @@ section { scroll-margin-top: 88px; }
 .check { display: flex; align-items: center; gap: 8px; color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); white-space: nowrap; }
 .check .pi { color: var(--fd-accent-text); font-size: 12px; }
 
-/* ============ 03 Proof ============ */
+/* ============ 03 Product ============ */
 .band { padding: 120px 0; background: var(--band); }
-.tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
-.tab { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 18px; border-radius: 999px; border: 0; background: none; cursor: pointer; white-space: nowrap;
-  color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); transition: background-color .15s, color .15s; }
-.tab .pi { font-size: 13px; }
-.tab:hover { color: var(--fd-ink); }
-.tab.on { background: var(--fd-accent-soft); color: var(--fd-accent-text); font-weight: 600; }
-.demo { width: 100%; overflow: hidden; border-radius: 28px; border: 1px solid var(--fd-line); background: var(--fd-bg); box-shadow: var(--lift); }
-.d-bar { display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 20px; border-bottom: 1px solid var(--fd-line); background: var(--fd-panel); }
-.dots { display: flex; gap: 6px; width: 90px; }
-.dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--fd-line); }
-.d-title { flex: 1; overflow: hidden; color: var(--fd-muted); font: 500 14px/20px var(--fd-font-sans); text-align: center; text-overflow: ellipsis; white-space: nowrap; }
-.d-bar .tag { width: 90px; justify-content: center; }
-.d-body { display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 440px; }
-.d-body.solo { grid-template-columns: minmax(0, 1fr); }
-.d-chat { display: flex; flex-direction: column; gap: 20px; padding: 36px 44px; }
-.d-chat.narrow { width: min(760px, 100%); margin: 0 auto; }
-.bubble { align-self: flex-end; max-width: min(520px, 90%); padding: 12px 18px; border-radius: 20px 20px 6px 20px; background: var(--fd-panel-2); color: var(--fd-ink); font: 400 16px/26px var(--fd-font-sans); }
-.who { display: flex; align-items: center; gap: 10px; color: var(--fd-ink); font: 600 15px/20px var(--fd-font-sans); }
-.who-ic { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 999px; background: var(--fd-accent-soft); color: var(--fd-accent-text); }
-.who-ic .pi { font-size: 13px; }
-.answer { display: flex; flex-direction: column; gap: 14px; color: var(--fd-ink); font: 400 17px/28px var(--fd-font-sans); }
-.answer .first { font-weight: 500; }
-.nw { white-space: nowrap; }
-.cite { display: inline-grid; place-items: center; min-width: 22px; height: 22px; margin: 0 2px; padding: 0 6px; border-radius: 6px; border: 0; vertical-align: 2px; cursor: pointer;
-  background: var(--fd-accent-soft); color: var(--fd-accent-text); font: 600 12px/1 var(--fd-font-sans); transition: background-color .15s, color .15s; }
-.cite.on, .cite:hover { background: var(--fd-accent); color: var(--fd-on-accent); }
-.acts { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: auto; color: var(--fd-muted); font: 500 14px/20px var(--fd-font-sans); }
-.acts span { display: flex; align-items: center; gap: 7px; }
-.acts .pi { font-size: 13px; }
-.d-src { display: flex; flex-direction: column; gap: 10px; padding: 24px; border-left: 1px solid var(--fd-line); background: var(--fd-panel); }
-.d-src-h { color: var(--fd-ink); font: 600 15px/20px var(--fd-font-sans); }
-.src { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--fd-line); background: var(--fd-bg); cursor: pointer; text-align: left;
-  transition: border-color .2s, box-shadow .2s; }
-.src.on { border-color: var(--fd-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fd-accent) 18%, transparent); }
-.src-k { display: flex; align-items: center; gap: 8px; color: var(--fd-muted); font: 600 12px/16px var(--fd-font-sans); letter-spacing: .6px; text-transform: uppercase; }
-.src-n { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; background: var(--fd-accent-soft); color: var(--fd-accent-text); font-size: 11px; letter-spacing: 0; }
-.src-t { margin-top: 4px; color: var(--fd-ink); font: 600 15px/22px var(--fd-font-sans); }
-.src-r { color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); }
-.src-q { margin-top: 8px; padding: 8px 12px; border-left: 2px solid var(--fd-accent); border-radius: 0 8px 8px 0; background: var(--fd-panel-2); color: var(--fd-muted); font: 400 14px/22px var(--fd-font-sans); }
-.swap-enter-active, .swap-leave-active { transition: opacity .18s ease; }
-.swap-enter-from, .swap-leave-to { opacity: 0; }
-
-/* ============ 04 Capabilities ============ */
 .cap { padding: 120px 0; }
-.cap-title { max-width: 820px; }
-.bento { display: grid; gap: 20px; margin-top: 56px; }
+.tour-block { margin-top: 56px; }
 .t-title { color: var(--fd-ink); font: 600 21px/28px var(--fd-font-sans); }
 .t-body { color: var(--fd-muted); font: 400 16px/26px var(--fd-font-sans); text-wrap: pretty; }
-.firms { grid-column: 1 / -1; display: flex; align-items: center; gap: 20px; padding: 28px 32px; border-radius: 24px;
+.firms { align-self: stretch; display: flex; align-items: center; gap: 20px; padding: 28px 32px; border-radius: 24px;
   border: 1px solid color-mix(in srgb, var(--fd-accent) 30%, transparent); background: var(--fd-accent-soft); }
 .f-ic { display: grid; place-items: center; width: 52px; height: 52px; flex-shrink: 0; border-radius: 999px; background: var(--fd-panel); color: var(--fd-accent-text); }
 .f-ic .pi { font-size: 18px; }
@@ -537,8 +412,6 @@ section { scroll-margin-top: 88px; }
   .nav { gap: 20px; }
   .h1 { font-size: 68px; line-height: 72px; }
   .h2 { font-size: 44px; line-height: 50px; }
-  .d-body { grid-template-columns: minmax(0, 1fr) 320px; }
-  .d-chat { padding: 28px 32px; }
   .pl-num { font-size: 34px; line-height: 42px; }
   .plan { padding: 24px; }
 }
@@ -559,18 +432,7 @@ section { scroll-margin-top: 88px; }
   .check { font-size: 14px; }
   .band, .cap { padding: 72px 0; }
   .col { gap: 28px; }
-  .tabs { width: 100%; }
-  .tab { flex: 1; padding: 9px 8px; font-size: 13px; }
-  .tab .pi { display: none; }
-  .demo { border-radius: 22px; }
-  .d-bar { height: 46px; padding: 0 14px; }
-  .dots { width: 52px; }
-  .d-bar .tag { width: auto; }
-  .d-body { grid-template-columns: minmax(0, 1fr); min-height: 0; }
-  .d-chat { padding: 20px 18px; gap: 16px; }
-  .answer { font-size: 16px; line-height: 26px; }
-  .d-src { padding: 18px; border-left: 0; border-top: 1px solid var(--fd-line); }
-  .bento { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 36px; }
+  .tour-block { margin-top: 36px; }
   .firms { flex-direction: column; align-items: flex-start; gap: 14px; padding: 24px; }
   .trial { flex-direction: column; gap: 12px; width: 100%; padding: 18px; border-radius: 22px; text-align: center; }
   .tr-text { justify-content: center; }
