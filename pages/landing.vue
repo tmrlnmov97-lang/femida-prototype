@@ -43,12 +43,13 @@ const PH = 'Ask a legal question or attach a\u00a0document…';
 const HEADLINE = [['Legal', 'answers'], ['you', 'can', 'verify.']];
 const NAV = [['Product', '#product'], ['Pricing', '#pricing'], ['FAQ', '#faq'], ['About', '#'], ['Blog', '#']];
 
-// Pricing (prices from the brief; plan copy 1:1 with the live site). Davit is the only plan on sale now, so it is the featured,
-// inverted card in the middle; the others are "Soon". No monthly/yearly switch — there are no yearly prices [OPEN].
+// Pricing (prices from the brief; plan copy 1:1 with the live site). Minimal on purpose (user, 11.10: "minimal and professional,
+// not AI-looking"): a price ladder, equal cards, Davit — the only plan on sale — marked by a firmer border and the one green
+// button. No monthly/yearly switch — there are no yearly prices [OPEN].
 const PLANS = [
   { name: 'Pokr Mher', price: '5,000', desc: 'Basic Q&A for individual\u00a0users', feats: ['Basic Q&A with sources', 'For individual users'], soon: true },
-  { name: 'Davit', price: '200,000', desc: 'In-depth legal research with full\u00a0sources', feats: ['Document analysis', 'Drafting', 'Priority support'], featured: true },
   { name: 'Mets Mher', price: '20,000', desc: 'Extended features for medium\u00a0workloads', feats: ['Extended features', 'For medium workloads'], soon: true },
+  { name: 'Davit', price: '200,000', desc: 'In-depth legal research with full\u00a0sources', feats: ['Document analysis', 'Drafting', 'Priority support'], featured: true },
 ];
 const SAFE = [
   { i: 'pi-lock', t: 'Files up to 25 MB, stored encrypted' },
@@ -149,11 +150,10 @@ const open = ref<number | null>(0);
             <p class="pl-price"><span class="pl-num">{{ p.price }}</span><span class="pl-per">AMD / month</span></p>
             <button v-if="p.featured" class="pl-btn go" @click="openAuth('register')">Choose {{ p.name }}</button>
             <button v-else class="pl-btn" disabled>Coming soon</button>
-            <ul class="pl-feats"><li v-for="f in p.feats" :key="f"><span class="tick"><i class="pi pi-check" /></span>{{ f }}</li></ul>
+            <ul class="pl-feats"><li v-for="f in p.feats" :key="f"><i class="pi pi-check" />{{ f }}</li></ul>
           </div>
         </div>
         <article class="firms">
-          <span class="f-ic"><i class="pi pi-users" /></span>
           <div class="f-copy"><h3 class="t-title">Built for firms</h3><p class="t-body">Shared seats and invites. Counsel works under an organisation&nbsp;contract.</p></div>
           <a class="btn secondary" href="mailto:femidai@femid.ai">Talk to us</a>
         </article>
@@ -335,45 +335,40 @@ section { scroll-margin-top: 88px; }
 .tour-block { margin-top: 56px; }
 .t-title { color: var(--fd-ink); font: 600 21px/28px var(--fd-font-sans); }
 .t-body { color: var(--fd-muted); font: 400 16px/26px var(--fd-font-sans); text-wrap: pretty; }
-.firms { align-self: stretch; display: flex; align-items: center; gap: 20px; padding: 28px 32px; border-radius: 24px;
-  border: 1px solid color-mix(in srgb, var(--fd-accent) 30%, transparent); background: var(--fd-accent-soft); }
+.firms { align-self: stretch; display: flex; align-items: center; gap: 20px; padding: 24px 28px; border-radius: 20px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
+.firms .t-title { font-size: 17px; line-height: 24px; }
+.firms .t-body { font-size: 15px; line-height: 23px; }
 .f-ic { display: grid; place-items: center; width: 52px; height: 52px; flex-shrink: 0; border-radius: 999px; background: var(--fd-panel); color: var(--fd-accent-text); }
 .f-ic .pi { font-size: 18px; }
 .f-copy { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
 
 /* ============ 05 Pricing ============ */
-.trial { display: flex; align-items: center; gap: 24px; padding: 8px 8px 8px 28px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--fd-accent) 40%, var(--fd-line)); background: var(--fd-panel); }
+.trial { display: flex; align-items: center; gap: 24px; padding: 8px 8px 8px 24px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
 .tr-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
 .tr-text b { color: var(--fd-ink); font: 600 16px/24px var(--fd-font-sans); }
 .tr-text span { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
-/* plans: the reference's format (three cards, the featured one raised in the middle) in our Sage style —
-   panels, a soft accent wash + accent rim + glow on the featured card, serif price, pill buttons, ticks in accent circles */
-.plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; gap: 20px; width: 100%; }
-.plan { position: relative; display: flex; flex-direction: column; padding: 36px 34px 38px; border-radius: 28px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
-.plan.featured { padding-top: 56px; padding-bottom: 58px; border-color: color-mix(in srgb, var(--fd-accent) 55%, var(--fd-line));
-  background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--fd-accent) 16%, transparent), transparent 70%), var(--fd-panel);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--fd-accent) 8%, transparent), 0 40px 90px -30px color-mix(in srgb, var(--fd-accent) 40%, transparent); }
+/* plans: minimal — equal cards, hairlines, no glow / wash / colour fills; the plan on sale is marked by a firmer border and the
+   one accent button */
+.plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; width: 100%; }
+.plan { display: flex; flex-direction: column; padding: 32px; border-radius: 20px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
+.plan.featured { border-color: color-mix(in srgb, var(--fd-ink) 32%, transparent); }
 .pl-top { display: flex; align-items: center; gap: 8px; }
-.pl-name { flex: 1; color: var(--fd-ink); font: 600 22px/30px var(--fd-font-sans); }
-.pl-tag { flex-shrink: 0; padding: 3px 10px; border-radius: 999px; background: var(--fd-accent-soft); color: var(--fd-accent-text); font: 600 12px/18px var(--fd-font-sans); }
-.pl-tag.soon { background: var(--fd-amber-soft); color: var(--fd-amber); }
-.pl-desc { margin-top: 6px; color: var(--fd-muted); font: 400 15px/23px var(--fd-font-sans); }
-.pl-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 32px 0 28px; }
-.pl-num { color: var(--fd-ink); font: 700 48px/1 var(--fd-font-serif); letter-spacing: -.8px; white-space: nowrap; }
-.featured .pl-num { color: var(--fd-ink); }
-.pl-per { color: var(--fd-muted); font: 400 15px/22px var(--fd-font-sans); white-space: nowrap; }
-.pl-btn { height: 48px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-panel-2); color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); cursor: not-allowed; }
-.pl-btn.go { border-color: transparent; background: var(--fd-accent); color: var(--fd-on-accent); cursor: pointer; transition: background-color .15s, transform .12s; }
+.pl-name { flex: 1; color: var(--fd-ink); font: 600 17px/24px var(--fd-font-sans); }
+.pl-tag { flex-shrink: 0; padding: 1px 8px; border-radius: 6px; border: 1px solid var(--fd-line); color: var(--fd-muted); font: 500 12px/18px var(--fd-font-sans); }
+.pl-desc { margin-top: 4px; color: var(--fd-muted); font: 400 14px/22px var(--fd-font-sans); }
+.pl-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 28px 0 24px; }
+.pl-num { color: var(--fd-ink); font: 600 40px/1 var(--fd-font-sans); letter-spacing: -1.2px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pl-per { color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); white-space: nowrap; }
+.pl-btn { height: 42px; border-radius: 999px; border: 1px solid var(--fd-line); background: none; color: var(--fd-muted); font: 500 14px/20px var(--fd-font-sans); cursor: not-allowed; }
+.pl-btn.go { border-color: transparent; background: var(--fd-accent); color: var(--fd-on-accent); cursor: pointer; transition: background-color .15s; }
 .pl-btn.go:hover { background: var(--fd-accent-hover); }
-.pl-btn.go:active { transform: scale(.98); }
 .pl-btn:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
-.pl-feats { display: flex; flex-direction: column; gap: 14px; margin-top: 28px; padding: 28px 0 0; border-top: 1px solid var(--fd-line); list-style: none; }
-.pl-feats li { display: flex; align-items: center; gap: 12px; color: var(--fd-ink); font: 400 15px/24px var(--fd-font-sans); }
-.tick { display: grid; place-items: center; width: 22px; height: 22px; flex-shrink: 0; border-radius: 999px; background: var(--fd-accent-soft); color: var(--fd-accent-text); }
-.tick .pi { font-size: 10px; }
+.pl-feats { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; padding: 24px 0 0; border-top: 1px solid var(--fd-line); list-style: none; }
+.pl-feats li { display: flex; align-items: center; gap: 10px; color: var(--fd-ink); font: 400 14px/22px var(--fd-font-sans); }
+.pl-feats .pi { color: var(--fd-muted); font-size: 11px; }
 .safe { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 32px; }
 .safe span { display: flex; align-items: center; gap: 10px; color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
-.safe .pi { color: var(--fd-accent-text); font-size: 14px; }
+.safe .pi { color: var(--fd-muted); font-size: 13px; }
 
 /* ============ 06 FAQ ============ */
 .faq { padding: 120px 0; background: var(--band); } /* sections alternate: hero · product (band) · pricing · FAQ (band) · CTA */
@@ -422,9 +417,8 @@ section { scroll-margin-top: 88px; }
   .nav { gap: 20px; }
   .h1 { font-size: 68px; line-height: 72px; }
   .h2 { font-size: 44px; line-height: 50px; }
-  .pl-num { font-size: 38px; }
-  .plan { padding: 30px 24px 32px; }
-  .plan.featured { padding-top: 44px; padding-bottom: 46px; }
+  .pl-num { font-size: 34px; }
+  .plan { padding: 26px 22px; }
 }
 
 /* ============ 390 ============ */
@@ -448,10 +442,10 @@ section { scroll-margin-top: 88px; }
   .trial { flex-direction: column; gap: 12px; width: 100%; padding: 18px; border-radius: 22px; text-align: center; }
   .tr-text { justify-content: center; }
   .plans { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .plan, .plan.featured { padding: 28px 24px 30px; }
+  .plan { padding: 26px 22px; }
   .plan.featured { order: -1; } /* the plan you can buy comes first on a phone */
-  .pl-price { margin: 24px 0 22px; }
-  .pl-num { font-size: 40px; }
+  .pl-price { margin: 22px 0 20px; }
+  .pl-num { font-size: 36px; }
   .safe { flex-direction: column; align-items: flex-start; gap: 10px; }
   .faq { padding: 72px 0; }
   .faq-list { margin-top: 32px; gap: 10px; }
