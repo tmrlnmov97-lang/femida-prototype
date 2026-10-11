@@ -13,6 +13,7 @@ const step = computed({ get: () => auth.value.step, set: (s: AuthStep) => (auth.
 const codeFor = ref<'signup' | 'reset'>('signup');
 const f = reactive({ name: '', email: '', password: '' });
 const show = ref(false);
+const remember = ref(false); // "Remember me" — user decision 11.10.2026, not on the live screen; needs a longer session on the backend [ASSUMPTION]
 const tried = ref(false);
 const busy = ref(false);
 const dialog = ref<HTMLElement>();
@@ -175,7 +176,10 @@ const HEAD = {
                 <span v-if="tried && errors.password" class="err"><i class="pi pi-exclamation-circle" />{{ errors.password }}</span>
                 <span v-else-if="step === 'register'" class="helper">At least 8 characters, a letter and a&nbsp;digit</span>
               </label>
-              <div v-if="step === 'login'" class="row-end"><button type="button" class="link quiet" @click="go('forgot')">Forgot your password?</button></div>
+              <div v-if="step === 'login'" class="row-end">
+                <label class="remember"><input v-model="remember" type="checkbox" class="cb" />Remember me</label>
+                <button type="button" class="link quiet" @click="go('forgot')">Forgot your password?</button>
+              </div>
               <button type="submit" class="btn" :disabled="busy">
                 <span v-if="busy" class="dots" aria-hidden="true"><i /><i /><i /></span>{{ step === 'register' ? 'Sign up free' : step === 'login' ? 'Log in' : 'Send code' }}
               </button>
@@ -249,7 +253,11 @@ p { margin: 0; }
 .helper { color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); }
 .err { display: flex; align-items: center; gap: 6px; color: var(--fd-red); font: 400 13px/18px var(--fd-font-sans); }
 .err .pi { font-size: 12px; }
-.row-end { display: flex; justify-content: flex-end; margin-top: -6px; }
+.row-end { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: -4px; }
+.remember { display: inline-flex; align-items: center; gap: 8px; color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); cursor: pointer; user-select: none; }
+.remember:hover { color: var(--fd-ink); }
+.cb { width: 16px; height: 16px; margin: 0; accent-color: var(--fd-accent); cursor: pointer; }
+.cb:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
 
 /* OTP: 6 cells */
 .otp { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
