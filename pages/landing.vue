@@ -113,7 +113,7 @@ const open = ref<number | null>(0);
     </section>
 
     <!-- ============ 03 Product — one window: an answer with sources, a refusal and the tools (replaced the proof demo and the bento) ============ -->
-    <section id="product" class="cap">
+    <section id="product" class="band">
       <div class="container">
         <div class="head">
           <p class="eyebrow">How femid.ai answers</p>
@@ -125,7 +125,7 @@ const open = ref<number | null>(0);
     </section>
 
     <!-- ============ 05 Pricing ============ -->
-    <section id="pricing" class="band">
+    <section id="pricing" class="cap">
       <div class="container col">
         <div class="head">
           <p class="eyebrow">Pricing</p>
@@ -366,7 +366,7 @@ section { scroll-margin-top: 88px; }
 .safe .pi { color: var(--fd-accent-text); font-size: 14px; }
 
 /* ============ 06 FAQ ============ */
-.faq { padding: 120px 0 80px; }
+.faq { padding: 120px 0; background: var(--band); } /* sections alternate: hero · product (band) · pricing · FAQ (band) · CTA */
 .faq-list { display: flex; flex-direction: column; gap: 12px; width: min(820px, 100%); margin: 48px auto 0; }
 .faq-item { border-radius: 20px; border: 1px solid var(--fd-line); background: var(--fd-panel); transition: border-color .2s; }
 .faq-item.open { border-color: color-mix(in srgb, var(--fd-accent) 45%, var(--fd-line)); }
@@ -438,7 +438,7 @@ section { scroll-margin-top: 88px; }
   .tr-text { justify-content: center; }
   .plans { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .safe { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .faq { padding: 72px 0 56px; }
+  .faq { padding: 72px 0; }
   .faq-list { margin-top: 32px; gap: 10px; }
   .faq-row { padding: 16px 16px 16px 18px; font-size: 16px; line-height: 24px; }
   .faq-a { padding: 0 18px 18px; font-size: 15px; line-height: 24px; }
