@@ -221,7 +221,7 @@ p { margin: 0; }
 .au-x { position: absolute; top: 20px; right: 20px; display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 999px; background: transparent; color: var(--fd-muted); cursor: pointer; }
 .au-x:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 8%, transparent); }
 .au-x .pi { font-size: 12px; }
-.head { display: flex; flex-direction: column; gap: 8px; padding-right: 28px; }
+.head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; padding-right: 28px; } /* air between the heading and the fields */
 .title { margin: 0; color: var(--fd-ink); font: 600 32px/38px var(--fd-font-serif); letter-spacing: -.4px; }
 .sub { color: var(--fd-muted); font: 400 16px/24px var(--fd-font-sans); text-wrap: pretty; }
 
@@ -285,6 +285,7 @@ p { margin: 0; }
 @media (max-width: 767px) {
   .au-wrap { align-items: end; padding: 12px; }
   .card { gap: 24px; padding: 28px 22px 24px; }
+  .head { margin-bottom: 12px; }
   .title { font-size: 28px; line-height: 34px; }
   .cells { gap: 6px; }
   .cell { width: calc((100vw - 24px - 44px - 30px) / 6); max-width: 52px; }
