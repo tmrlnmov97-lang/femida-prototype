@@ -4,7 +4,7 @@ import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 // Out of credits → a plan picker over the chat, the way Claude offers an upgrade when the limit is reached (user, 11.10).
 // Opens when the last credit is used, when someone tries to ask with none left, or from "View plans". Plans and prices are
 // the brief's (Davit on sale, the other two "Soon"); payment happens on the bank's page (Visa / Mastercard / ArCa).
-// The prototype stops at "Opening the bank's payment page…" — checkout itself is not designed yet [OPEN].
+// The prototype stops at "Opening payment…" (the bank's page) — checkout itself is not designed yet [OPEN].
 const { state, LIMIT } = useChat();
 const PLANS = [
   { id: 'davit', name: 'Davit', price: '200,000', desc: 'In-depth legal research with full sources', tag: 'Most complete', on: true },
@@ -60,7 +60,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
           <div class="foot">
             <button class="later" :disabled="busy" @click="close">Maybe later</button>
             <button class="go" :disabled="busy" @click="choose">
-              <template v-if="busy"><span class="dots" aria-hidden="true"><i /><i /><i /></span>Opening the bank’s payment page…</template>
+              <template v-if="busy">Opening payment<span class="dots" aria-hidden="true"><i /><i /><i /></span></template>
               <template v-else>Choose Davit<i class="pi pi-arrow-right" /></template>
             </button>
           </div>
@@ -105,13 +105,13 @@ ul { padding: 0; list-style: none; }
 .foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .later { height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: none; color: var(--fd-muted); cursor: pointer; font: 500 15px/20px var(--fd-font-sans); }
 .later:hover:not(:disabled) { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 6%, transparent); }
-.go { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border: 0; border-radius: 999px; background: var(--fd-accent); color: var(--fd-on-accent);
+.go { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 200px; height: 44px; padding: 0 20px; white-space: nowrap; border: 0; border-radius: 999px; background: var(--fd-accent); color: var(--fd-on-accent);
   cursor: pointer; font: 600 15px/20px var(--fd-font-sans); transition: background-color .15s; }
 .go:hover:not(:disabled) { background: var(--fd-accent-hover); }
-.go:disabled { cursor: default; opacity: .85; }
+.go:disabled { cursor: default; }
 .go .pi { font-size: 12px; transition: transform .2s; }
 .go:hover:not(:disabled) .pi { transform: translateX(3px); }
-.dots { display: inline-flex; gap: 3px; }
+.dots { display: inline-flex; align-items: flex-end; gap: 3px; height: 10px; margin-left: -4px; }
 .dots i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; animation: blink 1s infinite; }
 .dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
 @keyframes blink { 50% { opacity: .25; } }
