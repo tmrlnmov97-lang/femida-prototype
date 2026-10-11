@@ -2,12 +2,12 @@
 import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import type { AuthStep } from '~/composables/useAuthDialog';
 
-// Sign-in over the website. Cards are the Figma AuthCard variants 1:1 (Login 28:88 · Register 28:124 · Code 28:171 · Forgot 28:205);
-// fields follow Input 10:3 / Password 10:84 / OTP 11:21. Live site: email + password; brief: 6-digit email code valid 15 min.
+// Sign-in over the website. Steps and copy follow the live screens (en|hy/auth-login, auth-register) and the brief (6-digit email
+// code valid 15 min). Layout after the user's reference (11.10): big title + subtitle, fields with a leading icon, the eye on the
+// password, "Forgot your password?" under it, one accent button. No social sign-in and no "remember me" — the product has neither.
 // Prototype: any 6 digits are accepted; "forgot → code" signs in directly (no "new password" screen in Figma) [ASSUMPTION].
 const { auth, closeAuth } = useAuthDialog();
 const { state: chat } = useChat();
-const A = useLandingAsset();
 
 const step = computed({ get: () => auth.value.step, set: (s: AuthStep) => (auth.value = { ...auth.value, step: s }) });
 const codeFor = ref<'signup' | 'reset'>('signup');
@@ -125,7 +125,7 @@ onBeforeUnmount(() => { document.removeEventListener('keydown', onKey); clearInt
 
 const HEAD = {
   register: { tag: 'Sign up', title: 'Create an account', sub: '50 free questions. No card needed.' },
-  login: { tag: 'Log in', title: 'Welcome back', sub: 'Log in to continue with your account.' },
+  login: { tag: 'Log in', title: 'Welcome back', sub: 'Sign in to your account to continue.' },
   forgot: { tag: 'Password reset', title: 'Forgot your password?', sub: 'Enter your email and we\'ll send you a code to reset it.' },
   code: { tag: 'Check your email', title: 'Enter the code', sub: '' },
 } as const;
@@ -144,9 +144,7 @@ const HEAD = {
 
           <div class="card">
             <button class="au-x" aria-label="Close" @click="closeAuth"><i class="pi pi-times" /></button>
-            <p class="logo">femid<span>.ai</span></p>
             <div class="head">
-              <span class="tag">{{ HEAD[step].tag }}</span>
               <h2 id="au-title" class="title">{{ HEAD[step].title }}</h2>
               <p v-if="step !== 'code'" class="sub">{{ HEAD[step].sub }}</p>
               <p v-else class="sub">We sent a 6-digit code to {{ f.email.trim() || 'your email' }}. It is valid for 15&nbsp;minutes.</p>
@@ -156,19 +154,20 @@ const HEAD = {
             <form v-if="step !== 'code'" class="fields" novalidate @submit.prevent="submit">
               <label v-if="step === 'register'" class="field">
                 <span class="label">Full name</span>
-                <input v-model="f.name" data-f="name" data-first class="box" :class="{ bad: tried && errors.name }" placeholder="Ani Hakobyan" autocomplete="name" />
+                <span class="box" :class="{ bad: tried && errors.name }"><i class="pi pi-user lead" /><input v-model="f.name" data-f="name" data-first placeholder="Ani Hakobyan" autocomplete="name" /></span>
                 <span v-if="tried && errors.name" class="err"><i class="pi pi-exclamation-circle" />{{ errors.name }}</span>
               </label>
               <label class="field">
                 <span class="label">Email</span>
-                <input v-model="f.email" data-f="email" :data-first="step !== 'register' ? '' : undefined" class="box" :class="{ bad: tried && errors.email }" type="email" placeholder="anun@grasenyak.am" autocomplete="email" />
+                <span class="box" :class="{ bad: tried && errors.email }"><i class="pi pi-envelope lead" /><input v-model="f.email" data-f="email" :data-first="step !== 'register' ? '' : undefined" type="email" placeholder="anun@grasenyak.am" autocomplete="email" /></span>
                 <span v-if="tried && errors.email" class="err"><i class="pi pi-exclamation-circle" />{{ errors.email }}</span>
               </label>
               <label v-if="step !== 'forgot'" class="field">
                 <span class="label">Password</span>
-                <span class="box pw" :class="{ bad: tried && errors.password }">
+                <span class="box" :class="{ bad: tried && errors.password }">
+                  <i class="pi pi-lock lead" />
                   <input v-model="f.password" data-f="password" :type="show ? 'text' : 'password'" placeholder="At least 8 characters" :autocomplete="step === 'register' ? 'new-password' : 'current-password'" />
-                  <button type="button" class="eye" :class="{ on: show }" :aria-label="show ? 'Hide password' : 'Show password'" @click="show = !show"><img :src="A('b64b9')" alt="" width="20" height="20" /></button>
+                  <button type="button" class="eye" :class="{ on: show }" :aria-label="show ? 'Hide password' : 'Show password'" @click="show = !show"><i class="pi" :class="show ? 'pi-eye-slash' : 'pi-eye'" /></button>
                 </span>
                 <span v-if="step === 'register' && f.password" class="strength" :class="strengthTone" aria-live="polite">
                   <span v-for="i in 4" :key="i" class="seg" :class="{ on: i <= strength }" /><span class="word">{{ strengthWord }}</span>
@@ -176,6 +175,7 @@ const HEAD = {
                 <span v-if="tried && errors.password" class="err"><i class="pi pi-exclamation-circle" />{{ errors.password }}</span>
                 <span v-else-if="step === 'register'" class="helper">At least 8 characters, a letter and a&nbsp;digit</span>
               </label>
+              <div v-if="step === 'login'" class="row-end"><button type="button" class="link quiet" @click="go('forgot')">Forgot your password?</button></div>
               <button type="submit" class="btn" :disabled="busy">
                 <span v-if="busy" class="dots" aria-hidden="true"><i /><i /><i /></span>{{ step === 'register' ? 'Sign up free' : step === 'login' ? 'Log in' : 'Send code' }}
               </button>
@@ -189,13 +189,12 @@ const HEAD = {
                          :aria-label="`Digit ${i + 1}`" @input="onCell(i, $event)" @keydown="onCellKey(i, $event)" />
                 </div>
                 <span v-if="codeErr" class="err"><i class="pi pi-exclamation-circle" />{{ codeErr }}</span>
-                <span v-else-if="left > 0" class="resend"><img :src="A('66b00')" alt="" width="16" height="16" />New code in {{ mmss }}<template v-if="resent"> · Sent</template></span>
+                <span v-else-if="left > 0" class="resend"><i class="pi pi-clock" />New code in {{ mmss }}<template v-if="resent"> · Sent</template></span>
                 <button v-else type="button" class="link" @click="resend">Resend code</button>
               </div>
               <button class="btn" :disabled="busy" @click="confirmCode"><span v-if="busy" class="dots" aria-hidden="true"><i /><i /><i /></span>Confirm</button>
             </div>
 
-            <button v-if="step === 'login'" type="button" class="link" @click="go('forgot')">Forgot your password?</button>
             <div class="footer">
               <template v-if="step === 'register'"><span>Already have an account?</span><button type="button" class="link" @click="go('login')">Log in</button></template>
               <template v-else-if="step === 'login'"><span>No account?</span><button type="button" class="link" @click="go('register')">Sign up</button></template>
@@ -211,77 +210,84 @@ const HEAD = {
 
 <style scoped>
 p { margin: 0; }
-.au-wrap { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px; overflow-y: auto; background: rgb(0 0 0 / .55); backdrop-filter: blur(2px); }
-.au-col { display: flex; flex-direction: column; gap: 12px; width: 400px; max-width: 100%; }
-.au-q { display: grid; gap: 2px; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--fd-line); background: var(--fd-panel-2); }
+.au-wrap { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px; overflow-y: auto; background: rgb(0 0 0 / .55); backdrop-filter: blur(3px); }
+.au-col { display: flex; flex-direction: column; gap: 12px; width: min(440px, calc(100vw - 24px)); }
+.au-q { display: grid; gap: 2px; padding: 12px 16px; border-radius: 14px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
 .au-q-label { color: var(--fd-muted); font: 500 13px/18px var(--fd-font-sans); }
 .au-q-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--fd-ink); font: 400 15px/22px var(--fd-font-sans); }
 
-/* AuthCard: panel, line border, padding 32, radius 16, gap 20 */
-.card { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; padding: 32px; border-radius: 16px; border: 1px solid var(--fd-line); background: var(--fd-panel); box-shadow: var(--fd-overlay-shadow); }
-.au-x { position: absolute; top: 28px; right: 24px; display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: var(--fd-muted); cursor: pointer; }
+/* card: one panel, generous padding, the page's radius */
+.card { position: relative; display: flex; flex-direction: column; gap: 28px; padding: 40px 36px 32px; border-radius: 20px; border: 1px solid var(--fd-line); background: var(--fd-panel); box-shadow: var(--fd-overlay-shadow); }
+.au-x { position: absolute; top: 20px; right: 20px; display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 999px; background: transparent; color: var(--fd-muted); cursor: pointer; }
 .au-x:hover { color: var(--fd-ink); background: color-mix(in srgb, var(--fd-ink) 8%, transparent); }
 .au-x .pi { font-size: 12px; }
-.logo { color: var(--fd-ink); font: 600 18px/26px var(--fd-font-sans); white-space: nowrap; }
-.logo span { color: var(--fd-accent-text); }
-.head { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }
-.tag { padding: 2px 8px; border-radius: 999px; background: var(--fd-panel-2); color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); white-space: nowrap; }
-.title { margin: 0; color: var(--fd-ink); font: 700 28px/36px var(--fd-font-serif); }
-.sub { color: var(--fd-muted); font: 400 16px/26px var(--fd-font-sans); text-wrap: pretty; }
+.head { display: flex; flex-direction: column; gap: 8px; padding-right: 28px; }
+.title { margin: 0; color: var(--fd-ink); font: 600 32px/38px var(--fd-font-serif); letter-spacing: -.4px; }
+.sub { color: var(--fd-muted); font: 400 16px/24px var(--fd-font-sans); text-wrap: pretty; }
 
-/* Fields: Input 10:3 / Password 10:84 — label 15/20 medium, box 44 tall, radius 8, text 16/26 */
-.fields { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+/* fields: label above, a 48px box with a leading icon, inset (page) background */
+.fields { display: flex; flex-direction: column; gap: 18px; width: 100%; }
 .field { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-.label { color: var(--fd-ink); font: 500 15px/20px var(--fd-font-sans); }
-.box { display: flex; align-items: center; gap: 8px; width: 100%; height: 44px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--fd-line); background: var(--fd-panel); color: var(--fd-ink); outline: none; font: 400 16px/26px var(--fd-font-sans); transition: border-color .15s, box-shadow .15s; }
-input.box::placeholder, .pw input::placeholder { color: var(--fd-muted); }
-.box:focus, .box:focus-within { border-color: var(--fd-accent); box-shadow: 0 0 0 3px var(--fd-accent-soft); }
+.label { color: var(--fd-ink); font: 500 14px/20px var(--fd-font-sans); }
+.box { display: flex; align-items: center; gap: 12px; width: 100%; height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--fd-line); background: var(--fd-bg); color: var(--fd-ink);
+  transition: border-color .15s, box-shadow .15s; }
+.box input { flex: 1; min-width: 1px; height: 100%; padding: 0; border: 0; outline: none; background: transparent; color: var(--fd-ink); font: 400 16px/24px var(--fd-font-sans); }
+.box input::placeholder { color: color-mix(in srgb, var(--fd-muted) 80%, transparent); }
+.box .lead { color: var(--fd-muted); font-size: 15px; }
+.box:focus-within { border-color: var(--fd-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fd-accent) 18%, transparent); }
+.box:focus-within .lead { color: var(--fd-ink); }
 .box.bad { border-color: var(--fd-red); }
-.pw input { flex: 1; min-width: 1px; height: 100%; padding: 0; border: 0; outline: none; background: transparent; color: var(--fd-ink); font: inherit; }
-.eye { display: grid; place-items: center; width: 28px; height: 28px; margin-right: -4px; padding: 0; border: 0; border-radius: 6px; background: transparent; cursor: pointer; opacity: .75; }
-.eye.on, .eye:hover { opacity: 1; }
+.eye { display: grid; place-items: center; width: 32px; height: 32px; margin-right: -6px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--fd-muted); cursor: pointer; }
+.eye:hover, .eye.on { color: var(--fd-ink); }
+.eye .pi { font-size: 15px; }
 .strength { display: flex; align-items: center; gap: 4px; width: 100%; }
-.seg { flex: 1; min-width: 1px; height: 4px; border-radius: 999px; background: var(--fd-line); }
-.word { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); white-space: nowrap; }
+.seg { flex: 1; min-width: 1px; height: 3px; border-radius: 999px; background: var(--fd-line); }
+.word { margin-left: 4px; color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); white-space: nowrap; }
 .strength.weak .seg.on { background: var(--fd-red); } .strength.weak .word { color: var(--fd-red); }
 .strength.medium .seg.on { background: var(--fd-amber); } .strength.medium .word { color: var(--fd-amber); }
 .strength.strong .seg.on { background: var(--fd-accent); } .strength.strong .word { color: var(--fd-accent-text); }
-.helper { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
-.err { display: flex; align-items: center; gap: 6px; color: var(--fd-red); font: 400 15px/24px var(--fd-font-sans); }
-.err .pi { font-size: 13px; }
+.helper { color: var(--fd-muted); font: 400 13px/18px var(--fd-font-sans); }
+.err { display: flex; align-items: center; gap: 6px; color: var(--fd-red); font: 400 13px/18px var(--fd-font-sans); }
+.err .pi { font-size: 12px; }
+.row-end { display: flex; justify-content: flex-end; margin-top: -6px; }
 
-/* OTP 11:21 — cells 48×56, radius 8, digit 22/30 semibold; focused cell 2px focus border */
+/* OTP: 6 cells */
 .otp { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .cells { display: flex; gap: 8px; }
-.cell { width: 48px; height: 56px; padding: 0; border-radius: 8px; border: 1px solid var(--fd-line); background: var(--fd-panel); color: var(--fd-ink); text-align: center; outline: none; caret-color: var(--fd-focus); font: 600 22px/30px var(--fd-font-sans); }
-.cell:focus { border: 2px solid var(--fd-focus); }
+.cell { width: 52px; height: 58px; padding: 0; border-radius: 12px; border: 1px solid var(--fd-line); background: var(--fd-bg); color: var(--fd-ink); text-align: center; outline: none; caret-color: var(--fd-accent); font: 600 22px/30px var(--fd-font-sans);
+  transition: border-color .15s, box-shadow .15s; }
+.cell:focus { border-color: var(--fd-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fd-accent) 18%, transparent); }
 .cells.bad .cell { border-color: var(--fd-red); }
-.resend { display: flex; align-items: center; gap: 4px; color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); white-space: nowrap; }
+.resend { display: flex; align-items: center; gap: 6px; color: var(--fd-muted); font: 500 14px/20px var(--fd-font-sans); white-space: nowrap; }
+.resend .pi { font-size: 12px; }
 
-/* Button: primary M, full width */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px 20px; border: 0; border-radius: 8px; background: var(--fd-accent); color: var(--fd-on-accent); cursor: pointer; font: 500 15px/20px var(--fd-font-sans); transition: background-color .15s; }
+/* the one action */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; margin-top: 4px; border: 0; border-radius: 999px; background: var(--fd-accent); color: var(--fd-on-accent); cursor: pointer; font: 600 15px/20px var(--fd-font-sans); transition: background-color .15s; }
 .btn:hover:not(:disabled) { background: var(--fd-accent-hover); }
 .btn:disabled { opacity: .7; cursor: default; }
 .dots { display: inline-flex; gap: 3px; }
 .dots i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; animation: blink 1s infinite; }
 .dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
 @keyframes blink { 50% { opacity: .25; } }
-.link { padding: 0; border: 0; background: none; color: var(--fd-accent-text); cursor: pointer; font: 500 15px/20px var(--fd-font-sans); white-space: nowrap; }
-.link:hover { text-decoration: underline; text-underline-offset: 3px; }
-.footer { display: flex; align-items: flex-start; justify-content: center; gap: 4px; width: 100%; white-space: nowrap; }
-.footer span { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
-.footer .link { line-height: 24px; }
+.link { padding: 0; border: 0; background: none; color: var(--fd-ink); cursor: pointer; font: 500 14px/20px var(--fd-font-sans); white-space: nowrap; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .15s; }
+.link:hover { text-decoration-color: currentColor; }
+.link.quiet { color: var(--fd-muted); }
+.link.quiet:hover { color: var(--fd-ink); }
+.footer { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding-top: 4px; white-space: nowrap; }
+.footer span { color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); }
 .btn:focus-visible, .link:focus-visible, .au-x:focus-visible, .eye:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
 
 .au-enter-active, .au-leave-active { transition: opacity .18s ease; }
-.au-enter-active .au-col, .au-leave-active .au-col { transition: transform .18s ease; }
+.au-enter-active .au-col, .au-leave-active .au-col { transition: transform .2s var(--fd-easing, ease); }
 .au-enter-from, .au-leave-to { opacity: 0; }
-.au-enter-from .au-col, .au-leave-to .au-col { transform: translateY(8px) scale(.98); }
+.au-enter-from .au-col, .au-leave-to .au-col { transform: translateY(10px) scale(.98); }
 
 @media (max-width: 767px) {
   .au-wrap { align-items: end; padding: 12px; }
-  .card { padding: 24px; }
+  .card { gap: 24px; padding: 28px 22px 24px; }
+  .title { font-size: 28px; line-height: 34px; }
   .cells { gap: 6px; }
-  .cell { width: calc((100vw - 24px - 48px - 30px) / 6); max-width: 48px; }
+  .cell { width: calc((100vw - 24px - 44px - 30px) / 6); max-width: 52px; }
 }
+@media (prefers-reduced-motion: reduce) { .au-enter-active, .au-leave-active, .au-enter-active .au-col, .au-leave-active .au-col { transition: none; } }
 </style>
