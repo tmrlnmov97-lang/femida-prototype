@@ -135,12 +135,10 @@ const open = ref<number | null>(0);
         </div>
         <div class="plans">
           <div v-for="p in PLANS" :key="p.name" class="plan" :class="{ featured: p.featured }">
-            <!-- crop-mark corners around the plan on sale -->
-            <span v-if="p.featured" class="corners" aria-hidden="true"><i /><i /><i /><i /></span>
             <div class="pl-top">
               <p class="pl-name">{{ p.name }}</p>
               <span v-if="p.featured" class="pl-tag">Most complete</span>
-              <span v-else-if="p.soon" class="pl-tag">Soon</span>
+              <span v-else-if="p.soon" class="pl-tag soon">Soon</span>
             </div>
             <p class="pl-desc">{{ p.desc }}</p>
             <p class="pl-price"><span class="pl-num">{{ p.price }}</span><span class="pl-per">AMD / month</span></p>
@@ -325,35 +323,31 @@ section { scroll-margin-top: 88px; }
 .tour-block { margin-top: 56px; }
 
 /* ============ 05 Pricing ============ */
-.trial { display: flex; align-items: center; gap: 24px; padding: 8px 8px 8px 24px; border-radius: 2px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
-.trial .btn { border-radius: 2px; }
+.trial { display: flex; align-items: center; gap: 24px; padding: 8px 8px 8px 24px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
 .tr-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
 .tr-text b { color: var(--fd-ink); font: 600 16px/24px var(--fd-font-sans); }
 .tr-text span { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
-/* plans (user's reference, 11.10): sharp technical cards — square corners, hairlines, a dashed rule, the price with a
-   billing line, the action at the bottom; the plan on sale gets crop-mark corners and a slightly lighter panel. Sage colours. */
-.plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; width: 100%; }
-.plan { position: relative; display: flex; flex-direction: column; padding: 40px 36px 36px; border: 1px solid var(--fd-line); border-radius: 2px; background: var(--fd-panel); }
-.plan.featured { background: color-mix(in srgb, var(--fd-ink) 4%, var(--fd-panel)); border-color: color-mix(in srgb, var(--fd-ink) 22%, var(--fd-line)); }
-.corners i { position: absolute; width: 16px; height: 16px; border: 0 solid var(--fd-accent); }
-.corners i:nth-child(1) { top: -11px; left: -11px; border-top-width: 2px; border-left-width: 2px; }
-.corners i:nth-child(2) { top: -11px; right: -11px; border-top-width: 2px; border-right-width: 2px; }
-.corners i:nth-child(3) { bottom: -11px; left: -11px; border-bottom-width: 2px; border-left-width: 2px; }
-.corners i:nth-child(4) { bottom: -11px; right: -11px; border-bottom-width: 2px; border-right-width: 2px; }
-.pl-top { display: flex; align-items: center; gap: 8px; min-height: 32px; }
-.pl-name { flex: 1; color: var(--fd-ink); font: 500 18px/26px var(--fd-font-sans); }
-.pl-tag { flex-shrink: 0; padding: 4px 10px; border: 1px solid color-mix(in srgb, var(--fd-ink) 35%, transparent); border-radius: 2px; color: var(--fd-ink); font: 500 13px/18px var(--fd-font-sans); }
-.pl-desc { min-height: 48px; margin-top: 18px; color: var(--fd-muted); font: 400 16px/24px var(--fd-font-sans); }
-.pl-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin-top: 36px; }
-.pl-num { color: var(--fd-ink); font: 500 56px/1 var(--fd-font-sans); letter-spacing: -2.2px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.pl-per { color: var(--fd-muted); font: 400 17px/24px var(--fd-font-sans); white-space: nowrap; }
-.pl-bill { margin-top: 14px; color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); }
-.pl-feats { display: flex; flex-direction: column; gap: 16px; margin: 28px 0 36px; padding: 28px 0 0; border-top: 1px dashed var(--fd-line); list-style: none; }
-.pl-feats li { display: flex; align-items: center; gap: 14px; color: var(--fd-ink); font: 400 16px/24px var(--fd-font-sans); }
-.pl-feats .pi { color: var(--fd-ink); font-size: 12px; font-weight: 700; }
-.pl-btn { display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; margin-top: auto; border: 1px solid var(--fd-line); border-radius: 2px; background: none;
-  color: var(--fd-muted); font: 500 16px/20px var(--fd-font-sans); cursor: not-allowed; }
-.pl-btn .pi { font-size: 13px; transition: transform .2s var(--fd-easing); }
+/* plans in the landing's own style (rounded panels like the product window and FAQ, pill buttons, serif figures, hairlines,
+   no glow / fills); from the user's reference: the billing line under the price and the action at the bottom.
+   Davit, the plan on sale, gets a firmer border, the accent tag and the one accent button. */
+.plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; width: 100%; }
+.plan { display: flex; flex-direction: column; padding: 32px 32px 28px; border-radius: 24px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
+.plan.featured { border-color: color-mix(in srgb, var(--fd-ink) 26%, var(--fd-line)); }
+.pl-top { display: flex; align-items: center; gap: 8px; min-height: 28px; }
+.pl-name { flex: 1; color: var(--fd-ink); font: 600 18px/26px var(--fd-font-sans); }
+.pl-tag { flex-shrink: 0; padding: 3px 10px; border-radius: 999px; background: var(--fd-accent-soft); color: var(--fd-accent-text); font: 600 12px/18px var(--fd-font-sans); }
+.pl-tag.soon { background: var(--fd-panel-2); color: var(--fd-muted); }
+.pl-desc { min-height: 46px; margin-top: 8px; color: var(--fd-muted); font: 400 15px/23px var(--fd-font-sans); }
+.pl-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin-top: 24px; }
+.pl-num { color: var(--fd-ink); font: 600 46px/1.05 var(--fd-font-serif); letter-spacing: -.6px; white-space: nowrap; }
+.pl-per { color: var(--fd-muted); font: 400 15px/22px var(--fd-font-sans); white-space: nowrap; }
+.pl-bill { margin-top: 8px; color: var(--fd-muted); font: 400 14px/20px var(--fd-font-sans); }
+.pl-feats { display: flex; flex-direction: column; gap: 12px; margin: 24px 0 28px; padding: 24px 0 0; border-top: 1px solid var(--fd-line); list-style: none; }
+.pl-feats li { display: flex; align-items: center; gap: 12px; color: var(--fd-ink); font: 400 15px/24px var(--fd-font-sans); }
+.pl-feats .pi { color: var(--fd-accent-text); font-size: 12px; }
+.pl-btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; margin-top: auto; border: 1px solid var(--fd-line); border-radius: 999px; background: none;
+  color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); cursor: not-allowed; }
+.pl-btn .pi { font-size: 12px; transition: transform .2s var(--fd-easing); }
 .pl-btn.go { border-color: transparent; background: var(--fd-accent); color: var(--fd-on-accent); cursor: pointer; transition: background-color .15s; }
 .pl-btn.go:hover { background: var(--fd-accent-hover); }
 .pl-btn.go:hover .pi { transform: translateX(3px); }
@@ -406,10 +400,9 @@ section { scroll-margin-top: 88px; }
   .nav { gap: 20px; }
   .h1 { font-size: 68px; line-height: 72px; }
   .h2 { font-size: 44px; line-height: 50px; }
-  .pl-num { font-size: 42px; letter-spacing: -1.6px; }
+  .pl-num { font-size: 38px; }
   .pl-per { flex-basis: 100%; } /* same wrap in every card, so the rows stay aligned */
-  .plan { padding: 32px 24px 28px; }
-  .plans { gap: 22px; }
+  .plan { padding: 28px 24px 24px; }
 }
 
 /* ============ 390 ============ */
@@ -429,9 +422,9 @@ section { scroll-margin-top: 88px; }
   .band, .cap { padding: 72px 0; }
   .col { gap: 28px; }
   .tour-block { margin-top: 36px; }
-  .trial { flex-direction: column; gap: 12px; width: 100%; padding: 18px; border-radius: 2px; text-align: center; }
+  .trial { flex-direction: column; gap: 12px; width: 100%; padding: 18px; border-radius: 22px; text-align: center; }
   .tr-text { justify-content: center; }
-  .plans { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 0 4px; }
+  .plans { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .plan { padding: 28px 22px 24px; }
   .plan.featured { order: -1; } /* the plan you can buy comes first on a phone */
   .pl-desc { min-height: 0; margin-top: 10px; }
