@@ -65,16 +65,6 @@ function split(s: string): Seg[] {
 const PARAS = [split(ANSWER.short), split(ANSWER.paragraphs[0])];
 const nb = (s: string) => s.replace(/ (?=\S+$)/, '\u00a0'); // no widows in mock strings
 
-const BIG = [
-  { title: 'Document analysis', body: 'Upload a contract or a court decision. Deadlines, obligations and risks come back flagged.', shot: 'Uploaded contract with flagged deadlines and risks', wide: true },
-  { title: 'Deep research', body: 'For hard questions it plans the research and works through legislation, cassation practice and ECHR.', shot: 'Deep research in progress, steps and sources found', wide: false },
-];
-const SMALL = [
-  { icon: 'pi-file-edit', title: 'Drafting wizard', body: 'Five steps from a short description to an appeal or a claim, in Word or PDF.' },
-  { icon: 'pi-search', title: 'Court practice search', body: 'Find how courts decided cases like yours\u00a0— cassation, appeals, first\u00a0instance.' },
-  { icon: 'pi-calendar', title: 'Law on a date', body: 'Pick a date and see which version of the law was in force then.' },
-];
-
 const PLANS = [
   { name: 'Pokr Mher', price: '5,000', desc: 'Basic Q&A for individual\u00a0users', feats: ['Basic Q&A with sources', 'For individual users'] },
   { name: 'Mets Mher', price: '20,000', desc: 'Extended features for medium\u00a0workloads', feats: ['Extended features', 'For medium workloads'] },
@@ -209,20 +199,8 @@ const open = ref<number | null>(0);
           <h2 class="h2 cap-title">One assistant for the whole legal&nbsp;question.</h2>
         </div>
         <div class="bento">
-          <article v-for="b in BIG" :key="b.title" class="tile big" :class="{ wide: b.wide }">
-            <!-- Place for a real product screenshot [OPEN] -->
-            <figure class="shot" :aria-label="`Screenshot placeholder: ${b.shot}`">
-              <span class="shot-ic"><i class="pi pi-image" /></span>
-              <span class="shot-t">Screenshot</span>
-              <span class="shot-d">{{ b.shot }}</span>
-            </figure>
-            <div class="t-copy"><h3 class="t-title">{{ b.title }}</h3><p class="t-body">{{ b.body }}</p></div>
-          </article>
-          <article v-for="s in SMALL" :key="s.title" class="tile small">
-            <span class="t-ic"><i class="pi" :class="s.icon" /></span>
-            <h3 class="t-title">{{ s.title }}</h3>
-            <p class="t-body">{{ s.body }}</p>
-          </article>
+          <!-- the five tools as one live product window (replaces the screenshot placeholders) -->
+          <ProductTour class="tour-wrap" />
           <article class="firms">
             <span class="f-ic"><i class="pi pi-users" /></span>
             <div class="f-copy"><h3 class="t-title">Built for firms</h3><p class="t-body">Shared seats and invites. Counsel works under an organisation&nbsp;contract.</p></div>
@@ -479,20 +457,9 @@ section { scroll-margin-top: 88px; }
 /* ============ 04 Capabilities ============ */
 .cap { padding: 120px 0; }
 .cap-title { max-width: 820px; }
-.bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 56px; }
-.tile { display: flex; flex-direction: column; overflow: hidden; border-radius: 24px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
-.tile.wide { grid-column: span 2; }
-.shot { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 280px; padding: 32px; text-align: center; border-bottom: 1px solid var(--fd-line);
-  background: radial-gradient(120% 100% at 50% 0%, color-mix(in srgb, var(--fd-accent) 12%, transparent), transparent 65%), var(--fd-panel-2); }
-.shot::before { content: ''; position: absolute; inset: 14px; border-radius: 14px; border: 1.5px dashed color-mix(in srgb, var(--fd-ink) 16%, transparent); pointer-events: none; }
-.shot-ic { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 6px; border-radius: 14px; background: var(--fd-panel); color: var(--fd-muted); }
-.shot-t { color: var(--fd-muted); font: 600 12px/16px var(--fd-font-sans); letter-spacing: 1.2px; text-transform: uppercase; }
-.shot-d { max-width: 340px; color: var(--fd-ink); font: 500 16px/24px var(--fd-font-sans); text-wrap: balance; }
-.t-copy { display: flex; flex-direction: column; gap: 8px; padding: 24px 28px 28px; }
+.bento { display: grid; gap: 20px; margin-top: 56px; }
 .t-title { color: var(--fd-ink); font: 600 21px/28px var(--fd-font-sans); }
 .t-body { color: var(--fd-muted); font: 400 16px/26px var(--fd-font-sans); text-wrap: pretty; }
-.tile.small { gap: 10px; padding: 28px; }
-.t-ic { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 8px; border-radius: 12px; background: var(--fd-accent-soft); color: var(--fd-accent-text); }
 .firms { grid-column: 1 / -1; display: flex; align-items: center; gap: 20px; padding: 28px 32px; border-radius: 24px;
   border: 1px solid color-mix(in srgb, var(--fd-accent) 30%, transparent); background: var(--fd-accent-soft); }
 .f-ic { display: grid; place-items: center; width: 52px; height: 52px; flex-shrink: 0; border-radius: 999px; background: var(--fd-panel); color: var(--fd-accent-text); }
@@ -604,9 +571,6 @@ section { scroll-margin-top: 88px; }
   .answer { font-size: 16px; line-height: 26px; }
   .d-src { padding: 18px; border-left: 0; border-top: 1px solid var(--fd-line); }
   .bento { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 36px; }
-  .tile.wide { grid-column: auto; }
-  .shot { height: 200px; }
-  .t-copy, .tile.small { padding: 22px; }
   .firms { flex-direction: column; align-items: flex-start; gap: 14px; padding: 24px; }
   .trial { flex-direction: column; gap: 12px; width: 100%; padding: 18px; border-radius: 22px; text-align: center; }
   .tr-text { justify-content: center; }
