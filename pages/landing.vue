@@ -105,7 +105,6 @@ const open = ref<number | null>(0);
 
     <!-- ============ 01 Hero — the product is the first thing you see ============ -->
     <section id="top" class="hero container">
-      <span class="badge"><span class="b-ic"><i class="pi pi-shield" /></span>AI legal assistant for Armenia</span>
       <h1 class="h1">Legal answers<br /><span class="grad">you can verify.</span></h1>
       <p class="lead hero-lead">Ask in Armenian — every answer cites the law, court practice and ECHR decisions behind&nbsp;it.</p>
       <div class="chat-wrap"><ChatComposer variant="hero" gate input-id="hero-input" :placeholder="PH" @ask="openAuth('register', $event)" /></div>
@@ -354,10 +353,6 @@ section { scroll-margin-top: 88px; }
 
 /* ============ 01 Hero ============ */
 .hero { position: relative; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 112px 0 56px; }
-.badge { display: inline-flex; align-items: center; gap: 10px; padding: 5px 16px 5px 5px; border-radius: 999px; border: 1px solid var(--fd-line);
-  background: color-mix(in srgb, var(--fd-panel) 70%, transparent); color: var(--fd-muted); font: 500 14px/20px var(--fd-font-sans); }
-.b-ic { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 999px; background: var(--fd-accent-soft); color: var(--fd-accent-text); }
-.b-ic .pi { font-size: 12px; }
 .hero-lead { max-width: 580px; }
 .chat-wrap { width: min(800px, 100%); margin-top: 12px; text-align: left; }
 .chat-wrap :deep(.composer) { border-radius: 24px; }
@@ -529,7 +524,6 @@ section { scroll-margin-top: 88px; }
   .h2 { font-size: 32px; line-height: 38px; letter-spacing: -.4px; }
   .lead { font-size: 17px; line-height: 27px; }
   .hero { gap: 20px; padding: 64px 0 40px; }
-  .badge { font-size: 13px; }
   .checks { gap: 6px 18px; }
   .check { font-size: 14px; }
   .sources { padding: 16px 0 72px; }
