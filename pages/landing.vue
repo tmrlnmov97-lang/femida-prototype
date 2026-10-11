@@ -146,10 +146,10 @@ const open = ref<number | null>(0);
               <span v-else-if="p.soon" class="pl-tag soon">Soon</span>
             </div>
             <p class="pl-desc">{{ p.desc }}</p>
-            <p class="pl-price"><span class="pl-cur">֏</span><span class="pl-num">{{ p.price }}</span><span class="pl-per">/month</span></p>
+            <p class="pl-price"><span class="pl-num">{{ p.price }}</span><span class="pl-per">AMD / month</span></p>
             <button v-if="p.featured" class="pl-btn go" @click="openAuth('register')">Choose {{ p.name }}</button>
             <button v-else class="pl-btn" disabled>Coming soon</button>
-            <ul class="pl-feats"><li v-for="f in p.feats" :key="f"><i class="pi pi-check" />{{ f }}</li></ul>
+            <ul class="pl-feats"><li v-for="f in p.feats" :key="f"><span class="tick"><i class="pi pi-check" /></span>{{ f }}</li></ul>
           </div>
         </div>
         <article class="firms">
@@ -346,29 +346,31 @@ section { scroll-margin-top: 88px; }
 .tr-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
 .tr-text b { color: var(--fd-ink); font: 600 16px/24px var(--fd-font-sans); }
 .tr-text span { color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
-/* plans: three cards, the featured one inverted and a little taller (like the reference) */
+/* plans: the reference's format (three cards, the featured one raised in the middle) in our Sage style —
+   panels, a soft accent wash + accent rim + glow on the featured card, serif price, pill buttons, ticks in accent circles */
 .plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; gap: 20px; width: 100%; }
-.plan { --c-bg: var(--fd-panel); --c-ink: var(--fd-ink); --c-muted: var(--fd-muted); --c-line: var(--fd-line);
-  display: flex; flex-direction: column; padding: 40px 40px 44px; border-radius: 24px; border: 1px solid var(--c-line); background: var(--c-bg); }
-.plan.featured { --c-bg: var(--fd-ink); --c-ink: var(--fd-bg); --c-muted: color-mix(in srgb, var(--fd-bg) 62%, var(--fd-ink)); --c-line: color-mix(in srgb, var(--fd-bg) 14%, var(--fd-ink));
-  padding-top: 64px; padding-bottom: 68px; border-color: transparent; box-shadow: var(--lift); }
+.plan { position: relative; display: flex; flex-direction: column; padding: 36px 34px 38px; border-radius: 28px; border: 1px solid var(--fd-line); background: var(--fd-panel); }
+.plan.featured { padding-top: 56px; padding-bottom: 58px; border-color: color-mix(in srgb, var(--fd-accent) 55%, var(--fd-line));
+  background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--fd-accent) 16%, transparent), transparent 70%), var(--fd-panel);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--fd-accent) 8%, transparent), 0 40px 90px -30px color-mix(in srgb, var(--fd-accent) 40%, transparent); }
 .pl-top { display: flex; align-items: center; gap: 8px; }
-.pl-name { flex: 1; color: var(--c-ink); font: 700 24px/32px var(--fd-font-sans); letter-spacing: -.2px; }
-.pl-tag { flex-shrink: 0; padding: 3px 10px; border-radius: 999px; background: var(--fd-accent); color: var(--fd-on-accent); font: 600 12px/18px var(--fd-font-sans); }
+.pl-name { flex: 1; color: var(--fd-ink); font: 600 22px/30px var(--fd-font-sans); }
+.pl-tag { flex-shrink: 0; padding: 3px 10px; border-radius: 999px; background: var(--fd-accent-soft); color: var(--fd-accent-text); font: 600 12px/18px var(--fd-font-sans); }
 .pl-tag.soon { background: var(--fd-amber-soft); color: var(--fd-amber); }
-.pl-desc { margin-top: 6px; color: var(--c-muted); font: 400 16px/24px var(--fd-font-sans); }
-.pl-price { display: flex; align-items: baseline; gap: 6px; margin: 44px 0 36px; white-space: nowrap; }
-.pl-cur { align-self: flex-start; margin-top: 10px; color: var(--c-muted); font: 600 24px/1 var(--fd-font-sans); }
-.pl-num { color: var(--c-ink); font: 700 60px/1 var(--fd-font-sans); letter-spacing: -2px; font-variant-numeric: tabular-nums; }
-.pl-per { color: var(--c-muted); font: 400 17px/24px var(--fd-font-sans); }
-.pl-btn { height: 52px; border-radius: 14px; border: 1px solid var(--c-line); background: var(--fd-bg); color: var(--fd-muted); font: 600 16px/20px var(--fd-font-sans); cursor: not-allowed; }
+.pl-desc { margin-top: 6px; color: var(--fd-muted); font: 400 15px/23px var(--fd-font-sans); }
+.pl-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 32px 0 28px; }
+.pl-num { color: var(--fd-ink); font: 700 48px/1 var(--fd-font-serif); letter-spacing: -.8px; white-space: nowrap; }
+.featured .pl-num { color: var(--fd-ink); }
+.pl-per { color: var(--fd-muted); font: 400 15px/22px var(--fd-font-sans); white-space: nowrap; }
+.pl-btn { height: 48px; border-radius: 999px; border: 1px solid var(--fd-line); background: var(--fd-panel-2); color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); cursor: not-allowed; }
 .pl-btn.go { border-color: transparent; background: var(--fd-accent); color: var(--fd-on-accent); cursor: pointer; transition: background-color .15s, transform .12s; }
 .pl-btn.go:hover { background: var(--fd-accent-hover); }
 .pl-btn.go:active { transform: scale(.98); }
 .pl-btn:focus-visible { outline: 2px solid var(--fd-focus); outline-offset: 2px; }
-.pl-feats { display: flex; flex-direction: column; gap: 18px; margin-top: 36px; padding: 32px 0 0; border-top: 1px solid var(--c-line); list-style: none; }
-.pl-feats li { display: flex; align-items: center; gap: 14px; color: var(--c-ink); font: 400 16px/24px var(--fd-font-sans); }
-.pl-feats .pi { color: var(--c-muted); font-size: 13px; }
+.pl-feats { display: flex; flex-direction: column; gap: 14px; margin-top: 28px; padding: 28px 0 0; border-top: 1px solid var(--fd-line); list-style: none; }
+.pl-feats li { display: flex; align-items: center; gap: 12px; color: var(--fd-ink); font: 400 15px/24px var(--fd-font-sans); }
+.tick { display: grid; place-items: center; width: 22px; height: 22px; flex-shrink: 0; border-radius: 999px; background: var(--fd-accent-soft); color: var(--fd-accent-text); }
+.tick .pi { font-size: 10px; }
 .safe { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 32px; }
 .safe span { display: flex; align-items: center; gap: 10px; color: var(--fd-muted); font: 400 15px/24px var(--fd-font-sans); }
 .safe .pi { color: var(--fd-accent-text); font-size: 14px; }
@@ -420,10 +422,9 @@ section { scroll-margin-top: 88px; }
   .nav { gap: 20px; }
   .h1 { font-size: 68px; line-height: 72px; }
   .h2 { font-size: 44px; line-height: 50px; }
-  .pl-num { font-size: 40px; letter-spacing: -1.2px; }
-  .pl-price { flex-wrap: wrap; row-gap: 4px; }
-  .plan { padding: 32px 26px 34px; }
-  .plan.featured { padding-top: 48px; padding-bottom: 50px; }
+  .pl-num { font-size: 38px; }
+  .plan { padding: 30px 24px 32px; }
+  .plan.featured { padding-top: 44px; padding-bottom: 46px; }
 }
 
 /* ============ 390 ============ */
@@ -449,8 +450,8 @@ section { scroll-margin-top: 88px; }
   .plans { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .plan, .plan.featured { padding: 28px 24px 30px; }
   .plan.featured { order: -1; } /* the plan you can buy comes first on a phone */
-  .pl-price { margin: 28px 0 24px; }
-  .pl-num { font-size: 48px; }
+  .pl-price { margin: 24px 0 22px; }
+  .pl-num { font-size: 40px; }
   .safe { flex-direction: column; align-items: flex-start; gap: 10px; }
   .faq { padding: 72px 0; }
   .faq-list { margin-top: 32px; gap: 10px; }
