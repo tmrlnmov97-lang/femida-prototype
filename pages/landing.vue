@@ -340,7 +340,7 @@ section { scroll-margin-top: 88px; }
 
 /* ============ 00 Header ============ */
 .header { position: sticky; top: 0; z-index: 30; display: flex; justify-content: center; padding-top: 16px; pointer-events: none; }
-.pill { display: flex; align-items: center; gap: 8px; width: min(980px, calc(100% - 32px)); height: 60px; padding: 0 8px 0 24px; border-radius: 999px; pointer-events: auto;
+.pill { display: flex; align-items: center; gap: 8px; width: min(1320px, calc(100% - 96px)); height: 60px; padding: 0 8px 0 24px; /* on the page grid: same edges as the content */ border-radius: 999px; pointer-events: auto;
   border: 1px solid var(--fd-line); background: color-mix(in srgb, var(--fd-panel) 82%, transparent); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); box-shadow: var(--soft); }
 .nav { display: flex; gap: 28px; margin-left: 28px; color: var(--fd-muted); font: 500 15px/20px var(--fd-font-sans); white-space: nowrap; }
 .nav a:hover { color: var(--fd-ink); }
@@ -524,7 +524,7 @@ section { scroll-margin-top: 88px; }
   section { scroll-margin-top: 80px; }
   .hide-m, .nav { display: none; }
   .show-m { display: grid; }
-  .pill { height: 56px; padding-left: 20px; }
+  .pill { width: calc(100% - 32px); height: 56px; padding-left: 20px; }
   .h1 { font-size: 44px; line-height: 48px; letter-spacing: -.9px; }
   .h2 { font-size: 32px; line-height: 38px; letter-spacing: -.4px; }
   .lead { font-size: 17px; line-height: 27px; }
