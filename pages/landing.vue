@@ -340,7 +340,7 @@ section { scroll-margin-top: 88px; }
 @keyframes fd-fade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .w, .rise, .fade, .pill, .m-menu a { animation: none; }
-  .pill, .header, .nav-hl, .try .go, .nav a::after, .spin-enter-active, .spin-leave-active { transition: none; }
+  .pill, .header, .header::before, .nav-hl, .try .go, .nav a::after, .spin-enter-active, .spin-leave-active { transition: none; }
 }
 .h2 { color: var(--fd-ink); font: 600 52px/58px var(--fd-font-serif); letter-spacing: -.8px; text-align: center; text-wrap: balance; }
 .grad { background: linear-gradient(90deg, var(--fd-accent-text), var(--fd-accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -377,6 +377,12 @@ section { scroll-margin-top: 88px; }
   animation: fd-drop .6s var(--fd-easing) .05s both; transition: height .3s var(--fd-easing), background-color .3s, box-shadow .3s; }
 /* scrolled: a little tighter and denser */
 .header.scrolled { padding-top: 10px; }
+/* veil behind the pill: page colour across the full width, fading out just below it — nothing shows through above or
+   beside the header while scrolling; off at the very top so the hero glow stays */
+.header::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: calc(100% + 24px); z-index: -1; pointer-events: none;
+  background: linear-gradient(180deg, var(--fd-bg) 0%, var(--fd-bg) 62%, color-mix(in srgb, var(--fd-bg) 0%, transparent) 100%);
+  opacity: 0; transition: opacity .3s; }
+.header.scrolled::before { opacity: 1; }
 .header.scrolled .pill { height: 52px; background: color-mix(in srgb, var(--fd-panel) 94%, transparent); box-shadow: var(--lift); }
 @keyframes fd-drop { from { opacity: 0; transform: translateY(-14px) scale(.985); } to { opacity: 1; transform: none; } }
 .pill .logo { justify-self: start; margin-left: 16px; }
