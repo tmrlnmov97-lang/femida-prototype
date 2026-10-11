@@ -119,7 +119,7 @@ onBeforeUnmount(() => { window.removeEventListener('resize', placeHl); io?.disco
       <div class="bar">
         <span class="dots"><span /><span /><span /></span>
         <Transition name="fade" mode="out-in"><span :key="item.title" class="bar-t">{{ item.title }}</span></Transition>
-        <span class="tag">SAMPLE</span>
+        <!-- no visible SAMPLE badge (user, 11.10); the content is still sample data from data/mock — the real answer is pending [OPEN — CTO Q11] -->
       </div>
       <div class="body">
         <!-- sidebar: Chat + Tools, like the app -->
@@ -256,7 +256,6 @@ b { font-weight: 600; }
 .bar { position: relative; display: flex; align-items: center; height: 46px; flex-shrink: 0; padding: 0 18px; border-bottom: 1px solid var(--fd-line); }
 .dots { display: flex; gap: 6px; } .dots span { width: 9px; height: 9px; border-radius: 50%; background: var(--fd-line); }
 .bar-t { position: absolute; left: 50%; transform: translateX(-50%); color: var(--fd-muted); font: 500 13px/18px var(--fd-font-sans); white-space: nowrap; }
-.tag { margin-left: auto; padding: 2px 10px; border-radius: 999px; border: 1px dashed var(--fd-line); color: var(--fd-muted); font: 500 11px/18px var(--fd-font-sans); letter-spacing: .8px; }
 .fade-enter-active, .fade-leave-active { transition: opacity .2s; } .fade-enter-from, .fade-leave-to { opacity: 0; }
 .body { display: flex; flex: 1; min-height: 0; }
 
