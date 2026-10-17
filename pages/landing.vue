@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
 // Public website · Home v3 — the approved wireframe v2 (Figma MuXNHQVKOE55lGpjzUIOWt, page «Landing · Wireframe» 165:2, frames 170:93 / 170:405)
-// in the Bybit-style palette (near-black + orange). Order: floating header · hero with the chat · product window (chat with sources + tools) · pricing · FAQ · footer.
+// in the emerald palette from the brand board (#0D130F + #34D399). Order: floating header · hero with the chat · product window (chat with sources + tools) · pricing · FAQ · footer.
 // Copy comes from the Figma Home (33:2) and the app mock — nothing new is claimed. Sample content is marked SAMPLE.
 useHead({ title: 'femid.ai — Legal answers you can verify' });
 

@@ -2,22 +2,22 @@
 :root {
   /* Dark — default theme */
   color-scheme: dark;
-  --fd-bg: #101014;
-  --fd-panel: #17181E;
-  --fd-panel-2: #222227;
-  --fd-line: #333537;
-  --fd-ink: #FFFFFF;
-  --fd-muted: #A0A4AA;
-  --fd-accent: #FF9C2E;
-  --fd-accent-hover: #FFB057;
-  --fd-accent-soft: #362618;
-  --fd-accent-text: #FF9C2E;
-  --fd-on-accent: #121214;
-  --fd-amber: #FFD84D;
-  --fd-amber-soft: #312C1C;
-  --fd-red: #FF5468;
-  --fd-red-soft: #361B21;
-  --fd-focus: #FF9C2E;
+  --fd-bg: #0D130F;
+  --fd-panel: #151E18;
+  --fd-panel-2: #1A241D;
+  --fd-line: #26352B;
+  --fd-ink: #E8EDE6;
+  --fd-muted: #7B8F82;
+  --fd-accent: #34D399;
+  --fd-accent-hover: #6EE7B7;
+  --fd-accent-soft: #122E22;
+  --fd-accent-text: #34D399;
+  --fd-on-accent: #0D130F;
+  --fd-amber: #F5B547;
+  --fd-amber-soft: #2D2A17;
+  --fd-red: #FF7A85;
+  --fd-red-soft: #2F2120;
+  --fd-focus: #34D399;
   --fd-shadow: none;
   /* Scales — theme-independent */
   --fd-font-sans: 'Noto Sans Armenian','Noto Sans',system-ui,sans-serif;
@@ -91,21 +91,21 @@
 :root.fd-light {
   /* Light — toggled by class on <html> */
   color-scheme: light;
-  --fd-bg: #F5F7FA;
+  --fd-bg: #F4F6F2;
   --fd-panel: #FFFFFF;
-  --fd-panel-2: #E9ECF0;
-  --fd-line: #DDE1E5;
-  --fd-ink: #121214;
-  --fd-muted: #5A5E64;
-  --fd-accent: #C76A00;
-  --fd-accent-hover: #DB7600;
-  --fd-accent-soft: #FFF1E3;
-  --fd-accent-text: #9A5200;
-  --fd-on-accent: #121214;
-  --fd-amber: #6E5700;
-  --fd-amber-soft: #FFF7D6;
-  --fd-red: #C8202E;
+  --fd-panel-2: #E8EDE6;
+  --fd-line: #D3DCD5;
+  --fd-ink: #0D130F;
+  --fd-muted: #4F6156;
+  --fd-accent: #047857;
+  --fd-accent-hover: #065F46;
+  --fd-accent-soft: #D1FAE5;
+  --fd-accent-text: #047857;
+  --fd-on-accent: #FFFFFF;
+  --fd-amber: #8F5400;
+  --fd-amber-soft: #FFF3DF;
+  --fd-red: #B42335;
   --fd-red-soft: #FDE8EB;
-  --fd-focus: #9A5200;
+  --fd-focus: #047857;
   --fd-shadow: 0 1px 2px rgba(23,24,26,.06), 0 4px 12px rgba(23,24,26,.06);
 }
