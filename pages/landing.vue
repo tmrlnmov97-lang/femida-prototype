@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
 // Public website · Home v3 — the approved wireframe v2 (Figma MuXNHQVKOE55lGpjzUIOWt, page «Landing · Wireframe» 165:2, frames 170:93 / 170:405)
-// in the Sage palette. Order: floating header · hero with the chat · product window (chat with sources + tools) · pricing · FAQ · footer.
+// in the Bybit-style palette (near-black + orange). Order: floating header · hero with the chat · product window (chat with sources + tools) · pricing · FAQ · footer.
 // Copy comes from the Figma Home (33:2) and the app mock — nothing new is claimed. Sample content is marked SAMPLE.
 useHead({ title: 'femid.ai — Legal answers you can verify' });
 
@@ -206,7 +206,7 @@ section { scroll-margin-top: 88px; }
 .container { width: min(1320px, calc(100% - 96px)); margin: 0 auto; }
 .col { display: flex; flex-direction: column; align-items: center; gap: 40px; }
 .glow { position: absolute; top: -360px; left: 50%; width: 1500px; height: 960px; transform: translateX(-50%); pointer-events: none;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--fd-accent) 16%, transparent), transparent); }
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--fd-accent) 8%, transparent), transparent); }
 
 /* Type */
 .h1 { font: 600 84px/88px var(--fd-font-serif); letter-spacing: -1.7px; text-align: center; }
