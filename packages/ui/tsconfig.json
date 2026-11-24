@@ -1,0 +1,4 @@
+{
+  // IDE types for the layer files: borrow the app's generated config (run `npm install` or `npm run dev:app` once to create it)
+  "extends": "../../apps/app/.nuxt/tsconfig.json"
+}

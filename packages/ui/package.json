@@ -1,0 +1,17 @@
+{
+  "name": "@femida/ui",
+  "private": true,
+  "type": "module",
+  "main": "./nuxt.config.ts",
+  "scripts": {
+    "sync": "node scripts/sync-tokens.mjs"
+  },
+  "dependencies": {
+    "@primevue/themes": "^4.5.4",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.5.5"
+  },
+  "peerDependencies": {
+    "nuxt": "^3.17.0"
+  }
+}

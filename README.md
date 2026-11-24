@@ -1,23 +1,50 @@
-# Femida — coded prototype (Chat)
+# Femida — coded prototype
 
-**Live:** https://tmrlnmov97-lang.github.io/femida-prototype/ · redesign prototype for review, not the production app.
+> Handing this to a developer? Start with **[HANDOFF.md](HANDOFF.md)** — what is real, what is mocked and where to plug the API.
 
-Nuxt 3 SPA + PrimeVue 4, themed with the Femida tokens (`--fd-*`). Chat screen rebuilt from the live product (hz.femid.ai, 08.10.2026) at the premium level of the Figma redesign.
+Redesign prototype for review, not the production app. Two separate frontends, one design system:
+
+| | Folder | Dev | Live |
+|---|---|---|---|
+| **App** (signed-in product: Chat, cases, documents, notes, account) | `apps/app` | http://localhost:3001 | https://tmrlnmov97-lang.github.io/femida-prototype/ |
+| **Landing** (public website: hero with the chat, product tour, pricing, FAQ, sign-in) | `apps/landing` | http://localhost:3002 | https://tmrlnmov97-lang.github.io/femida-prototype/landing/ |
+
+Both are Nuxt 3 SPAs + PrimeVue 4 and extend one Nuxt layer, **`packages/ui`** (`@femida/ui`): the `--fd-*` tokens, the PrimeVue Aura preset, the `v-tie` no-widows directive, the chat composer and refusal card (the landing hero reuses the app's composer), the chat store and the SAMPLE data. Each app builds, runs and deploys on its own; neither imports from the other.
+
+```
+prototype/
+  apps/app/        pages/ (Chat = index, cases, documents, notes, account, tools…) · components/chat, shell · composables/
+  apps/landing/    pages/index.vue · components/landing, site (AuthDialog) · composables/ · public/figma/
+  packages/ui/     nuxt.config.ts (the layer) · assets/css · theme/preset.ts · plugins/ · components/chat · composables/useChat · data/mock
+  scripts/         dev.mjs · deploy-pages.mjs · shot.mjs · interact.mjs
+```
+
+Shared files are imported as `#ui/...` (e.g. `#ui/data/mock`). Inside a layer `~` points at the app that extends it, so `~/...` only ever means the app's own files.
 
 ## Run
 
-Needs Node 18+.
+Needs **Node 20.19+ or 22.12+** (`.nvmrc` = 22; Nuxt 3.21 / Vite 8). npm workspaces: one `npm install` at the root.
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev            # both: app :3001 + landing :3002
+npm run dev:app        # only the app
+npm run dev:landing    # only the landing
+npm run generate       # static builds → apps/*/.output/public
 ```
 
-Inside the full workspace, `npm run sync` (runs before dev/build) copies the generated tokens (`ds-app/src/tokens/*.css`) and the PrimeVue preset (`ds-app/src/theme/preset.ts`) into this app — ds-app stays the single source. Without ds-app next to it (e.g. this folder on its own), the copies already in `assets/css` and `theme/` are used.
+`npm run sync` in each app (runs before dev/generate) copies the generated tokens (`ds-app/src/tokens/*.css`) and the PrimeVue preset (`ds-app/src/theme/preset.ts`) into `packages/ui`, so ds-app stays the single source. Without ds-app next to it (e.g. this folder on its own), the copies already in `packages/ui` are used.
 
-## What works
+### How the two talk to each other
 
-- **Palette:** Sage (approved 08.10.2026). Dark is the default; light via the account menu → Theme, or `?theme=light`.
+- **Landing → app.** After sign-in the guest's question goes to the app in the URL: `?ask=…&mode=…&file=…&size=…&theme=light`. The app sends it on arrival and clears the query. Address: `NUXT_PUBLIC_APP_URL` (default `http://localhost:3001/`). Real build: upload the attached file before leaving and pass its id [ASSUMPTION].
+- **App → landing.** Log out / Sign out leads to the website, keeping the theme. Address: `NUXT_PUBLIC_SITE_URL` (default `http://localhost:3002/`).
+
+To host them apart (e.g. `femid.ai` + `app.femid.ai`), set the two URLs and `NUXT_APP_BASE_URL` per app at build time.
+
+## What works — app
+
+- **Palette:** Emerald from the brand board (17.10.2026). Dark is the default; light via the account menu → Theme, or `?theme=light`.
 - **Top bar:** Sources (n) toggle. Credit counter "N of 50 credits" (1 question = 1 credit): skeleton while loading, amber at ≤10, click for the usage card + "See plans". Account menu (Account / Plans / Organisation, Theme dark/light, Log out). No language switch: the product is Armenian-only.
 - **Sidebar:**
   - Search chats and New chat; Library (with Watch · Soon); Tools open a panel with one-line descriptions.
@@ -43,19 +70,27 @@ Inside the full workspace, `npm run sync` (runs before dev/build) copies the gen
 
 - **My notes** (`/notes`): list + reader; saved answers keep clickable citations and sources; Studio materials (timeline, questions, key facts) with the files they are based on; states via `/notes?state=loading|empty|error`.
 
+## What works — landing
+
+- Floating header (nav slider, scroll-spy, theme switch, phone menu), hero with the chat composer in **gate** mode: a guest can type, attach and pick a mode, Ask opens sign-in.
+- Product tour (answer with sources, refusal, tools — SAMPLE data from `packages/ui/data/mock`), pricing (Davit is the only plan on sale), FAQ, footer.
+- Sign-in dialog: register → 6-digit email code (resend timer) · log in (remember me) · forgot password → then on to the app with the question.
+- `?theme=light` as in the app.
+
 All copy is an English placeholder until the Armenian pass. Answers, sources, chat titles and case names are SAMPLE.
 
-Demo URLs: `?demo=answer`, `fragment`, `streaming`, `searching`, `deep`, `plan`, `refused`, `error-temporary`, `error-quota`, `error-service`, `low`, `out`, `sheet` (phone).
+Demo URLs (app): `?demo=answer`, `fragment`, `streaming`, `searching`, `deep`, `plan`, `refused`, `error-temporary`, `error-quota`, `error-service`, `low`, `out`, `sheet` (phone).
 
 ## Deploy (GitHub Pages)
 
-`npm run deploy` builds with the `/femida-prototype/` base path and publishes `.output/public` to the `gh-pages` branch.
+`npm run deploy` (stop the dev servers first) generates both with their base paths — the app at `/femida-prototype/`, the landing at `/femida-prototype/landing/`, the same links as before the split — puts them in one `dist-pages/` and publishes it to the `gh-pages` branch.
 
 ## Screenshots
 
-`npm run generate && node scripts/shot.mjs` → `shots/*.png` (headless Chrome; phones are rendered in a 390px iframe).
+`npm run generate && node scripts/shot.mjs` → `shots/*.png` (headless Chrome; phones are rendered in a 390px iframe). Landing: `APP=landing node scripts/shot.mjs name=@1440x900`.
 
 ## Notes
 
-- Answer text and sources are **SAMPLE** content (`data/mock.ts`) — replace with a real verified answer (open question 11 to the CTO).
-- PrimeVue used: Button, Textarea (autoResize), Drawer, Skeleton, Menu, Tooltip; custom Femida components: composer, citation chip, sources panel, answer, states.
+- Answer text and sources are **SAMPLE** content (`packages/ui/data/mock.ts`) — replace with a real verified answer (open question 11 to the CTO).
+- PrimeVue used: Button, Textarea (autoResize), Popover, Drawer, Skeleton, Menu, Tooltip; custom Femida components: composer, citation chip, sources panel, answer, states.
+- The landing is an SPA like the app. Prerendering it (SSG, better for SEO) needs `@primevue/nuxt-module` so the theme CSS is in the HTML [ASSUMPTION — later].

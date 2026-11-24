@@ -1,6 +1,6 @@
 // Real interaction checks with the system Chrome (puppeteer-core). BASE defaults to the dev server.
 import puppeteer from 'puppeteer-core';
-const BASE = process.env.BASE || 'http://localhost:3000';
+const BASE = process.env.BASE || 'http://localhost:3001'; // the app (apps/app)
 const out = new URL('../shots/', import.meta.url).pathname;
 const browser = await puppeteer.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
 const page = await browser.newPage();

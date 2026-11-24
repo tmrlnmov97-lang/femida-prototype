@@ -1,0 +1,19 @@
+{
+  "name": "@femida/app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "node ../../packages/ui/scripts/sync-tokens.mjs",
+    "dev": "npm run sync && nuxt dev",
+    "build": "npm run sync && nuxt build",
+    "generate": "npm run sync && nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@femida/ui": "*",
+    "nuxt": "^3.17.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  }
+}

@@ -1,7 +1,8 @@
-public/__frame.html
 shots/
 .output/
 .nuxt/
 node_modules/
 dist
+dist-pages/
+__frame.html
 .DS_Store

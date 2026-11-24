@@ -1,15 +1,17 @@
 // Screenshots of the generated prototype with headless Chrome.
-// Usage: npm run generate && node scripts/shot.mjs [name=query@WxH ...]
+// Usage: npm run generate && node scripts/shot.mjs [name=query@WxH ...]          (the app)
+//        APP=landing node scripts/shot.mjs [name=query@WxH ...]                 (the landing)
 import { spawn, execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
+const app = root + `apps/${process.env.APP || 'app'}/`;
 const out = root + 'shots/';
 mkdirSync(out, { recursive: true });
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const PORT = 4173;
-const BASE = process.env.BASE || `http://localhost:${PORT}`; // BASE=http://localhost:3000 → use the running dev server
+const BASE = process.env.BASE || `http://localhost:${PORT}`; // BASE=http://localhost:3001 (app) / :3002 (landing) → use the running dev server
 const defaults = [
   'empty=@1440x900', 'answer=demo=answer@1440x900', 'fragment=demo=fragment@1440x900', 'streaming=demo=streaming@1440x900',
   'refused=demo=refused@1440x900', 'error-service=demo=error-service@1440x900', 'out=demo=out@1440x900', 'deep=demo=deep@1440x900',
@@ -20,8 +22,8 @@ const jobs = (process.argv.slice(2).length ? process.argv.slice(2) : defaults).m
   const [name, rest] = s.split('='); const [q, size] = s.slice(name.length + 1).split('@');
   const [w, h] = size.split('x'); return { name, query: q.replace(/%26/g, '&'), w, h };
 });
-const server = process.env.BASE ? null : spawn('python3', ['-m', 'http.server', String(PORT), '-d', root + '.output/public'], { stdio: 'ignore' });
-const frameDir = process.env.BASE ? root + 'public/' : root + '.output/public/';
+const server = process.env.BASE ? null : spawn('python3', ['-m', 'http.server', String(PORT), '-d', app + '.output/public'], { stdio: 'ignore' });
+const frameDir = process.env.BASE ? app + 'public/' : app + '.output/public/';
 await new Promise((r) => setTimeout(r, 800));
 try {
   for (const j of jobs) {
